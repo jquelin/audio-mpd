@@ -1,0 +1,105 @@
+#!/usr/bin/perl -w
+use strict;
+use constant VERSION => '0.10.0';
+
+die("MPD.pm not found!\n") unless -f "MPD.pm";
+require("MPD.pm");
+my $x = MPD->new();
+$x->connect();
+
+# mpctime() - For getting the time in the same format as `mpc` writes it
+sub mpctime
+{
+    my($psf,$tst) = split /:/, $x->{'time'};
+    return sprintf("%d:%02d (%d%%)",
+           ($psf / 60), # minutes so far
+           ($psf % 60), # seconds - minutes so far
+           $psf/($tst/100)); # Percent
+}
+
+sub help
+{
+  print "mpc version: ".VERSION."\n";
+  print "mpc\t\t\t\tDisplays status\n";
+  print "mpc add <filename>\t\tAdd a song to the current playlist\n";
+  print "mpc del <playlist #>\t\tRemove a song from the current playlist\n";
+  print "mpc play <number>\t\tStart playing a <number> (default: 1)\n";
+  print "mpc next\t\t\tPlay the next song in the current playlist\n";
+  print "mpc prev\t\t\tPlay the previous song in the current playlist\n";
+  print "mpc pause\t\t\tPauses the currently playing song\n";
+  print "mpc stop\t\t\tStop the currently playing song\n";
+  print "mpc seek <0-100>\t\tSeeks to the position specified in percent\n";
+  print "mpc clear\t\t\tClears the current playlist\n";
+  print "mpc shuffle\t\t\tShuffle the current playlist\n";
+  print "mpc move <from> <to>\t\tMove song in playlist\n";
+  #print "mpc playlist\t\t\tPrint the current playlist\n";
+  #print "mpc listall [<song>]\t\tList all songs in the music dir\n";
+  #print "mpc ls [<dir>]\t\t\tList the contents of <dir>\n";
+  #print "mpc lsplaylists\t\t\tLists currently available playlists\n";
+  #print "mpc load <file>\t\t\tLoad <file> as a playlist\n";
+  #print "mpc save <file>\t\t\tSaves a playlist as <file>\n";
+  #print "mpc rm <file>\t\t\tRemoves a playlist\n";
+  print "mpc volume [+-]<num>\t\tSets volume to <num> or adjusts by [+-]<num>\n";
+  print "mpc repeat <on|off>\t\tToggle repeat mode, or specify state\n";
+  print "mpc random <on|off>\t\tToggle random mode, or specify state\n";
+  #print "mpc search <type> <queries>\tSearch for a song\n";
+  print "mpc crossfade [sec]\t\tSet and display crossfade settings\n";
+  print "mpc update\t\t\tScans music directory for updates\n";
+  print "mpc version\t\t\tReports version of MPD\n";
+  print "For more information about these and other options look man 1 mpc\n";
+  exit;
+}
+
+# status() - For showing the current status
+sub status
+{
+  $x->getstatus; # Better update to be sure we get the real information
+  my $repeat = ($x->{repeat} == 1 ? 'on ' : 'off'); # Let's show the repeat-status a bit nicer
+  my $random = ($x->{random} == 1 ? 'on ' : 'off'); # And the same for random
+  
+  if($x->{state} eq 'play' || $x->{state} eq 'pause') { # If MPD is either playing or paused
+    print $x->gettitle."\n";
+    print "[".($x->{state} eq 'play' ? 'playing' : 'paused')."] #".($x->{song}+1)."/".$x->{playlistlength}."\t".mpctime."\n";
+    print "volume: ".$x->{volume}."%   repeat: ".$repeat."  random: ".$random."\n";
+  } elsif($x->{state} eq 'stop') { # If MPD is stopped, we don't show much
+     print "volume: ".$x->{volume}."%   repeat: ".$repeat."  random: ".$random."\n";
+  }
+  exit;
+}
+
+sub play { $x->play($ARGV[1] || 1); status; }
+sub stop { $x->stop(); status; }
+sub pause { $x->pause(); status; }
+sub add { $x->add($ARGV[1]); }
+sub del { $x->del($ARGV[1]); }
+sub next { $x->next(); }
+sub prev { $x->prev(); }
+sub seek { $x->seek($ARGV[1]); }
+sub clear { $x->clear(); }
+sub shuffle { $x->shuffle(); }
+sub move { $x->move($ARGV[1],$ARGV[2]); }
+sub playlist { }
+sub listall { }
+sub ls { }
+sub lsplaylists { }
+sub load { }
+sub save { }
+sub rm { }
+sub volume { $x->volume($ARGV[1]); }
+sub repeat { $x->setrepeat($ARGV[1]); }
+sub random { $x->setrandom($ARGV[1]); }
+sub search { }
+sub crossfade { $x->crossfade($ARGV[1]); }
+sub update { $x->update(); }
+sub version { print "mpd version: ".$x->{version}."\n"; }
+
+# main() - Main sub
+sub main
+{
+  status if !$ARGV[0];
+  help if $ARGV[0] !~ /^(add|del|play|next|prev|pause|stop|seek|clear|shuffle|move|playlist|listall|ls|lsplaylists|load|save|rm|volume|repeat|random|search|crossfade|update|version)$/;
+  goto &{ $ARGV[0] };
+}
+
+# Let's start!
+main;
