@@ -4,7 +4,7 @@
 # Written for MPD 0.10.0, but should work for most versions.
 #
 # Copyright (C) 2004 Tue Abrahamsen (twoface@wtf.dk)
-# This project's homepage is: http://code.growl.dk/mpd/
+# This project's homepage is: http://www.musicpd.org
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
