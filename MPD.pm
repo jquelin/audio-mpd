@@ -23,6 +23,10 @@
 #
 # Changelog:
 #
+# 0.10.0-alpha7
+#  - Major speedup. Playlist was fetched way too many times
+#  - Another major speedup. Playlist is now only fetched when needed!
+#
 # 0.10.0-alpha6
 #  - Changed @playlist syntax ($playlist[song-number]{info-to-get} eg. $playlist[42]{'file'})
 #  - Removed deprecated getsonginfo()
@@ -181,7 +185,7 @@ sub getstatus
         }
         last if $_ eq 'OK';
         if($_ =~ /^(.+):\s(.+)$/) {
-            $update = 1 if($1 eq 'playlist' && $1 ne $self->{playlist});
+            $update = 1 if($1 eq 'playlist' && $2 ne $self->{playlist} && $self->{playlist} != 0);
             $self->{$1} = $2;
         }
     }
@@ -1110,6 +1114,7 @@ Returns the playlist in array-hash
 sub playlist
 {
     my($self) = @_;
+    &getplaylist if !$playlist[0];
     return \@playlist;
 }
 
@@ -1125,6 +1130,7 @@ sub gettitle
     my($artist, $title);
     
     &getstatus;
+    &getplaylist if !$playlist[0];
     my $info = $song || $self->{song} || 'false';
 #    return '' if !$self->{playlistlength} || (!$info && $info != 0) || $self->{playlistlength}-1 < $info;
     return '' if !$self->{playlistlength} || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
