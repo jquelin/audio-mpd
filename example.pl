@@ -24,7 +24,6 @@ while(%foo = $x->nextinfo)
 }
 
 print "\n\nExample: Shows how to get information from the playlist. \@playlist is a reference, so don't change it :)\n\n";
-my $plist = $x->playlist;
-my @playlist = @$plist;
-print "Song 42 filename: ".$playlist[42]{'file'}."\n";
-print "Song 13 time: ".$playlist[13]{'Time'}."\n";
+my $playlist = $x->playlist;
+print "Song 42 filename: ".$playlist->[42]{'file'}."\n";
+print "Song 13 time: ".$playlist->[13]{'Time'}."\n";
