@@ -293,8 +293,6 @@ sub _get_outputs
 		}
 		$output{$1} = $2 if /^output(.+): (.+)$/;
 	}
-		$output{$1} = $2 if /^output(.+): (.+)$/;
-	}
 	push @outputs, { %output } if %output;
 	$self->{outputs} = \@outputs;
 	return 1;
@@ -886,6 +884,7 @@ sub get_time_info
 
   #Parse the time left
   my $min_left = ($left / 60);
+	my $sec_left;
   $rv->{time_left} = sprintf "-%d:%02d",
     $min_left,
     $sec_left;
