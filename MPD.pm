@@ -470,6 +470,7 @@ sub seek
 	my($self,$position,$song,$from_id) = @_;
 	$self->_connect;
 	my $command = (defined($from_id) && $from_id == 1 ? 'seekid' : 'seek');
+	$position = int($position) if(defined($position)); # Go INT!
 	if(defined($song) && defined($position) && $song =~ /^\d+$/ && $position =~ /^\d+$/)
 	{
 		print $sock "$command $song $position\n";
