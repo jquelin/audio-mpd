@@ -5,6 +5,7 @@
 #
 # Copyright (C) 2004 Tue Abrahamsen (twoface@wtf.dk)
 # This project's homepage is: http://www.musicpd.org
+# Report bugs at: http://www.musicpd.org/mantis/
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +32,9 @@
 #  - Stupid bug where last song was not saved in @playlist removed
 #  - Rewrote searchadd() to utilize 'command_list_begin'/'command_list_end' (Much faster now)
 #  - Fixed bug where search() didn't return the last song found
+#  - Small rewrite in setrepeat() and setrandom()
+#  - Typos
+#  - Fixed bugs and bugs and bugs and bugs
 #
 # 0.10.0-alpha6
 #  - Changed @playlist syntax ($playlist[song-number]{info-to-get} eg. $playlist[42]{'file'})
@@ -71,8 +75,8 @@
 package MPD;
 use strict;
 use IO::Socket;
+use constant VERSION => '0.10.0-alpha7';
 
-my $version = '0.10.0-alpha7';
 my $sock;
 my @playlist;
 
@@ -101,7 +105,7 @@ sub new
     my($self,$host,$port) = @_;
     $self = {
         # Variables set by class
-        module_version => $version,
+        module_version => VERSION,
         version => undef,
         connected => undef,
         password => undef,
@@ -153,7 +157,7 @@ sub connect
     die("Could not create socket: $!\n") unless $sock;
     while(<$sock>)
     {
-        if($_ =~ /^OK MPD (.+)$/)
+        if(/^OK MPD (.+)$/)
         {
             $self->{version} = $1;
             $self->{connected} = 1;
@@ -193,13 +197,13 @@ sub getstatus
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^ACK (.+)$/) {
+        if(/^ACK (.+)$/) {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
         last if $_ eq 'OK';
-        if($_ =~ /^(.+):\s(.+)$/) {
-            $update = 1 if($1 eq 'playlist' && $2 ne $self->{playlist} && $self->{playlist} != 0);
+        if(/^(.[^:]+):\s(.+)$/) {
+            $update = 1 if($1 eq 'playlist' && $self->{playlist} && $2 ne $self->{playlist} && $self->{playlist} != 0);
             $self->{$1} = $2;
         }
     }
@@ -221,12 +225,12 @@ sub getstats
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^ACK (.+)$/) {
+        if(/^ACK (.+)$/) {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
         last if $_ eq 'OK';
-        $self->{$1} = $2 if $_ =~ /^(.+):\s(.+)$/;
+        $self->{$1} = $2 if /^(.[^:]+):\s(.+)$/;
     }   
     return 1;
 }
@@ -249,7 +253,7 @@ sub getplaylist
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^(.+):\s(.+)$/) 
+        if(/^(.[^:]+):\s(.+)$/) 
         {
           if($1 eq 'file')
           {
@@ -258,12 +262,12 @@ sub getplaylist
           }
           $hash{$1} = $2;
         }
-        if($_ =~ /^(ACK|OK)/)
+        if(/^(ACK|OK)/)
         {
             push @playlist, { %hash } if %hash;
-            if($_ =~ /^ACK (.+)$/) {
+            if(/^ACK (.+)$/) {
                 $self->{ack_error} = $1;
-                undef;
+                return undef;
             }
             return 1 if $_ =~ /^OK/;
         }
@@ -284,12 +288,12 @@ sub clearerror
     print $sock "clearerror\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+				return 1 if /^OK/;
     }
 }
 
@@ -338,7 +342,7 @@ sub ping
     print $sock "ping\n";
     while(<$sock>)
     {
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -356,12 +360,12 @@ sub password
     print $sock "password ".($password || 'default')."\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -381,21 +385,23 @@ sub setrepeat
     my($self,$status) = @_;
     &connect;
     my $command;
-    $status =~ s/off/0/ if $status;
-    $status =~ s/on/1/ if $status; 
-    $status = $status if $status && $status =~ /^(0|1)$/;
-    $status = ($self->{repeat} == 1 ? 0 : 1) if !$status;
+		if($status && $status =~ /^(0|1|on|off)$/) {
+	    $status =~ s/off/0/ if $status;
+  	  $status =~ s/on/1/ if $status;
+		} else {
+    	$status = ($self->{repeat} == 1 ? 0 : 1);
+		} 
     $command = "repeat $status\n";
     print $sock $command;
     $self->{repeat} = $status;
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -411,21 +417,23 @@ sub setrandom
     my($self,$status) = @_;
     &connect;
     my $command;
-    $status =~ s/off/0/ if $status;
-    $status =~ s/on/1/ if $status;
-    $status = $status if $status && $status =~ /^(0|1)$/;
-    $status = ($self->{random} == 1 ? 0 : 1) if !$status;
+		if($status && $status =~ /^(0|1|on|off)$/) {
+	    $status =~ s/off/0/ if $status;
+  	  $status =~ s/on/1/ if $status;
+		} else {
+	    $status = ($self->{random} == 1 ? 0 : 1);
+		}
     $command = "random $status\n";
     print $sock $command;
     $self->{random} = $status;
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -444,12 +452,12 @@ sub setfade
     $self->{xfade} = $secs;
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -480,12 +488,12 @@ sub setvolume
     $self->{volume} = $volume;
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -514,7 +522,7 @@ sub play
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -534,12 +542,12 @@ sub pause
     print $sock "pause\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -557,12 +565,12 @@ sub stop
     print $sock "stop\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -581,12 +589,12 @@ sub next
     print $sock "next\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     } 
 }
 
@@ -604,12 +612,12 @@ sub prev
     print $sock "previous\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -627,12 +635,12 @@ sub setpause
     print $sock "pause $toggle\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -657,12 +665,12 @@ sub seek
     }
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -684,12 +692,12 @@ sub clear
     print $sock "clear\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -709,12 +717,12 @@ sub add
     print $sock "add \"$path\"\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        if($_ =~ /^OK/)
+        if(/^OK/)
         {
           $self->{playlist}++;
           return 1;
@@ -744,12 +752,12 @@ sub delete
     }
     while(<$sock>)
     {
-      if($_ =~ /^ACK (.+)$/)
+      if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        if($_ =~ /^OK/)
+        if(/^OK/)
         {
           $self->{playlist}++;
           return 1;
@@ -771,12 +779,12 @@ sub load
     print $sock "load $list\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -794,12 +802,12 @@ sub update
     print $sock "update\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -822,12 +830,12 @@ sub swap
     }
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        if($_ =~ /^OK/)
+        if(/^OK/)
         {
           $self->{playlist}++;
           return 1;
@@ -849,12 +857,12 @@ sub shuffle
     print $sock "shuffle\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -877,12 +885,12 @@ sub move
     }
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        if($_ =~ /^OK/)
+        if(/^OK/)
         {
           $self->{playlist}++;
           return 1;
@@ -904,12 +912,12 @@ sub rm
     print $sock "rm $list\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -927,16 +935,16 @@ sub save
     print $sock "save $list\n";
     while(<$sock>)
     {
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
           if($1 =~ /^A file or directory already exists with the name/ && $config{'OVERWRITE_PLAYLIST'}) {
             $self->rm($list);
             $self->save($list);
           }
-          undef;
+          return undef;
         }
-        return 1 if $_ =~ /^OK/;
+        return 1 if /^OK/;
     }
 }
 
@@ -953,7 +961,7 @@ sub search
     &connect;
     $strict = 0 if !$strict;
     return undef if $type !~ /^(artist|album|title|filename)$/;
-    my $command = ($strict == 0) ? 'search' : 'find';
+    my $command = ($strict == 0 ? 'search' : 'find');
     print $sock "$command $type $what\n";
 
     my @list;
@@ -961,7 +969,7 @@ sub search
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^(.+):\s(.+)$/)
+        if($_ =~ /^(.[^:]+):\s(.+)$/)
         {
             if($1 eq 'file')
             {
@@ -970,12 +978,12 @@ sub search
             }
             $hest{$1} = $2;
         }
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        if($_ =~ /^OK/)
+        if(/^OK/)
         {
 					push @list, { %hest } if %hest;
           return @list;
@@ -997,19 +1005,22 @@ sub list
     return "Must be list((artist|album),[artist])" if $foo !~ /^(artist|album)$/;
     my $command;
     $bar = '' if !$bar;
-    $command = "list $foo $bar\n" if $foo eq 'album';
-    $command = "list $foo\n" if $foo eq 'artist';
+		if($foo eq 'album') {
+	    $command = "list $foo $bar\n";
+		} else {
+    	$command = "list $foo\n";
+		}
     print $sock $command;
     my @tmp;
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
             $self->{ack_error} = $1;
-            undef; 
+            return undef; 
         }
-        last if $_ =~ /^OK/;
+        last if /^OK/;
         push @tmp, $1 if $_ =~ /^(?:Artist|Album):\s(.+)$/;
     } 
     return @tmp;
@@ -1033,12 +1044,12 @@ sub listall
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^ACK (.+)$/)
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          undef;
+          return undef;
         }
-        last if $_ =~ /^OK/;
+        last if /^OK/;
         push @tmp, $_;
     }
     return @tmp;
@@ -1082,7 +1093,7 @@ sub lsinfo
 
 Returns the next entry from either the lsinfo() or listallinfo() commands. Data is returned in a hash.
 
-Example: while($bar = $foo->nextinfo) { print $bar{'file'}; }
+Example: while(%bar = $foo->nextinfo) { print $bar{'file'}; }
 
 =cut
 sub nextinfo
@@ -1091,14 +1102,15 @@ sub nextinfo
     my %hash;
     while(<$sock>)
     {
-        $hash{$1} = $2 if($_ =~ /^(.+):\s(.+)$/);
-        if($_ =~ /^ACK (.+)$/)
+				chomp;
+        $hash{$1} = $2 if($_ =~ /^(.[^:]+):\s(.+)$/);
+        if(/^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
           return;
         }
-        return if $_ =~ /^OK/; # Unfortunately, we can't have 'return 1' on succes, as a while(nextinfo) won't stop
-        last if($_ =~ /^(Time|directory|playlist):\s/);
+        return if /^OK/; # Unfortunately, we can't have 'return 1' on succes, as a while(nextinfo) won't stop
+        last if /^(Time|directory|playlist):\s/;
     }
     return %hash;
 } 
@@ -1119,10 +1131,9 @@ sub searchadd
 {
     my($self,$type,$string) = @_;
     my @songs = $self->search($type, $string);
-    my $foo;
     if($#songs > -1) {
       print $sock "command_list_begin\n";
-      foreach $foo (@songs)
+      foreach my $foo (@songs)
       {
           my %hash = %$foo;
           print $sock "add \"".$hash{'file'}."\"\n";
@@ -1130,14 +1141,14 @@ sub searchadd
       print $sock "command_list_end\n";  
       while(<$sock>)
       {
-          if($_ =~ /^ACK (.+)$/)
+          if(/^ACK (.+)$/)
           {
             $self->{ack_error} = $1;
-            undef;
+            return undef;
           }
-          if($_ =~ /^OK/)
+          if(/^OK/)
           {
-            $self->{playlist} = $self->{playlist} + $#songs;
+            $self->{playlist} = $self->{playlist} + $#songs + 1;
             return 1;
           }
       }    
@@ -1203,6 +1214,9 @@ sub gettimeformat
 
 =todo
 
+Rewrite all pods to @param,@return stuff
+02:16:37 <avuton> if($_ =~ /^ACK (.+)$/) in my world would be if(/^ACK (.+)$/) :)
+Tabindent all!
 
 =cut
 

@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 use strict;
-use Data::Dumper;
 
 die("MPD.pm not found!\n") unless -f "MPD.pm";
 require("MPD.pm");

@@ -70,7 +70,16 @@ sub status
 sub play { $x->play($ARGV[1] || 1); status; }
 sub stop { $x->stop(); status; }
 sub pause { $x->pause(); status; }
-sub add { $x->add($ARGV[1]); }
+sub add {
+	if($ARGV[1]) {
+		$x->add($ARGV[1]);
+	} else {
+		while(<STDIN>) {
+			chomp;
+			$x->add($_);
+		}
+	}
+}
 sub del { $x->del($ARGV[1]); }
 sub next { $x->next(); }
 sub prev { $x->prev(); }
@@ -78,17 +87,58 @@ sub seek { $x->seek($ARGV[1]); }
 sub clear { $x->clear(); }
 sub shuffle { $x->shuffle(); }
 sub move { $x->move($ARGV[1],$ARGV[2]); }
-sub playlist { }
-sub listall { }
-sub ls { }
-sub lsplaylists { }
-sub load { }
-sub save { }
-sub rm { }
+sub playlist
+{
+	my $playlist = $x->playlist;
+	for(my $i = 0 ; $i < $x->{playlistlength} ; $i++)
+	{
+		print "#".$i.") ".$playlist->[$i]{'file'}."\n";
+	}
+}
+sub listall
+{
+	my @list = $x->listall($ARGV[1]);
+	foreach my $item (@list)
+	{
+		print "$1\n" if $item =~ /(?:file):\s(.+)/;
+	}
+}
+sub ls
+{ 
+	$x->lsinfo($ARGV[1]);
+	while(my %hash = $x->nextinfo)
+	{
+		if($hash{'directory'} || $hash{'file'})
+		{
+			print $hash{'directory'} || $hash{'file'};
+			print "\n";
+		}
+	}
+}
+sub lsplaylists
+{
+	$x->lsinfo();
+	while(my %hash = $x->nextinfo)
+	{
+		print $hash{'playlist'}."\n" if $hash{'playlist'};
+	}
+}
+sub load { $x->load($ARGV[1]); }
+sub save { $x->save($ARGV[1]); }
+sub rm { $x->rm($ARGV[1]); }
 sub volume { $x->volume($ARGV[1]); }
 sub repeat { $x->setrepeat($ARGV[1]); }
 sub random { $x->setrandom($ARGV[1]); }
-sub search { }
+sub search
+{
+	die('No way!') if $ARGV[1] !~ /^(filename|artist|title|album)$/;
+	my @list = $x->search($ARGV[1],$ARGV[2]);
+	foreach my $hash (@list) 
+	{
+		my %song = %$hash;
+		print $song{'file'}."\n";
+	}
+}
 sub crossfade { $x->crossfade($ARGV[1]); }
 sub update { $x->update(); }
 sub version { print "mpd version: ".$x->{version}."\n"; }
