@@ -23,7 +23,13 @@
 #
 # Changelog:
 #
-# 0.10.0-alpha2
+# 0.10.0-alpha4
+#  - Fixed bug where last song on playlist was not present
+#  - Made getstatus() call playlistinfo if playlist had changed
+#  - Implemented getsonginfo() for returning information from @playlist (Thanks msells)
+#  - Added $this->{module_version}
+#
+# 0.10.0-alpha3
 #  - Fixed error in add()-comments
 #  - Moved $host and $port parameter to new() - It finally works!
 #
@@ -38,6 +44,7 @@ package MPD;
 use strict;
 use IO::Socket;
 
+my $version = '0.10.0-alpha4';
 my $sock;
 my @playlist;
 
@@ -57,6 +64,7 @@ sub new
     my($self,$host,$port) = @_;
     $self = {
         # Variables set by class
+        module_version => $version,
         version => undef,
         connected => undef,
         password => undef,
@@ -137,13 +145,16 @@ sub getstatus
     {
         chomp;
         last if $_ eq 'OK';
-        $self->{$1} = $2 if $_ =~ /^(.+):\s(.+)$/;
+        if($_ =~ /^(.+):\s(.+)$/) {
+            &getplaylist if($1 eq 'playlist' && $1 ne $self->{playlist});
+            $self->{$1} = $2;
+        }
     }
     #return $self->{$row} if($row && $self->{$row});
     return;
 }
 
-=item $foo->getstatus
+=item $foo->getstats
 
 Reads serverstats into module variables.
     
@@ -186,6 +197,7 @@ sub getplaylist
         } else {
             push @tmp, $_;
         }
+        push @playlist, [@tmp] if @tmp;
         return $_ if $_ =~ /^ACK/;
         return if $_ =~ /^OK/;
     }
@@ -204,7 +216,6 @@ sub gettitle
     
     &getstatus if $song;
     my $info = $song || $self->{song};
-    #print $playlist[$info][0];
     $artist = $1 if($playlist[$info][0] =~ /^file:\s(.+)$/);
     for(my $i = 0; $i<@{$playlist[$info]} ; $i++)
     {
@@ -215,6 +226,19 @@ sub gettitle
     return $artist;
 }
 
+=item $foo->getsonginfo ([$song])
+
+Returns all information on $song from playlist, if specified, otherwise from playing song.
+
+=cut
+sub getsonginfo
+{
+    my($self,$song) = @_;
+    &getstatus if $song;
+    my $info = $song || $self->{song};
+    return @{$playlist[$info]};
+}
+    
 =item $foo->gettimeformat
 Written by decius (jesper@noehr.org)
 
