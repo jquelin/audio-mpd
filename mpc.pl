@@ -4,7 +4,7 @@ use constant VERSION => '0.10.0';
 
 die("MPD.pm not found!\n") unless -f "MPD.pm";
 require("MPD.pm");
-my $x = MPD->new();
+my $x = MPD->new('freya',2100);
 $x->connect();
 
 # mpctime() - For getting the time in the same format as `mpc` writes it
@@ -83,7 +83,7 @@ sub add {
 sub del { $x->del($ARGV[1]); }
 sub next { $x->next(); }
 sub prev { $x->prev(); }
-sub seek { $x->seek($ARGV[1]); }
+sub seek { $x->seek($ARGV[1]); status; }
 sub clear { $x->clear(); }
 sub shuffle { $x->shuffle(); }
 sub move { $x->move($ARGV[1]-1,$ARGV[2]-1); }
@@ -92,7 +92,8 @@ sub playlist
 	my $playlist = $x->playlist;
 	for(my $i = 0 ; $i < $x->{playlistlength} ; $i++)
 	{
-		print "#".($i+1).") ".$playlist->[$i]{'file'}."\n";
+		my $title = ($playlist->[$i]{'Artist'} && $playlist->[$i]{'Title'} ? $playlist->[$i]{'Artist'}." - ".$playlist->[$i]{'Title'} : $playlist->[$i]{'file'});
+		print "#".($i+1).") ".$title."\n";
 	}
 }
 sub listall
@@ -126,7 +127,7 @@ sub lsplaylists
 sub load { $x->load($ARGV[1]); }
 sub save { $x->save($ARGV[1]); }
 sub rm { $x->rm($ARGV[1]); }
-sub volume { $x->volume($ARGV[1]); }
+sub volume { $x->setvolume($ARGV[1]); status; }
 sub repeat { $x->setrepeat($ARGV[1]); }
 sub random { $x->setrandom($ARGV[1]); }
 sub search

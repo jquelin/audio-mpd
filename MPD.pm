@@ -34,7 +34,6 @@ my @playlist;
 #-------------------------------------------------------------#
 
 my %config = ( 
-			   UNPAUSE_ON_PLAY => 1,	  # Unpauses on play(), if paused
 			   OVERWRITE_PLAYLIST => 1,   # Overwrites playlist, if already exists on save()
 			 );
 
@@ -100,7 +99,7 @@ sub connect
 	$sock = new IO::Socket::INET
 	(
 		PeerAddr => $self->{host} || $ENV{'MPD_HOST'} || 'localhost',
-		PeerPort => $self->{port} || $ENV{'MPD_PORT'} || 2100,
+		PeerPort => $self->{port} || $ENV{'MPD_PORT'} || 6600,
 		Proto => 'tcp',
 	);
 	die("Could not create socket: $!\n") unless $sock;
@@ -313,6 +312,29 @@ sub password
 	}
 }
 
+=item $foo->urlhandlers ()
+
+Gets list of supported url handlers
+@return array URL handlers
+
+=cut
+sub urlhandlers
+{
+	my($self) = shift;
+	my @handlers;
+	print $sock "urlhandlers\n";
+	while(<$sock>)
+	{
+		if(/^ACK (.+)$/)
+    {
+      $self->{ack_error} = $1;
+      return undef;
+    }
+    return 1 if /^OK/;
+		push @handlers, $1 if $_ =~ /^handler: (.+)$/;
+	}
+}
+
 =item $foo->DESTROY ()
 
 Destructor
@@ -468,9 +490,10 @@ sub play
 {
 	my($self,$number) = @_;
 	$self->connect;
-	if($self->{state} eq 'pause' && $config{'UNPAUSE_ON_PLAY'} == 1) {
+	if($self->{state} eq 'pause') {
 	  print $sock "pause\n";
 	} else {
+		$number = '' if !$number;
 	  print $sock "play $number\n";
 	}
 	while(<$sock>)
@@ -610,7 +633,7 @@ sub seek
 	if($song && $time && $song =~ /^\w+$/ && $time =~ /^\w+$/)
 	{
 		print $sock "seek $song $time\n";
-	} elsif($song && $song =~ /^\w+$/ && $self->{song}) {
+	} elsif($time && $time =~ /^\w+$/ && $self->{song}) {
 	  print $sock "seek ",$self->{song}," $time\n";
 	} else {
 		return 0; 
@@ -993,7 +1016,7 @@ sub listall
 	my($self, $path) = @_;
 	$self->connect;
 	$path = '' if !$path;
-	print $sock "listall $path\n";
+	print $sock "listall \"$path\"\n";
 	my @tmp;
 	while(<$sock>)
 	{
@@ -1022,7 +1045,7 @@ sub listallinfo
 	my($self, $path) = @_;
 	$self->connect;
 	$path = '' if !$path;
-	print $sock "listallinfo $path\n";
+	print $sock "listallinfo \"$path\"\n";
 }
 
 =item $foo->lsinfo ([$path])
@@ -1038,7 +1061,7 @@ sub lsinfo
 	my($self, $path) = @_;
 	$self->connect;
 	$path = '' if !$path;
-	print $sock "lsinfo $path\n";
+	print $sock "lsinfo \"$path\"\n";
 }
 
 =item $foo->nextinfo ()

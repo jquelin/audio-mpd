@@ -1,3 +1,11 @@
+
+ - Changed default port to 6600
+ - Removed UNPAUSE_ON_PLAY setting, as this is now default in MPD
+ - Added urlhandlers()
+ - Fixed seek()
+ - Small bugfixes
+ - Bugfixes in mpc.pl (playlist() and volume())
+
 0.10.0-rc1
  - No changes
 
