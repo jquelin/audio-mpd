@@ -812,6 +812,7 @@ sub get_title
 {
 	my($self,$song) = @_;
 	$self->_connect;
+	$self->_get_status;
 	my $info;
 	$info = $self->{song} unless !defined($self->{song}) || $self->{song} =~ /^\D+$/;
 	$info = $song unless !defined($song) || $song =~ /^\D+$/;
