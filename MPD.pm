@@ -28,6 +28,8 @@
 #  - Made getstatus() call playlistinfo if playlist had changed
 #  - Implemented getsonginfo() for returning information from @playlist (Thanks msells)
 #  - Added $this->{module_version}
+#  - Empties @playlist, when renewing it
+#  - A bit of optimizing and cleanup around getplaylist (Thanks msells)
 #
 # 0.10.0-alpha3
 #  - Fixed error in add()-comments
@@ -42,6 +44,7 @@
 #
 package MPD;
 use strict;
+use Data::Dumper;
 use IO::Socket;
 
 my $version = '0.10.0-alpha4';
@@ -126,7 +129,6 @@ sub connect
     }
     &getstats;
     &getstatus;
-    &getplaylist;
     return;
 }
 
@@ -140,16 +142,19 @@ Returns nothing.
 sub getstatus
 {
     my($self) = @_;
+    my $update = 0;
     print $sock "status\n";
     while(<$sock>)
     {
         chomp;
         last if $_ eq 'OK';
         if($_ =~ /^(.+):\s(.+)$/) {
-            &getplaylist if($1 eq 'playlist' && $1 ne $self->{playlist});
+            
+            $update = 1 if($1 eq 'playlist' && $1 ne $self->{playlist});
             $self->{$1} = $2;
         }
     }
+    &getplaylist if $update;
     #return $self->{$row} if($row && $self->{$row});
     return;
 }
@@ -187,6 +192,7 @@ sub getplaylist
     print $sock "playlistinfo\n";
     
     my @tmp;
+    @playlist = ();
     while(<$sock>)
     {
         chomp;
@@ -197,9 +203,12 @@ sub getplaylist
         } else {
             push @tmp, $_;
         }
-        push @playlist, [@tmp] if @tmp;
-        return $_ if $_ =~ /^ACK/;
-        return if $_ =~ /^OK/;
+        if($_ =~ /^(ACK|OK)/)
+        {
+            push @playlist, [@tmp] if @tmp;
+            return $_ if $_ =~ /^ACK/;
+            return if $_ =~ /^OK/;
+        }
     }
 }
 
@@ -214,8 +223,10 @@ sub gettitle
     my($self,$song) = @_;
     my($artist, $title);
     
-    &getstatus if $song;
+    &getstatus;
     my $info = $song || $self->{song};
+    return '' if !$self->{playlistlength} || !$info || $self->{playlistlength}-1 < $info;
+    
     $artist = $1 if($playlist[$info][0] =~ /^file:\s(.+)$/);
     for(my $i = 0; $i<@{$playlist[$info]} ; $i++)
     {
@@ -234,8 +245,9 @@ Returns all information on $song from playlist, if specified, otherwise from pla
 sub getsonginfo
 {
     my($self,$song) = @_;
-    &getstatus if $song;
+    &getstatus;
     my $info = $song || $self->{song};
+    return '' if !$self->{playlistlength} || !$info || $self->{playlistlength}-1 < $info;
     return @{$playlist[$info]};
 }
     
@@ -249,6 +261,7 @@ sub gettimeformat
 {
     my($self) = @_;
     &getstatus;
+    return '' if !$self->{playlistlength} || !$self->{song};
     my($psf,$tst) = split /:/, $self->{'time'};
     return sprintf("%d:%02d/%d:%02d",
            ($psf / 60), # minutes so far
