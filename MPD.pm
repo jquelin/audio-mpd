@@ -44,7 +44,6 @@
 #
 package MPD;
 use strict;
-use Data::Dumper;
 use IO::Socket;
 
 my $version = '0.10.0-alpha4';
@@ -225,7 +224,7 @@ sub gettitle
     
     &getstatus;
     my $info = $song || $self->{song};
-    return '' if !$self->{playlistlength} || !$info || $self->{playlistlength}-1 < $info;
+    return '' if !$self->{playlistlength} || (!$info && $info != 0) || $self->{playlistlength}-1 < $info;
     
     $artist = $1 if($playlist[$info][0] =~ /^file:\s(.+)$/);
     for(my $i = 0; $i<@{$playlist[$info]} ; $i++)
@@ -247,7 +246,7 @@ sub getsonginfo
     my($self,$song) = @_;
     &getstatus;
     my $info = $song || $self->{song};
-    return '' if !$self->{playlistlength} || !$info || $self->{playlistlength}-1 < $info;
+    return '' if !$self->{playlistlength} || (!$info && $info != 0) || $self->{playlistlength}-1 < $info;
     return @{$playlist[$info]};
 }
     
