@@ -27,6 +27,7 @@
 #  - Major speedup. Playlist was fetched way too many times
 #  - Another major speedup. Playlist is now only fetched when needed!
 #  - Added %config, for changing default behavior
+#  - Old $number-- in play() was removed.
 #
 # 0.10.0-alpha6
 #  - Changed @playlist syntax ($playlist[song-number]{info-to-get} eg. $playlist[42]{'file'})
@@ -68,7 +69,7 @@ package MPD;
 use strict;
 use IO::Socket;
 
-my $version = '0.10.0-alpha6';
+my $version = '0.10.0-alpha7';
 my $sock;
 my @playlist;
 
@@ -77,8 +78,8 @@ my @playlist;
 #-------------------------------------------------------------#
 
 my %config = ( 
-               UNPAUSE_ON_PLAY => 1, # Unpauses on play(), if paused
-               OVERWRITE_PLAYLIST => 1, # Overwrites playlist, if already exists on save()
+               UNPAUSE_ON_PLAY => 1,      # Unpauses on play(), if paused
+               OVERWRITE_PLAYLIST => 1,   # Overwrites playlist, if already exists on save()
              );
 
 #-------------------------------------------------------------#
@@ -500,7 +501,6 @@ sub play
 {
     my($self,$number) = @_;
     &connect;
-    $number--;
     if($self->{state} eq 'pause' && $config{'UNPAUSE_ON_PLAY'} == 1) {
       print $sock "pause\n";
     } else {
