@@ -26,7 +26,13 @@
 # 0.10.0-alpha5
 #  - Made getsonginfo() return a hash instead of an array
 #  - Streamlined add()/delete()/move()/swap()
-#  - Made (almost) all functions return 0 on succes and 1 on error. Last error can be retrieved by $self->getError()
+#  - Made (almost) all functions undef on succes and 1 on error. Last error can be retrieved by $self->geterror()
+#  - search() now accepts filenames too (thanks sbh)
+#  - delete() can take ranges (thanks sbh)
+#  - Added the 'Custom functions'-part
+#  - Added search() (thanks sbh)
+#  - Repaired add()
+#  - Added playlist()
 #
 # 0.10.0-alpha4
 #  - Fixed bug where last song on playlist was not present
@@ -83,7 +89,7 @@ sub new
         repeat => undef,
         random => undef,
         state => undef,
-        playlist => undef,
+        playlist => 0,
         playlistlength => undef,
         bitrate => undef,
         xfade => undef,
@@ -145,7 +151,7 @@ Returns last error
 sub geterror
 {
   my($self) = @_;
-  return $self->{ack_error} || 0;
+  return $self->{ack_error};
 }
 
 =item $foo->getstatus
@@ -165,7 +171,7 @@ sub getstatus
         chomp;
         if($_ =~ /^ACK (.+)$/) {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         last if $_ eq 'OK';
         if($_ =~ /^(.+):\s(.+)$/) {
@@ -193,7 +199,7 @@ sub getstats
         chomp;
         if($_ =~ /^ACK (.+)$/) {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         last if $_ eq 'OK';
         $self->{$1} = $2 if $_ =~ /^(.+):\s(.+)$/;
@@ -230,9 +236,9 @@ sub getplaylist
             push @playlist, [@tmp] if @tmp;
             if($_ =~ /^ACK (.+)$/) {
                 $self->{ack_error} = $1;
-                return 1;
+                undef;
             }
-            return 0 if $_ =~ /^OK/;
+            return 1 if $_ =~ /^OK/;
         }
     }
 }
@@ -316,7 +322,7 @@ sub clearerror
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -388,7 +394,7 @@ sub password
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -422,7 +428,7 @@ sub setrepeat
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -452,7 +458,7 @@ sub setrandom
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -476,7 +482,7 @@ sub setfade
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -512,7 +518,7 @@ sub setvolume
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -540,7 +546,7 @@ sub play
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -563,7 +569,7 @@ sub pause
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -586,7 +592,7 @@ sub stop
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -610,7 +616,7 @@ sub next
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     } 
@@ -633,7 +639,7 @@ sub prev
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -656,35 +662,37 @@ sub setpause
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
 }
 
-=item $foo->seek ($song, $time)
+=item $foo->seek ($time, $song)
 
-Seeks to position $time (in seconds) in song $song.
+Seeks to position $time (in seconds) in song $song. If $song is not supplied, current song is chosen
 
 Returns nothing on success, but error on error.
 
 =cut
 sub seek
 {
-    my($self,$song,$time) = @_;
+    my($self,$time,$song) = @_;
     &connect;
     if($song && $time && $song =~ /^\w+$/ && $time =~ /^\w+$/)
     {
         print $sock "seek $song $time\n";
+    } elsif($song && $song =~ /^\w+$/ && $self->{song}) {
+      print $sock "seek ",$self->{song}," $time\n";
     } else {
-        return "Must be seek(int, int)";
+        return 0; 
     }
     while(<$sock>)
     {
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -711,7 +719,7 @@ sub clear
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -730,13 +738,13 @@ sub add
 {
     my($self,$path) = @_;
     &connect;
-    print $sock "add $path\n";
+    print $sock "add \"$path\"\n";
     while(<$sock>)
     {
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         if($_ =~ /^OK/)
         {
@@ -748,7 +756,7 @@ sub add
 
 =item $foo->delete ($song)
 
-Deletes $song from playlist. $song must a integer describing the entry in the playlist.
+Deletes songs from the playlist. $song must either be an integer or integer-integer for song-range..
 
 Returns nothing on success, but error on error.
 
@@ -757,13 +765,21 @@ sub delete
 {
     my($self,$song) = @_;
     &connect;
-    print $sock "delete $song\n";
+    if($song =~ /^(\w)-(\w)$/)
+    {
+        for(my $i = $1 ; $i <= $2 ; $i++)
+        {
+            &delete($i);
+        }
+    } else {
+        print $sock "delete $song\n";
+    }
     while(<$sock>)
     {
       if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         if($_ =~ /^OK/)
         {
@@ -790,7 +806,7 @@ sub load
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -813,7 +829,7 @@ sub update
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -841,7 +857,7 @@ sub swap
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         if($_ =~ /^OK/)
         {
@@ -868,7 +884,7 @@ sub shuffle
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -896,7 +912,7 @@ sub move
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         if($_ =~ /^OK/)
         {
@@ -923,7 +939,7 @@ sub rm
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -946,7 +962,7 @@ sub save
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         return 1 if $_ =~ /^OK/;
     }
@@ -954,9 +970,9 @@ sub save
 
 =item $foo->search ($type, $what, [$strict = 0])
 
-Searches playlist for entries of type $type (artist, album or title), matching $what. If $strict is set to 1, $what must be completely matched.
+Searches playlist for entries of type $type (artist, album, title or filename), matching $what. If $strict is set to 1, $what must be completely matched.
 
-Returns matches in array.
+Returns matches in array-hash.
 
 =cut
 sub search
@@ -964,28 +980,33 @@ sub search
     my($self,$type,$what,$strict) = @_;
     &connect;
     $strict = 0 if !$strict;
-    return "Type must be artist, album or title" if $type !~ /^(artist|album|title)$/;
+    return undef if $type !~ /^(artist|album|title|filename)$/;
     my $command = ($strict == 0) ? 'search' : 'find';
     print $sock "$command $type $what\n";
 
     my @list;
-    my @tmp;
+    my %hest;
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^file:/)
+        if($_ =~ /^(.+):\s(.+)$/)
         {
-            push @list, [@tmp] if @tmp;
-            @tmp = $_;
-        } else {
-            push @tmp, $_;
+            if($1 eq 'file')
+            {
+                push @list, { %hest } if %hest;
+                %hest = ();
+            }
+            $hest{$1} = $2;
         }
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
-        return @list if $_ =~ /^OK/;
+        if($_ =~ /^OK/)
+        {
+          return @list;
+        }
     }
 }
 
@@ -1013,7 +1034,7 @@ sub list
         if($_ =~ /^ACK (.+)$/)
         {
             $self->{ack_error} = $1;
-            return 0;
+            undef; 
         }
         last if $_ =~ /^OK/;
         push @tmp, $1 if $_ =~ /^(?:Artist|Album):\s(.+)$/;
@@ -1042,7 +1063,7 @@ sub listall
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          undef;
         }
         last if $_ =~ /^OK/;
         push @tmp, $_;
@@ -1101,13 +1122,49 @@ sub nextinfo
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
-          return 0;
+          return;
         }
-        return 1 if $_ =~ /^OK/;
+        return if $_ =~ /^OK/; # Unfortunately, we can't have 'return 1' on succes, as a while(nextinfo) won't stop
         last if($_ =~ /^(Time|directory|playlist):\s/);
     }
     return %hash;
 } 
+
+#-------------------------------------------------------------#
+#                       CUSTOM SUBS                           #
+#-------------------------------------------------------------#
+
+=item $foo->searchadd ($type, $string)
+
+Searches for songs where $type contains $string, and adds those to the playlist.
+$type must be 'artist','album','title' or 'filename'.
+
+Returns nothing.
+
+=cut
+sub searchadd
+{
+    my($self,$type,$string) = @_;
+    my @songs = $self->search($type, $string);
+    my $foo;
+    foreach $foo (@songs)
+    {
+        my %hash = %$foo;
+        $self->add($hash{'file'});
+    }
+    return 0;
+}
+
+=item $foo->playlist ()
+
+Returns the playlist in array-hash
+
+=cut
+sub playlist
+{
+    my($self) = @_;
+    return @playlist;
+}
 
 #-------------------------------------------------------------#
 #                     UNFINISHED SUBS                         #
