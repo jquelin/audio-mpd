@@ -81,8 +81,8 @@ sub add {
 	}
 }
 sub del { $x->del($ARGV[1]); }
-sub next { $x->next(); }
-sub prev { $x->prev(); }
+sub next { $x->next(); status; }
+sub prev { $x->prev(); status; }
 sub seek { $x->seek($ARGV[1]); status; }
 sub clear { $x->clear(); }
 sub shuffle { $x->shuffle(); }

@@ -199,7 +199,7 @@ sub _connect
 		die("Could not connect: $!\n");
 	}
 	$self->_get_status;
-	return;
+	return 1;
 }
 
 sub _process_feedback
@@ -348,7 +348,7 @@ sub set_volume
 	if($volume =~ /^(-|\+)(\d+)/ && defined($self->{volume}))
 	{
 		$volume = $self->{volume} + $2 if $1 eq '+';
-		$volume = $self->{volume} + $2 if $1 eq '-';
+		$volume = $self->{volume} - $2 if $1 eq '-';
 	}
 	
 	return undef if !defined($volume) || $volume < 0 || $volume > 100;
@@ -410,7 +410,7 @@ sub prev
 {
 	my($self) = shift;
 	$self->_connect;
-	print $sock "prev\n";
+	print $sock "previous\n";
 	return $self->_process_feedback;
 }
 
