@@ -1,3 +1,7 @@
+0.12.0-rc6
+ - get_song_info() now uses current song, if none is specified
+ - mpc.pl now says that 'seek' is in seconds instead of percentage
+
 0.12.0-rc5 (No more fires!-release)
  - Fixed bug in save() (Thanks Laurent Monrouzies)
  - Removed annoying line in set_random() (Thanks Dale Francum)

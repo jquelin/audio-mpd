@@ -116,8 +116,10 @@ sub is_connected
 		print $sock "ping\n";
 		if(<$sock> =~ /^OK/)
 		{
+			print 'JA!';
 			return 1;
 		} else {
+			print 'NEJ!';
 			return undef;
 		}
 	}
@@ -289,6 +291,8 @@ sub _get_outputs
 			push @outputs, { %output } if %output;
 			%output = ();
 		}
+		$output{$1} = $2 if /^output(.+): (.+)$/;
+	}
 		$output{$1} = $2 if /^output(.+): (.+)$/;
 	}
 	push @outputs, { %output } if %output;
@@ -882,8 +886,6 @@ sub get_time_info
 
   #Parse the time left
   my $min_left = ($left / 60);
-  my $sec_left = ($left % 60);
-
   $rv->{time_left} = sprintf "-%d:%02d",
     $min_left,
     $sec_left;

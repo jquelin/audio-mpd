@@ -5,7 +5,7 @@ use constant VERSION => '0.10.0';
 
 die("MPD.pm not found!\n") unless -f "MPD.pm";
 require("MPD.pm");
-my $x = MPD->new();
+my $x = MPD->new('localhost',6600);
 
 # mpctime() - For getting the time in the same format as `mpc` writes it
 sub mpctime
@@ -28,7 +28,7 @@ sub help
   print "mpc prev\t\t\tPlay the previous song in the current playlist\n";
   print "mpc pause\t\t\tPauses the currently playing song\n";
   print "mpc stop\t\t\tStop the currently playing song\n";
-  print "mpc seek <0-100>\t\tSeeks to the position specified in percent\n";
+  print "mpc seek <0-100>\t\tSeeks to the position specified in seconds\n";
   print "mpc clear\t\t\tClears the current playlist\n";
   print "mpc shuffle\t\t\tShuffle the current playlist\n";
   print "mpc move <from> <to>\t\tMove song in playlist\n";
