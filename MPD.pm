@@ -441,7 +441,7 @@ sub seekid
 #               METHODS FOR PLAYLIST-HANDLING                 #
 #-------------------------------------------------------------#
 #  This section contains all methods which has anything to do #
-#            with the current og saved playlists.             #
+#            with the current or saved playlists.             #
 ###############################################################
 
 sub clear
@@ -465,11 +465,11 @@ sub delete
 {
 	my($self,$song,$from_id) = @_;
 	$self->_connect;
-	return undef if !defined($song) || $song !~ /^\d+$/;
+	return undef if !defined($song);
 	my $command = (defined($from_id) && $from_id == 1 ? 'deleteid' : 'delete');
 	if($song =~ /^(\d+)-(\d+)$/)
 	{
-		for(my $i = $1 ; $i <= $2 ; $i++)
+		for(my $i = $2 ; $i >= $1 ; $i--)
 		{
 			$self->$command($i);
 		}
@@ -766,6 +766,22 @@ sub get_time_format
        ($psf % 60), # seconds - minutes so far
        ($tst / 60), # minutes total
        ($tst % 60));# seconds - minutes total
+}
+
+sub crop
+{
+	my($self) = shift;
+	print $sock "command_list_begin\n";
+	for(my $i = ($self->{playlistlength}-1) ; $i >= ($self->{song}+1) ; $i--)
+	{
+		print $sock "delete $i\n";
+	}
+	for(my $i = ($self->{song}-1) ; $i >= 0 ; $i--)
+	{
+		print $sock "delete $i\n";
+	}
+	print $sock "command_list_end\n";
+	$self->_process_feedback;
 }
 
 1;

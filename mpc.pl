@@ -80,13 +80,31 @@ sub add {
 		}
 	}
 }
-sub del { $x->del($ARGV[1]); }
+sub del {
+	if(defined($ARGV[1])) {
+		$x->delete($ARGV[1]-1);
+	} else {
+		help;
+	}
+}
 sub next { $x->next(); status; }
 sub prev { $x->prev(); status; }
-sub seek { $x->seek($ARGV[1]); status; }
+sub seek {
+	if(defined($ARGV[1])) {
+		$x->seek($ARGV[1]); status;
+	} else {
+		help;
+	}
+}
 sub clear { $x->clear(); }
 sub shuffle { $x->shuffle(); }
-sub move { $x->move($ARGV[1]-1,$ARGV[2]-1); }
+sub move {
+	if(defined($ARGV[1]) && defined($ARGV[2])) {
+		$x->move($ARGV[1]-1,$ARGV[2]-1);
+	} else {
+		help;
+	}
+}
 sub playlist
 {
 	my $playlist = $x->playlist;
@@ -125,12 +143,51 @@ sub lsplaylists
 		print $hash{'playlist'}."\n" if $hash{'playlist'};
 	}
 }
-sub load { $x->load($ARGV[1]); }
-sub save { $x->save($ARGV[1]); }
-sub rm { $x->rm($ARGV[1]); }
-sub volume { $x->set_volume($ARGV[1]); status; }
-sub repeat { print $ARGV[1]; $x->set_repeat($ARGV[1]); status; }
-sub random { $x->set_random($ARGV[1]); status; }
+sub load {
+	if(defined($ARGV[1])) {
+		$x->load($ARGV[1]);
+	} else {
+		help;
+	}
+}
+sub save {
+	if(defined($ARGV[1])) {
+		$x->save($ARGV[1]);
+	} else {
+		help;
+	}
+}
+sub rm {
+	if(defined($ARGV[1])) {
+		$x->rm($ARGV[1]);
+	} else {
+		help;
+	}
+}
+sub volume {
+	if(defined($ARGV[1])) {
+		$x->set_volume($ARGV[1]);
+		status;
+	} else {
+		help;
+	}
+}
+sub repeat {
+	if(defined($ARGV[1])) {
+		$x->set_repeat($ARGV[1]);
+		status;
+	} else {
+		help;
+	}
+}
+sub random {
+	if(defined($ARGV[1])) {
+		$x->set_random($ARGV[1]);
+		status;
+	} else {
+		help;
+	}
+}
 sub search
 {
 	die('No way!') if $ARGV[1] !~ /^(filename|artist|title|album)$/;
@@ -141,8 +198,14 @@ sub search
 		print $song{'file'}."\n";
 	}
 }
-sub crossfade { $x->set_fade($ARGV[1]); }
-sub update { $x->update(); }
+sub crossfade {
+	if(defined($ARGV[1])) {
+		$x->set_fade($ARGV[1]);
+	} else {
+		help;
+	}
+}
+sub update { $x->updatedb(); }
 sub version { print "mpd version: ".$x->{version}."\n"; }
 
 # main() - Main sub

@@ -1,5 +1,7 @@
 0.12.0-rc4
  - Old bug where $playlist[0] contained undef removed again :)
+ - crop() function added (removes all songs but the playing)
+ - Fixed some bugs and errorhandling in mpc.pl
 
 0.12.0-rc3
  - (almost) total rewrite of module
