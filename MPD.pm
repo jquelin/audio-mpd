@@ -28,6 +28,9 @@
 #  - Another major speedup. Playlist is now only fetched when needed!
 #  - Added %config, for changing default behavior
 #  - Old $number-- in play() was removed.
+#  - Stupid bug where last song was not saved in @playlist removed
+#  - Rewrote searchadd() to utilize 'command_list_begin'/'command_list_end' (Much faster now)
+#  - Fixed bug where search() didn't return the last song found
 #
 # 0.10.0-alpha6
 #  - Changed @playlist syntax ($playlist[song-number]{info-to-get} eg. $playlist[42]{'file'})
@@ -257,7 +260,7 @@ sub getplaylist
         }
         if($_ =~ /^(ACK|OK)/)
         {
-            push @playlist, [@tmp] if @tmp;
+            push @playlist, { %hash } if %hash;
             if($_ =~ /^ACK (.+)$/) {
                 $self->{ack_error} = $1;
                 undef;
@@ -974,6 +977,7 @@ sub search
         }
         if($_ =~ /^OK/)
         {
+					push @list, { %hest } if %hest;
           return @list;
         }
     }
@@ -1116,10 +1120,27 @@ sub searchadd
     my($self,$type,$string) = @_;
     my @songs = $self->search($type, $string);
     my $foo;
-    foreach $foo (@songs)
-    {
-        my %hash = %$foo;
-        $self->add($hash{'file'});
+    if($#songs > -1) {
+      print $sock "command_list_begin\n";
+      foreach $foo (@songs)
+      {
+          my %hash = %$foo;
+          print $sock "add \"".$hash{'file'}."\"\n";
+      }
+      print $sock "command_list_end\n";  
+      while(<$sock>)
+      {
+          if($_ =~ /^ACK (.+)$/)
+          {
+            $self->{ack_error} = $1;
+            undef;
+          }
+          if($_ =~ /^OK/)
+          {
+            $self->{playlist} = $self->{playlist} + $#songs;;
+            return 1;
+          }
+      }    
     }
     return 0;
 }
