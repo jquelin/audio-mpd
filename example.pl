@@ -4,6 +4,7 @@ use strict;
 die("MPD.pm not found!\n") unless -f "MPD.pm";
 require("MPD.pm");
 
+#my $x = MPD->new('10.0.0.37',2100); # Do this for specifing server and/or port.
 my $x = MPD->new();
 $x->connect();
 
@@ -20,5 +21,5 @@ $x->listallinfo('Classical');
 my %foo;
 while(%foo = $x->nextinfo)
 {
-    print $foo{'file'} || $foo{'directory'} || $foo{'playlist'},"\n";
+    print $foo{'file'} || $foo{'directory'} || $foo{'playlist'},"\n"; # Don't ever, ever, ever, ever stop the loop!
 }

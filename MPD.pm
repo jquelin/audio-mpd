@@ -25,6 +25,7 @@
 #
 # 0.10.0-alpha2
 #  - Fixed error in add()-comments
+#  - Moved $host and $port parameter to new() - It finally works!
 #
 # 0.10.0-alpha2
 #  - Added nextinfo() and changed lsinfo() and listallinfo()
@@ -44,20 +45,23 @@ my @playlist;
 #                       BASIC SUBS                            #
 #-------------------------------------------------------------#
 
-=item MPD->new ()
+=item MPD->new ([$host, [$port]])
 
-The constructor.
+The constructor. Saves information on MPD server at either specified - , enviroment variables - , og preset host:port.
 
 Returns reference to self.
 
 =cut
 sub new
 {
-    my $self = {
+    my($self,$host,$port) = @_;
+    $self = {
         # Variables set by class
         version => undef,
         connected => undef,
         password => undef,
+        host => $host,
+        port => $port,
         # Variables set by command 'status'
         volume => undef,
         repeat => undef,
@@ -84,21 +88,20 @@ sub new
     return $self;
 }
 
-=item $foo->connect ([$host, [$port]])
+=item $foo->connect ()
 
-Connects to MPD server at either specified - , enviroment variables - , og preset host:port.
+Connects to MPD server.
 
 Returns nothing, but dies on failed connection.
 
 =cut
 sub connect
 {
-    my($self,$host,$port) = @_;
+    my($self) = @_;
     $sock = new IO::Socket::INET
     (
-    #    PeerAddr => $host || $ENV{'MPD_HOST'} || 'localhost', # Why am I not working? Must be a swedish solution!
-        PeerAddr => $ENV{'MPD_HOST'} || 'localhost', # Danish substitue
-        PeerPort => $port || $ENV{'MPD_PORT'} || 2100,
+        PeerAddr => $self->{host} || $ENV{'MPD_HOST'} || 'localhost',
+        PeerPort => $self->{port} || $ENV{'MPD_PORT'} || 2100,
         Proto => 'tcp',
     );
     die("Could not create socket: $!\n") unless $sock;
@@ -885,7 +888,7 @@ Returns nothing.
 sub lsinfo
 {
     my($self, $path) = @_;
-    &connect;
+    &connect();
     $path = '' if !$path;
     print $sock "lsinfo $path\n";
 }
@@ -908,7 +911,7 @@ sub nextinfo
         last if($_ =~ /^(Time|directory|playlist):\s/);
     }
     return %hash;
-}
+} 
 
 #-------------------------------------------------------------#
 #                     UNFINISHED SUBS                         #
@@ -917,6 +920,8 @@ sub nextinfo
 =todo
 
 Shift all playlist-numbers to equal mpc
+
+Fix connect()
 
 =cut
 
