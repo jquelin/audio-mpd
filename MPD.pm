@@ -506,7 +506,7 @@ sub setvolume
         $volume = $self->{volume} + $1 if $volume =~ /^\+(\w+)$/; 
         $volume = $self->{volume} - $1 if $volume =~ /^-(\w+)$/;
     }
-    if($volume && $volume =~ /^(1\w{2}|\w{2})$/)
+    if($volume && $volume > -1 && $volume < 101)
     {
         print $sock "setvol $volume\n";
     } else {
