@@ -744,7 +744,11 @@ sub lsinfo
 sub get_song_info
 {
 	my($self,$song,$from_id) = @_;
-	return undef if !defined($song);
+	if(!defined($song)) {
+		$self->_connect;
+		$self->_get_status;
+		$song = $self->{song};
+	}
 	print $sock "playlist".(defined($from_id) && $from_id == 1 ? 'id' : 'info')." $song\n";
 	my %metadata;
 	foreach($self->_process_feedback)
