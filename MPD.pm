@@ -24,6 +24,9 @@
 # Changelog:
 #
 # 0.10.0-alpha2
+#  - Fixed error in add()-comments
+#
+# 0.10.0-alpha2
 #  - Added nextinfo() and changed lsinfo() and listallinfo()
 #  - Changed version-numbering to fit MPD standards
 #
@@ -584,9 +587,11 @@ sub clear
     }
 }
 
-=item $foo->add ($path)
+=item $foo->add ([$path])
 
 Adds $path to playlist. $path must be file or directory currently in database.
+
+If $path is not given, all songs are added to the playlist.
 
 Returns nothing on succes, but error on error.
 
