@@ -1,0 +1,6 @@
+MPD.pm is a perl module for client development for MPD.
+
+See example.pl for some simple examples of usage, or mpc.pl for a very simple perl-copy of `mpc`.
+
+Read more about MPD on http://www.musicpd.org/
+Reports bugs at http://www.musicpd.org/mantis/

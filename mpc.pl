@@ -71,7 +71,7 @@ sub play { $x->play($ARGV[1] || 1); status; }
 sub stop { $x->stop(); status; }
 sub pause { $x->pause(); status; }
 sub add {
-	if($ARGV[1]) {
+	if($ARGV[1] || $ARGV[1] eq '') {
 		$x->add($ARGV[1]);
 	} else {
 		while(<STDIN>) {

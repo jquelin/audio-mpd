@@ -1,0 +1,55 @@
+0.10.0-rc1
+ - No changes
+
+0.10.0-alpha7
+ - Major speedup. Playlist was fetched way too many times
+ - Another major speedup. Playlist is now only fetched when needed!
+ - Added %config, for changing default behavior
+ - Old $number-- in play() was removed.
+ - Stupid bug where last song was not saved in @playlist removed
+ - Rewrote searchadd() to utilize 'command_list_begin'/'command_list_end' (Much faster now)
+ - Fixed bug where search() didn't return the last song found
+ - Small rewrite in setrepeat() and setrandom()
+ - Typos
+ - Fixed bugs and bugs and bugs and bugs
+ - Added a destructor
+ - Rewrote all pod-documentation
+ - Tabindented all
+ - Removed 'unfinished subs' and 'todo'
+ - Probably more stuff
+
+0.10.0-alpha6
+ - Changed @playlist syntax ($playlist[song-number]{info-to-get} eg. $playlist[42]{'file'})
+ - Removed deprecated getsonginfo()
+ - Moved gettitle() and gettimeformat() to 'Custom subs'
+ - Altered gettitle()'s errorhandling a bit
+ 
+0.10.0-alpha5
+ - Made getsonginfo() return a hash instead of an array
+ - Streamlined add()/delete()/move()/swap()
+ - Made (almost) all functions undef on succes and 1 on error. Last error can be retrieved by $self->geterror()
+ - search() now accepts filenames too (thanks sbh)
+ - delete() can take ranges (thanks sbh)
+ - Added the 'Custom functions'-part
+ - Added searchadd() (thanks sbh)
+ - Repaired add()
+ - Added playlist()
+
+0.10.0-alpha4
+ - Fixed bug where last song on playlist was not present
+ - Made getstatus() call playlistinfo if playlist had changed
+ - Implemented getsonginfo() for returning information from @playlist (Thanks msells)
+ - Added $self->{module_version}
+ - Empties @playlist, when renewing it
+ - A bit of optimizing and cleanup around getplaylist (Thanks msells)
+
+0.10.0-alpha3
+ - Fixed error in add()-comments
+ - Moved $host and $port parameter to new() - It finally works!
+
+0.10.0-alpha2
+ - Added nextinfo() and changed lsinfo() and listallinfo()
+ - Changed version-numbering to fit MPD standards
+
+0.1
+ - Initial release
