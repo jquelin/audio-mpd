@@ -67,7 +67,7 @@ sub status
   exit;
 }
 
-sub play { $x->play($ARGV[1] || 1); status; }
+sub play { $x->play(($ARGV[1]-1) || 0); status; }
 sub stop { $x->stop(); status; }
 sub pause { $x->pause(); status; }
 sub add {
@@ -86,13 +86,13 @@ sub prev { $x->prev(); }
 sub seek { $x->seek($ARGV[1]); }
 sub clear { $x->clear(); }
 sub shuffle { $x->shuffle(); }
-sub move { $x->move($ARGV[1],$ARGV[2]); }
+sub move { $x->move($ARGV[1]-1,$ARGV[2]-1); }
 sub playlist
 {
 	my $playlist = $x->playlist;
 	for(my $i = 0 ; $i < $x->{playlistlength} ; $i++)
 	{
-		print "#".$i.") ".$playlist->[$i]{'file'}."\n";
+		print "#".($i+1).") ".$playlist->[$i]{'file'}."\n";
 	}
 }
 sub listall
