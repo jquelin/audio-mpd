@@ -26,6 +26,7 @@
 # 0.10.0-alpha7
 #  - Major speedup. Playlist was fetched way too many times
 #  - Another major speedup. Playlist is now only fetched when needed!
+#  - Added %config, for changing default behavior
 #
 # 0.10.0-alpha6
 #  - Changed @playlist syntax ($playlist[song-number]{info-to-get} eg. $playlist[42]{'file'})
@@ -70,6 +71,15 @@ use IO::Socket;
 my $version = '0.10.0-alpha6';
 my $sock;
 my @playlist;
+
+#-------------------------------------------------------------#
+#                      CONFIGURATION                          #
+#-------------------------------------------------------------#
+
+my %config = ( 
+               UNPAUSE_ON_PLAY => 1, # Unpauses on play(), if paused
+               OVERWRITE_PLAYLIST => 1, # Overwrites playlist, if already exists on save()
+             );
 
 #-------------------------------------------------------------#
 #                       BASIC SUBS                            #
@@ -491,7 +501,11 @@ sub play
     my($self,$number) = @_;
     &connect;
     $number--;
-    print $sock "play $number\n";
+    if($self->{state} eq 'pause' && $config{'UNPAUSE_ON_PLAY'} == 1) {
+      print $sock "pause\n";
+    } else {
+      print $sock "play $number\n";
+    }
     while(<$sock>)
     {
         if($_ =~ /^ACK (.+)$/)
@@ -913,6 +927,10 @@ sub save
         if($_ =~ /^ACK (.+)$/)
         {
           $self->{ack_error} = $1;
+          if($1 =~ /^A file or directory already exists with the name/ && $config{'OVERWRITE_PLAYLIST'}) {
+            $self->rm($list);
+            $self->save($list);
+          }
           undef;
         }
         return 1 if $_ =~ /^OK/;
@@ -1132,7 +1150,6 @@ sub gettitle
     &getstatus;
     &getplaylist if !$playlist[0];
     my $info = $song || $self->{song} || 'false';
-#    return '' if !$self->{playlistlength} || (!$info && $info != 0) || $self->{playlistlength}-1 < $info;
     return '' if !$self->{playlistlength} || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
     return $playlist[$info]{'Artist'}.' - '.$playlist[$info]{'Title'} if($playlist[$info]{'Artist'} && $playlist[$info]{'Title'});
     return $playlist[$info]{'file'};
