@@ -1,8 +1,10 @@
 #!/usr/bin/perl -w
 #
 # MPD perl module
+# Written for MPD 0.10.0, but should work for most versions.
+#
 # Copyright (C) 2004 Tue Abrahamsen (twoface@wtf.dk)
-# This project's homepage is: http://code.growl.dk/mpd
+# This project's homepage is: http://code.growl.dk/mpd/
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +23,12 @@
 #
 # Changelog:
 #
-# 0.1 - Initial release
+# 0.10.0-alpha2
+#  - Added nextinfo() and changed lsinfo() and listallinfo()
+#  - Changed version-numbering to fit MPD standards
+#
+# 0.1
+#  - Initial release
 #
 package MPD;
 use strict;
@@ -47,6 +54,7 @@ sub new
         # Variables set by class
         version => undef,
         connected => undef,
+        password => undef,
         # Variables set by command 'status'
         volume => undef,
         repeat => undef,
@@ -85,7 +93,8 @@ sub connect
     my($self,$host,$port) = @_;
     $sock = new IO::Socket::INET
     (
-        PeerAddr => $host || $ENV{'MPD_HOST'} || 'localhost',
+    #    PeerAddr => $host || $ENV{'MPD_HOST'} || 'localhost', # Why am I not working? Must be a swedish solution!
+        PeerAddr => $ENV{'MPD_HOST'} || 'localhost', # Danish substitue
         PeerPort => $port || $ENV{'MPD_PORT'} || 2100,
         Proto => 'tcp',
     );
@@ -124,6 +133,7 @@ sub getstatus
         last if $_ eq 'OK';
         $self->{$1} = $2 if $_ =~ /^(.+):\s(.+)$/;
     }
+    #return $self->{$row} if($row && $self->{$row});
     return;
 }
 
@@ -189,7 +199,7 @@ sub gettitle
     &getstatus if $song;
     my $info = $song || $self->{song};
     #print $playlist[$info][0];
-    $artist = $playlist[$info][0];
+    $artist = $1 if($playlist[$info][0] =~ /^file:\s(.+)$/);
     for(my $i = 0; $i<@{$playlist[$info]} ; $i++)
     {
         $artist = $1 if $playlist[$info][$i] =~ /^Artist:\s(.+)$/;
@@ -227,6 +237,7 @@ Returns nothing on success, but error on error.
 sub clearerror
 {
     my($self) = @_;
+    &connect;
     print $sock "clearerror\n";
     while(<$sock>)
     {
@@ -259,6 +270,7 @@ Returns nothing.
 sub kill
 {
     my($self) = @_;
+    &connect;
     print $sock "kill\n";
     return;
 }
@@ -271,10 +283,29 @@ Returns OK if connection is established to MPD.
 sub ping
 {
     my($self) = @_;
+    &connect;
     print $sock "ping\n";
     while(<$sock>)
     {
         return $_ if $_ =~ /^OK/;
+    }
+}
+
+=item $foo->password ($password)
+
+Sends $password to MPD server.
+
+Returns output.
+
+=cut
+sub password
+{
+    my($self,$password) = @_;
+    &connect;
+    print $sock "password ".($password || 'default')."\n";
+    while(<$sock>)
+    {
+        return $_ if $_ =~ /^(OK|ACK)/;
     }
 }
 
@@ -292,6 +323,7 @@ Returns nothing on success, but error on error.
 sub setrepeat
 {
     my($self,$status) = @_;
+    &connect;
     my $command;
     $status =~ s/off/0/ if $status;
     $status =~ s/on/1/ if $status; 
@@ -317,6 +349,7 @@ Returns nothing on success, but error on error.
 sub setrandom
 {
     my($self,$status) = @_;
+    &connect;
     my $command;
     $status =~ s/off/0/ if $status;
     $status =~ s/on/1/ if $status;
@@ -342,6 +375,7 @@ Returns nothing on success, but error on error.
 sub setfade
 {
     my($self,$secs) = @_;
+    &connect;
     print $sock "crossfade $secs\n";
     $self->{xfade} = $secs;
     while(<$sock>)
@@ -362,6 +396,7 @@ Returns nothing on success, but error on error.
 sub setvolume
 {
     my($self,$volume) = @_;
+    &connect;
     
     if($volume =~ /^(-|\+)/ && $self->{volume})
     {
@@ -396,6 +431,7 @@ Returns nothing on success, buts error on error.
 sub play 
 {
     my($self,$number) = @_;
+    &connect;
     $number--;
     print $sock "play $number\n";
     while(<$sock>)
@@ -415,6 +451,7 @@ Returns nothing on success, but error on error.
 sub pause
 {
     my($self) = @_;
+    &connect;
     print $sock "pause\n";
     while(<$sock>)
     {
@@ -433,6 +470,7 @@ Returns nothing on success, but error on error.
 sub stop
 {
     my($self) = @_;
+    &connect;
     print $sock "stop\n";
     while(<$sock>)
     {
@@ -451,6 +489,8 @@ Returns nothing on success, but error on error.
 sub next
 {
     my($self) = @_;
+    &connect;
+    &connect;
     print $sock "next\n";
     while(<$sock>)
     {
@@ -469,6 +509,7 @@ Returns nothing on success, but error on error.
 sub prev
 {
     my($self) = @_;
+    &connect;
     print $sock "previous\n";
     while(<$sock>)
     {
@@ -487,6 +528,7 @@ Returns nothing on success, but error on error.
 sub setpause
 {
     my($self,$toggle) = @_;
+    &connect;
     print $sock "pause $toggle\n";
     while(<$sock>)
     {
@@ -505,6 +547,7 @@ Returns nothing on success, but error on error.
 sub seek
 {
     my($self,$song,$time) = @_;
+    &connect;
     if($song && $time && $song =~ /^\w+$/ && $time =~ /^\w+$/)
     {
         print $sock "seek $song $time\n";
@@ -532,6 +575,7 @@ Returns nothing on success, but error on error.
 sub clear
 {
     my($self) = @_;
+    &connect;
     print $sock "clear\n";
     while(<$sock>)
     {
@@ -550,6 +594,7 @@ Returns nothing on succes, but error on error.
 sub add
 {
     my($self,$path) = @_;
+    &connect;
     print $sock "add $path\n";
     while(<$sock>)
     {
@@ -568,6 +613,7 @@ Returns nothing on success, but error on error.
 sub delete
 {
     my($self,$song) = @_;
+    &connect;
     print $sock "delete $song\n";
     while(<$sock>)
     {
@@ -586,6 +632,7 @@ Returns nothing on succes, but error on error.
 sub load
 {
     my($self,$list) = @_;
+    &connect;
     print $sock "load $list\n";
     while(<$sock>)
     {
@@ -604,6 +651,7 @@ Returns nothing on success, but error on error.
 sub update
 {
     my($self) = @_;
+    &connect;
     print $sock "update\n";
     while(<$sock>)
     {
@@ -622,6 +670,7 @@ Returns nothing on success, but error on error.
 sub swap
 {
     my($self,$foo,$bar) = @_;
+    &connect;
     if($foo && $bar && $foo =~ /\w+/ && $bar =~ /\w+/)
     {
         print $sock "swap $foo $bar\n";
@@ -645,6 +694,7 @@ Returns nothing on success, but error on error.
 sub shuffle
 {
     my($self) = @_;
+    &connect;
     print $sock "shuffle\n";
     while(<$sock>)
     {
@@ -663,6 +713,7 @@ Returns nothing on success, but error on error.
 sub move
 {
     my($self,$from,$to) = @_;
+    &connect;
     if($from && $to && $from =~ /\w+/ && $to =~ /\w+/)
     {
         print $sock "move $from $to\n";
@@ -686,6 +737,7 @@ Returns nothing on success, but error on error.
 sub rm
 {
     my($self,$list) = @_;
+    &connect;
     print $sock "rm $list\n";
     while(<$sock>)
     {
@@ -704,6 +756,7 @@ Returns nothing on success, but error on error.
 sub save
 {
     my($self,$list) = @_;
+    &connect;
     print $sock "save $list\n";
     while(<$sock>)
     {
@@ -722,6 +775,7 @@ Returns matches in array.
 sub search
 {
     my($self,$type,$what,$strict) = @_;
+    &connect;
     $strict = 0 if !$strict;
     return "Type must be artist, album or title" if $type !~ /^(artist|album|title)$/;
     my $command = ($strict == 0) ? 'search' : 'find';
@@ -754,6 +808,7 @@ Returns array containing tags on success, and error on error.
 sub list
 {
     my($self,$foo,$bar) = @_;
+    &connect;
     return "Must be list((artist|album),[artist])" if $foo !~ /^(artist|album)$/;
     my $command;
     $bar = '' if !$bar;
@@ -774,14 +829,15 @@ sub list
 
 =item $foo->listall ([$path])
 
-Lists all songs and directories in $path (recursively).
+Lists all songs and directories recursively in $path.
 
 Returns array of entries on success, and error on error.
 
-=cut
+=cut 
 sub listall
 {
     my($self,$path) = @_;
+    &connect;
     $path = '' if !$path;
     print $sock "listall $path\n";
     my @tmp;
@@ -795,79 +851,67 @@ sub listall
     return @tmp;
 }
 
-=item $foo->listallinfo ([$path])
+=item $foo->listallinfo ([$path]) 
 
-Lists all songs and directories in $path (recursively), with metadata.
+Sends command 'listallinfo $path', which lists all songs and directories recursively in $path with full metadata.
 
-Returns array of entries on success, and error on error.
+Must be processed with nextinfo(). Other use may break program usage!
+
+Returns nothing.
 
 =cut
 sub listallinfo
 {
     my($self, $path) = @_;
+    &connect;
     $path = '' if !$path;
     print $sock "listallinfo $path\n";
-
-    my @list;
-    my @tmp;
-    while(<$sock>)
-    {
-        chomp;
-        if($_ =~ /^file:/)
-        {
-            push @list, [@tmp] if @tmp;
-            @tmp = $_;
-        } else {
-            push @tmp, $_;
-        }
-        return $_ if $_ =~ /^ACK/;
-        return @list if $_ =~ /^OK/;
-    }
 }
 
 =item $foo->lsinfo ([$path])
 
-Lists all songs and directories in $path, with metadata.
+Sends command 'lsinfo $path', which lists all songs and directories in $path with full metadata.
 
-Returns array of entries on success, and error on error.
+Must be processed with nextinfo(). Other use may break program usage!
+
+Returns nothing.
 
 =cut
 sub lsinfo
 {
     my($self, $path) = @_;
+    &connect;
     $path = '' if !$path;
     print $sock "lsinfo $path\n";
+}
 
-    my @list;
-    my @tmp;
+=item $foo->nextinfo ()
+
+Returns the next entry from either the lsinfo() or listallinfo() commands. Data is returned in a hash.
+
+Example: while($bar = $foo->nextinfo) { print $bar{'file'}; }
+
+=cut
+sub nextinfo
+{
+    my($self) = @_;
+    my %hash;
     while(<$sock>)
     {
-        chomp;
-        if($_ =~ /^(file|directory):/)
-        {
-            push @list, [@tmp] if @tmp;
-            @tmp = $_;
-        } else {
-            push @tmp, $_;
-        }
-        return $_ if $_ =~ /^ACK/;
-        return @list if $_ =~ /^OK/;
+        $hash{$1} = $2 if($_ =~ /^(.+):\s(.+)$/);
+        return if($_ =~ /^(OK|ACK)/);
+        last if($_ =~ /^(Time|directory|playlist):\s/);
     }
+    return %hash;
 }
 
 #-------------------------------------------------------------#
 #                     UNFINISHED SUBS                         #
 #-------------------------------------------------------------#
 
-sub password
-{
-
-}
-
 =todo
 
- - is_connected()-check on (almost) all functions - connect if not
- - perhaps a 'ping()' every five seconds? Possible without fork? I think not :(
+Shift all playlist-numbers to equal mpc
 
 =cut
 
