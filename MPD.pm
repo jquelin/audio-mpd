@@ -572,7 +572,7 @@ sub save
 	if(!$self->_process_feedback)
 	{
 		# Does the playlist already exist?
-		if(${$self->get_error}[0] == 56 && $config{'OVERWRITE_PLAYLIST'})
+		if(${$self->get_error}[0] eq '56' && $config{'OVERWRITE_PLAYLIST'})
 		{
 			$self->rm($playlist);
 			$self->save($playlist);
