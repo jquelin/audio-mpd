@@ -6,6 +6,7 @@
  - Added support for new MPD-functions:
  'outputs', 'enableoutputs', 'disableoutputs', 'commands' and 'notcommands'
  - Fixed bug in get_title() where old title would get returned
+ - Fixed bug in playlist() where playlist was never updated
 
 0.12.0-rc4
  - Old bug where $playlist[0] contained undef removed again :)

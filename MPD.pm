@@ -804,7 +804,7 @@ sub playlist
 {
 	my($self) = shift;
 	$self->_connect;
-	$self->_get_playlist if !defined($playlist[0]);
+	$self->_get_playlist;
 	return \@playlist;
 }
 
