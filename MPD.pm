@@ -116,10 +116,8 @@ sub is_connected
 		print $sock "ping\n";
 		if(<$sock> =~ /^OK/)
 		{
-			print 'JA!';
 			return 1;
 		} else {
-			print 'NEJ!';
 			return undef;
 		}
 	}
