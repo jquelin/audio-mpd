@@ -5,6 +5,8 @@
  - Fixed seek()
  - Small bugfixes
  - Bugfixes in mpc.pl (playlist() and volume())
+ - Updated ACK-error handling (geterror() changed, seterror() added)
+ - Add 'plchanges'-support in getplaylist()
 
 0.10.0-rc1
  - No changes
