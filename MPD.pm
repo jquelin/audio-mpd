@@ -23,6 +23,12 @@
 #
 # Changelog:
 #
+# 0.10.0-alpha6
+#  - Changed @playlist syntax ($playlist[song-number]{info-to-get} eg. $playlist[42]{'file'})
+#  - Removed deprecated getsonginfo()
+#  - Moved gettitle() and gettimeformat() to 'Custom subs'
+#  - Altered gettitle()'s errorhandling a bit
+# 
 # 0.10.0-alpha5
 #  - Made getsonginfo() return a hash instead of an array
 #  - Streamlined add()/delete()/move()/swap()
@@ -30,7 +36,7 @@
 #  - search() now accepts filenames too (thanks sbh)
 #  - delete() can take ranges (thanks sbh)
 #  - Added the 'Custom functions'-part
-#  - Added search() (thanks sbh)
+#  - Added searchadd() (thanks sbh)
 #  - Repaired add()
 #  - Added playlist()
 #
@@ -57,7 +63,7 @@ package MPD;
 use strict;
 use IO::Socket;
 
-my $version = '0.10.0-alpha5';
+my $version = '0.10.0-alpha6';
 my $sock;
 my @playlist;
 
@@ -220,16 +226,19 @@ sub getplaylist
     print $sock "playlistinfo\n";
     
     my @tmp;
+    my %hash;
     @playlist = ();
     while(<$sock>)
     {
         chomp;
-        if($_ =~ /^file:/)
+        if($_ =~ /^(.+):\s(.+)$/) 
         {
-            push @playlist, [@tmp] if @tmp;
-            @tmp = $_;
-        } else {
-            push @tmp, $_;
+          if($1 eq 'file')
+          {
+              push @playlist, { %hash } if %hash;
+              %hash = ();
+          }
+          $hash{$1} = $2;
         }
         if($_ =~ /^(ACK|OK)/)
         {
@@ -241,68 +250,6 @@ sub getplaylist
             return 1 if $_ =~ /^OK/;
         }
     }
-}
-
-=item $foo->gettitle ([$song])
-
-Returns title of $song if specified, otherwise playing song.
-Title is made of id3-tag-information if available, otherwise filename.
-
-=cut
-sub gettitle
-{
-    my($self,$song) = @_;
-    my($artist, $title);
-    
-    &getstatus;
-    my $info = $song || $self->{song};
-    return '' if !$self->{playlistlength} || (!$info && $info != 0) || $self->{playlistlength}-1 < $info;
-    
-    $artist = $1 if($playlist[$info][0] =~ /^file:\s(.+)$/);
-    for(my $i = 0; $i<@{$playlist[$info]} ; $i++)
-    {
-        $artist = $1 if $playlist[$info][$i] =~ /^Artist:\s(.+)$/;
-        $title = $1 if $playlist[$info][$i] =~ /^Title:\s(.+)$/;
-    }
-    return "$artist - $title" if $artist && $title;
-    return $artist;
-}
-
-=item $foo->getsonginfo ([$song])
-
-Returns all information on $song from playlist as hash, if specified, otherwise from playing song.
-
-=cut
-sub getsonginfo
-{
-    my($self,$song) = @_;
-    &getstatus;
-    my $info = $song || $self->{song};
-    return '' if !$self->{playlistlength} || (!$info && $info != 0) || $self->{playlistlength}-1 < $info;
-    my %hash;
-    foreach(@{$playlist[$info]}) {
-      $hash{$1} = $2 if $_ =~ /^(.+): (.+)$/;
-    }
-    return %hash;
-}
-    
-=item $foo->gettimeformat
-Written by decius (jesper@noehr.org)
-
-Returns formatted time of currently playing song.
-
-=cut
-sub gettimeformat
-{
-    my($self) = @_;
-    &getstatus;
-    return '' if !$self->{playlistlength} || !$self->{song};
-    my($psf,$tst) = split /:/, $self->{'time'};
-    return sprintf("%d:%02d/%d:%02d",
-           ($psf / 60), # minutes so far
-           ($psf % 60), # seconds - minutes so far
-           ($tst / 60), # minutes total
-           ($tst % 60));# seconds - minutes total
 }
 
 =item $foo->clearerror ()
@@ -1163,8 +1110,48 @@ Returns the playlist in array-hash
 sub playlist
 {
     my($self) = @_;
-    return @playlist;
+    return \@playlist;
 }
+
+=item $foo->gettitle ([$song])
+
+Returns title of $song if specified, otherwise playing song.
+Title is made of id3-tag-information if available, otherwise filename.
+
+=cut
+sub gettitle
+{
+    my($self,$song) = @_;
+    my($artist, $title);
+    
+    &getstatus;
+    my $info = $song || $self->{song} || 'false';
+#    return '' if !$self->{playlistlength} || (!$info && $info != 0) || $self->{playlistlength}-1 < $info;
+    return '' if !$self->{playlistlength} || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
+    return $playlist[$info]{'Artist'}.' - '.$playlist[$info]{'Title'} if($playlist[$info]{'Artist'} && $playlist[$info]{'Title'});
+    return $playlist[$info]{'file'};
+}
+
+=item $foo->gettimeformat
+Written by decius (jesper@noehr.org)
+
+Returns formatted time of currently playing song.
+
+=cut
+sub gettimeformat
+{
+    my($self) = @_;
+    &getstatus;
+    return '' if !$self->{playlistlength} || !$self->{song};
+    my($psf,$tst) = split /:/, $self->{'time'};
+    return sprintf("%d:%02d/%d:%02d",
+           ($psf / 60), # minutes so far
+           ($psf % 60), # seconds - minutes so far
+           ($tst / 60), # minutes total
+           ($tst % 60));# seconds - minutes total
+}
+
+
 
 #-------------------------------------------------------------#
 #                     UNFINISHED SUBS                         #
