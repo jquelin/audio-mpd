@@ -25,7 +25,7 @@ package MPD;
 use strict;
 use IO::Socket;
 use Data::Dumper;
-use constant VERSION => '0.12.0-rc3';
+use constant VERSION => '0.12.0-rc4';
 
 # Socket handle
 my $sock;
