@@ -1,3 +1,6 @@
+0.12.0-rc3
+ - (almost) total rewrite of module
+
 0.12.0-rc2
  - Changed default port to 6600
  - Removed UNPAUSE_ON_PLAY setting, as this is now default in MPD

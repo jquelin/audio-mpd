@@ -14,66 +14,75 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 package MPD;
 use strict;
 use IO::Socket;
 use Data::Dumper;
-use constant VERSION => '0.12.0-rc2';
+use constant VERSION => '0.12.0-rc3';
 
+# Socket handle
 my $sock;
+# Array holding playlist-entries in hashes
 my @playlist;
 
-#-------------------------------------------------------------#
+###############################################################
 #                        CONFIGURATION                        #
 #-------------------------------------------------------------#
+#   Only holds the hash specifying different configuration-   #
+#  values used by the module. These may not be changed during #
+#   runtime, but can be altered for the programmers wishes.   #
+###############################################################
 
-my %config = ( 
-			   OVERWRITE_PLAYLIST => 1,   # Overwrites playlist, if already exists on save()
-				 ALLOW_TOGGLE_STATES => 0,  # Allows random and repeat states to be toggled by not giving parameter
-			 );
+my %config = (
+				# Overwrites old playlist, if a playlist is saved with the same
+				# name. Otherwise, an error is returned. Default: yes
+				OVERWRITE_PLAYLIST => 1,
+				# Allows toggling repeat and random states by not specifying
+				# parameteres. Default: no
+				ALLOW_TOGGLE_STATES => 0,
+				# The default host to connect to, if no other host is specified.
+				DEFAULT_MPD_HOST => 'localhost',
+				# The default port to connect to, if no other port is specified.
+				DEFAULT_MPD_PORT => 6600,
+			);
 
+###############################################################
+#                       BASIC METHODS                         #
 #-------------------------------------------------------------#
-#                         BASIC SUBS                          #
-#-------------------------------------------------------------#
+#  This section contains all basic methods for the module to  #
+#     function, internal methods and methods not returning    #
+#      or altering information about playback and alike.      #
+###############################################################
 
-=item MPD->new ([$host, [$port]])
-
-The constructor.
-@param string Host to connect to
-@param integer Port to connect to
-@return ref Reference to self
-
-=cut
 sub new
 {
-	my($self,$host,$port) = @_;
+	my($self,$mpd_host,$mpd_port) = @_;
 	$self = {
 		# Variables set by class
 		module_version => VERSION,
-		version => undef,
-		connected => undef,
+		mpd_version => undef,
 		password => undef,
-		# ACK error stuff
+		# Variables for ACK error
 		ack_error_id => undef,
 		ack_error_command_id => undef,
 		ack_error_command => undef,
 		ack_error => undef,
-		# Where to find MPD
-		host => $host,
-		port => $port,
+		# MPD connection information
+		mpd_host => $mpd_host || $ENV{'MPD_HOST'} || $config{'DEFAULT_MPD_HOST'},
+		mpd_port => $mpd_port || $ENV{'MPD_PORT'} || $config{'DEFAULT_MPD_PORT'},
 		# Variables set by command 'status'
 		volume => undef,
 		repeat => undef,
 		random => undef,
 		state => undef,
-		playlist => 0,
+		playlist => -1,
 		playlistlength => undef,
 		bitrate => undef,
 		xfade => undef,
@@ -84,1325 +93,679 @@ sub new
 		# Variables set by command 'stats'
 		artists => undef,
 		albums => undef,
-		songs => undef, 
+		songs => undef,
 		uptime => undef,
 		db_playtime => undef,
 		db_update => undef,
 		playtime => undef,
-		};
+	};
 	bless($self);
+	$self->_connect;
 	return $self;
 }
 
-=item $foo->connect ()
-
-Establishes a connections to the MPD server
-@return void
-
-=cut
-sub connect
+sub is_connected
 {
 	my($self) = shift;
-	$sock = new IO::Socket::INET
-	(
-		PeerAddr => $self->{host} || $ENV{'MPD_HOST'} || 'localhost',
-		PeerPort => $self->{port} || $ENV{'MPD_PORT'} || 6600,
-		Proto => 'tcp',
-	);
-	die("Could not create socket: $!\n") unless $sock;
-	while(<$sock>)
+	# No need to check, if socket has not been initialized
+	if($sock)
 	{
-		if(/^OK MPD (.+)$/)
+		print $sock "ping\n";
+		if(<$sock> =~ /^OK/)
 		{
-			$self->{version} = $1;
-			$self->{connected} = 1;
-			last;
+			return 1;
 		} else {
-			die("Could not connect: $!\n");
+			return undef;
 		}
 	}
-	$self->getstats;
-	$self->getstatus;
-	return;
+	return undef;
 }
 
-=item $foo->geterror ()
-
-Get last error
-@return array Errorinfo (error id, error string, command that made error, command number in command_list)
-
-=cut
-sub geterror
+sub close_connection
 {
-  my($self) = shift;
-  return ($self->{ack_error_id}, $self->{ack_error}, $self->{ack_error_command}, $self->{ack_error_command_id});
-}
-
-=item $foo->seterror ($ackline)
-
-Set error
-@param string Line from MPD with error
-
-=cut
-sub seterror
-{
-	my($self,$ackline) = @_;
-	print $ackline;
-	if($ackline =~ /^ACK \[(\w+)\@(\w+)\] {(.+)} (.+)$/)
-	{
-		$self->{ack_error_id} = $1;
-		$self->{ack_error_command_id} = $2;
-		$self->{ack_error_command} = $3;
-		$self->{ack_error} = $4;
-	}
+	my($self) = shift;
+	print $sock "close\n";
 	return 1;
 }
 
-=item $foo->getstatus ()
-
-Reads server-status into module variables.
-@return integer Completion status
-
-=cut
-sub getstatus
+sub kill_mpd
 {
 	my($self) = shift;
-	my $update = 0;
-	print $sock "status\n";
-	while(<$sock>)
-	{
-		chomp;
-		if(/^ACK/) {
-		  $self->seterror($_);
-		  return undef;
-		}
-		last if $_ eq 'OK';
-		if(/^(.[^:]+):\s(.+)$/) {
-			$update = $self->{playlist} if($1 eq 'playlist' && $self->{playlist} && $2 ne $self->{playlist} && $self->{playlist} != 0);
-			$self->{$1} = $2;
-		}
-	}
-	$self->getplaylist($update) if $update;
-	return 1;
-}
-
-=item $foo->getstats ()
-
-Reads serverstats into module variables.
-@return integer Completion status
-	
-=cut
-sub getstats
-{
-	my($self) = shift;
-	print $sock "stats\n";
-	while(<$sock>)
-	{
-		chomp;
-		if(/^ACK/) {
-			$self->seterror($_);
-		  return undef;
-		}
-		last if $_ eq 'OK';
-		$self->{$1} = $2 if /^(.[^:]+):\s(.+)$/;
-	}	
-	return 1;
-}
-
-=item $foo->getplaylist ()
-
-Reads entire playlist
-@return integer Completion status
-
-=cut
-sub getplaylist
-{
-	my($self,$old_id) = @_;
-
-	# If there is a change in the playlist, we use 'plchanges' to update it
-	if($old_id && $playlist[0])
-	{
-		print $sock "plchanges $old_id\n";
-
-		my @tmp;
-		my %hash;
-		while(<$sock>)
-		{
-			chomp;
-			if(/^(.[^:]+):\s(.+)$/) 
-      {
-        if($1 eq 'file')
-        {
-					$playlist[$hash{'Num'}] = { %hash } if $hash{'Num'};
-          %hash = ();
-        }
-        $hash{$1} = $2;
-      }
-      if(/^(ACK|OK)/)
-      {
-				$playlist[$hash{'Num'}] = { %hash };
-				# Now to delete the songs no longer present in the playlist
-				for(my $i = ($#playlist - ($self->{playlistlength} - 1)) ; $i != 0 ; $i--)
-				{
-					delete($playlist[$#playlist]);
-				}
-        if(/^ACK/) {
-          $self->seterror($_);
-          return undef;
-        }
-        return 1 if $_ =~ /^OK/;
-      }
-		}	
-	# If we don't have the playlist, we fetch it all
-	} else {
-		print $sock "playlistinfo\n";
-	
-		my @tmp;
-		my %hash;
-		@playlist = ();
-		while(<$sock>)
-		{
-			chomp;
-			if(/^(.[^:]+):\s(.+)$/) 
-			{
-			  if($1 eq 'file')
-		  	{
-			  	push @playlist, { %hash } if %hash;
-				  %hash = ();
-			  }
-			  $hash{$1} = $2;
-			}
-			if(/^(ACK|OK)/)
-			{
-				push @playlist, { %hash } if %hash;
-				if(/^ACK/) {
-					$self->seterror($_);
-					return undef;
-				}
-				return 1 if $_ =~ /^OK/;
-			}
-		}
-	}
-}
-
-=item $foo->clearerror ()
-
-Clears current error.
-@return integer Completion status
-
-=cut
-sub clearerror
-{
-	my($self) = shift;
-	$self->connect;
-	print $sock "clearerror\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-				return 1 if /^OK/;
-	}
-}
-
-=item sub->close ()
-
-Closes current connection to MPD
-@return void
-
-=cut
-sub close
-{
-	my($self) = shift;
-	if($self->{connected})
-	{
-	  print $sock "close\n";
-	}
-	$self->{connected} = 0;
-	return;
-}
-
-=item $foo->kill ()
-
-Kills MPD
-@return void
-
-=cut
-sub kill
-{
-	my($self) = shift;
-	$self->connect;
+	$self->_connect;
 	print $sock "kill\n";
-	return;
+	return 1;
 }
 
-=item $foo->ping ()
-
-Checks connection to MPD
-@return integer Connection status
-
-=cut
-sub ping
+sub send_password
 {
 	my($self) = shift;
-	$self->connect;
-	print $sock "ping\n";
-	while(<$sock>)
-	{
-		return 1 if /^OK/;
-	}
+	$self->_connect;
+	print $sock "password ".$self->{password}."\n";
+	$self->_process_feedback;
+	return 1;
 }
 
-=item $foo->password ($password)
-
-Sends $password to MPD server
-@return integer Completion status
-
-=cut
-sub password
-{
-	my($self,$password) = @_;
-	$self->connect;
-	print $sock "password ".($password || 'default')."\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->urlhandlers ()
-
-Gets list of supported url handlers
-@return array URL handlers
-
-=cut
-sub urlhandlers
+sub get_urlhandlers
 {
 	my($self) = shift;
+	$self->_connect;
 	my @handlers;
 	print $sock "urlhandlers\n";
-	while(<$sock>)
+	foreach($self->_process_feedback)
 	{
-		if(/^ACK/)
-    {
-			$self->seterror($_);
-      return undef;
-    }
-    return 1 if /^OK/;
-		push @handlers, $1 if $_ =~ /^handler: (.+)$/;
+		push @handlers, $1 if /^handler: (.+)$/;
 	}
+	return @handlers;
 }
 
-=item END ()
+sub get_error
+{
+	my($self) = shift;
+	return ( 													# Let's return an array
+			$self->{ack_error_id},				# [0] What is the ID of the error?
+			$self->{ack_error},						# [1] Human readable error-message
+			$self->{ack_error_command},		# [2] The command that caused the error
+			$self->{ack_error_command_id}	# [3] What number the command was in the command_list (if used)
+		);
+}
 
-Destructor
-Closes connection to MPD on script-termination
-
-=cut
 sub END
 {
 	print $sock "close\n";
 }
 
-#-------------------------------------------------------------#
-#                  SUBS FOR ALTERING SETTINGS                 #
-#-------------------------------------------------------------#
+#-------------------------------------------#
+#             INTERNAL METHODS              #
+#-------------------------------------------#
+# This sub-section is only used for methods #
+# not meant to be accessed from the outside.#
+#-------------------------------------------#
 
-=item $foo->setrepeat ([$status])
-
-Sets status for 'repeat'
-@param integer/string New status (0 / 1 / on / off)
-@return integer Completion status
-
-=cut
-sub setrepeat
-{
-	my($self,$status) = @_;
-	$self->connect;
-	my $command;
-	return undef if(!$status && !$config{'ALLOW_TOGGLE_STATUS'}); # We wan't clients to behave nicely!
-	if($status && $status =~ /^(0|1|on|off)$/) {
-		$status =~ s/off/0/ if $status;
-		$status =~ s/on/1/ if $status;
-	} else {
-		$status = ($self->{repeat} == 1 ? 0 : 1);
-	} 
-	$command = "repeat $status\n";
-	print $sock $command;
-	$self->{repeat} = $status;
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->setrandom ([$status])
-
-Sets status for 'random'
-@param integer/string New status (0 / 1 / on / off)
-@return integer Completion status
-	
-=cut
-sub setrandom
-{
-	my($self,$status) = @_;
-	$self->connect;
-	my $command;
-	return undef if(!$status && !$config{'ALLOW_TOGGLE_STATUS'}); # We wan't clients to behave nicely!
-	if($status && $status =~ /^(0|1|on|off)$/) {
-		$status =~ s/off/0/ if $status;
-		$status =~ s/on/1/ if $status;
-	} else {
-		$status = ($self->{random} == 1 ? 0 : 1);
-	}
-	$command = "random $status\n";
-	print $sock $command;
-	$self->{random} = $status;
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->setfade ($secs)
-
-Sets amount of seconds used for crossfading
-@param integer Seconds
-@return integer Completion status
-
-=cut
-sub setfade
-{
-	my($self,$secs) = @_;
-	$self->connect;
-	print $sock "crossfade $secs\n";
-	$self->{xfade} = $secs;
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->setvolume ($volume)
-
-Sets volume
-@param integer/string New wolume (eg. 0 / 42 / -13 / +45)
-@return integer Completion status
-
-=cut
-sub setvolume
-{
-	my($self,$volume) = @_;
-	$self->connect;
-	
-	if($volume =~ /^(-|\+)/ && $self->{volume})
-	{
-		$volume = $self->{volume} + $1 if $volume =~ /^\+(\w+)$/; 
-		$volume = $self->{volume} - $1 if $volume =~ /^-(\w+)$/;
-	}
-	if($volume && $volume > -1 && $volume < 101)
-	{
-		print $sock "setvol $volume\n";
-	} else {
-		return "Must be setvolume(int)";
-	}
-	$self->{volume} = $volume;
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-#-------------------------------------------------------------#
-#                  SUBS FOR COMMON PLAYBACK                   #
-#-------------------------------------------------------------#
-
-=item $foo->play ([$song])
-
-Starts playback
-@param integer Song to play
-@return integer Completion status
-
-=cut
-sub play 
-{
-	my($self,$number) = @_;
-	$self->connect;
-	$number = '' if !$number;
-  print $sock "play $number\n";
-	while(<$sock>)
-	{
-		if($_ =~ /^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if $_ =~ /^OK/;
-	}
-}
-
-=item $foo->pause ()
-
-Pauses playback, resumes from pause if already paused
-@return integer Completion status
-
-=cut
-sub pause
+sub _connect
 {
 	my($self) = shift;
-	$self->connect;
-	print $sock "pause\n";
-	while(<$sock>)
+	return 1 if $self->is_connected;
+	$sock = new IO::Socket::INET
+	(
+		PeerAddr => $self->{mpd_host},
+		PeerPort => $self->{mpd_port},
+		Proto => 'tcp',
+	);
+	die("Could not create socket: $!\n") unless $sock;
+	if(<$sock> =~ /^OK MPD (.+)$/)
 	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->stop ()
-
-Stops playback
-@return integer Completion status
-
-=cut
-sub stop
-{
-	my($self) = shift;
-	$self->connect;
-	print $sock "stop\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->next ()
-
-Plays next song in playlist
-@return integer Completion status
-
-=cut
-sub next
-{
-	my($self) = shift;
-	$self->connect;
-	print $sock "next\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	} 
-}
-
-=item $foo->prev ()
-
-Plays previous song in playlist
-@return integer Completion status
-
-=cut
-sub prev
-{
-	my($self) = shift;
-	$self->connect;
-	print $sock "previous\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);	
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->setpause ([$toggle])
-
-Toggles pausemode
-@param integer Pause status
-@return integer Completion status
-
-=cut
-sub setpause
-{
-	my($self,$toggle) = @_;
-	$self->connect;
-	print $sock "pause $toggle\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->seek ($time, $song)
-
-Seeks to specific position
-@param integer Position in seconds
-@param integer Song
-@return integer Completion status
-
-=cut
-sub seek
-{
-	my($self,$time,$song) = @_;
-	$self->connect;
-	if($song && $time && $song =~ /^\w+$/ && $time =~ /^\w+$/)
-	{
-		print $sock "seek $song $time\n";
-	} elsif($time && $time =~ /^\w+$/ && $self->{song}) {
-	  print $sock "seek ",$self->{song}," $time\n";
+		$self->{version} = $1;
 	} else {
-		return 0; 
+		die("Could not connect: $!\n");
 	}
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
+	$self->_get_status;
+	return;
 }
 
-#-------------------------------------------------------------#
-#                 SUBS FOR PLAYLIST-HANDLING                  #
-#-------------------------------------------------------------#
-
-=item $foo->clear ()
-
-Clears playlist
-@return integer Completion status
-
-=cut
-sub clear
+sub _process_feedback
 {
 	my($self) = shift;
-	$self->connect;
-	print $sock "clear\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->add ([$path])
-
-Adds path to playlist
-@param string Path to add, if not supplied, all songs is added
-@return integer Completion status
-
-=cut
-sub add
-{
-	my($self,$path) = @_;
-	$self->connect;
-	$path = '' if !$path;
-	print $sock "add \"$path\"\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		if(/^OK/)
-		{
-		  #$self->{playlist}++;
-		  return 1;
-		}
-	}
-}
-
-=item $foo->delete ($song)
-
-Deletes song[s] from the playlist
-@param integer/string Song[-range] to delete
-@return integer Completion status
-
-=cut
-sub delete
-{
-	my($self,$song) = @_;
-	$self->connect;
-	if($song =~ /^(\w)-(\w)$/)
-	{
-		for(my $i = $1 ; $i <= $2 ; $i++)
-		{
-			$self->delete($i);
-		}
-	} else {
-		print $sock "delete $song\n";
-	}
-	while(<$sock>)
-	{
-	  if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		if(/^OK/)
-		{
-		  #$self->{playlist}++;
-		  return 1;
-		}
-	}
-} 
-
-=item $foo->load ($list)
-
-Loads playlist
-@param string Playlistname
-@return integer Completion status
-
-=cut
-sub load
-{
-	my($self,$list) = @_;
-	$self->connect;
-	print $sock "load $list\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->update ()
-
-Updates MPD database
-@return integer Completion status
-
-=cut
-sub update
-{
-	my($self) = shift;
-	$self->connect;
-	print $sock "update\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->swap ($foo, $bar)
-
-Swaps songs in playlist
-@param integer Song 1
-@param integer Song 2
-@return integer Completion status
-
-=cut
-sub swap
-{
-	my($self,$foo,$bar) = @_;
-	$self->connect;
-	if($foo && $bar && $foo =~ /\w+/ && $bar =~ /\w+/)
-	{
-		print $sock "swap $foo $bar\n";
-	} else {
-		return "Must be swap(int, int)!";
-	}
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		if(/^OK/)
-		{
-		  $self->{playlist}++;
-		  return 1;
-		}
-	}
-}
-
-=item $foo->shuffle ()
-
-Shuffles playlist
-@return integer Completion status
-
-=cut
-sub shuffle
-{
-	my($self) = shift;
-	$self->connect;
-	print $sock "shuffle\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->move ($from, $to)
-
-Moves songs in playlist
-@param integer From #
-@param integer To #
-@return integer Completion status
-
-=cut
-sub move
-{
-	my($self,$from,$to) = @_;
-	$self->connect;
-	if($from && $to && $from =~ /\w+/ && $to =~ /\w+/)
-	{
-		print $sock "move $from $to\n";
-	} else {
-		return "Must be move(int, int)!";
-	}
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		if(/^OK/)
-		{
-		  $self->{playlist}++;
-		  return 1;
-		}
-	}
-}
-
-=item $foo->rm ($list)
-
-Removes playlist
-@param string Playlistname
-@return integer Completion status
-
-=cut
-sub rm
-{
-	my($self,$list) = @_;
-	$self->connect;
-	print $sock "rm $list\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->save ($list)
-
-Saves playlist
-@param string Playlistname
-@return integer Completion status
-
-=cut
-sub save
-{
-	my($self,$list) = @_;
-	$self->connect;
-	print $sock "save $list\n";
-	while(<$sock>)
-	{
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  if($_ =~ /A file or directory already exists with the name/ && $config{'OVERWRITE_PLAYLIST'}) {
-			$self->rm($list);
-			$self->save($list);
-		  }
-		  return undef;
-		}
-		return 1 if /^OK/;
-	}
-}
-
-=item $foo->search ($type, $what, [$strict = 0])
-
-Searching playlist for songs
-@param string Search-criteria-type (filename | artist | album | title)
-@param string Search-criteria-string
-@param integer 1 for casesensitive search
-@return array Song-hashes
-Returns matches in array-hash.
-
-=cut
-sub search
-{
-	my($self,$type,$what,$strict) = @_;
-	$self->connect;
-	$strict = 0 if !$strict;
-	return undef if $type !~ /^(artist|album|title|filename)$/;
-	my $command = ($strict == 0 ? 'search' : 'find');
-	print $sock "$command $type $what\n";
-
-	my @list;
-	my %hest;
-	while(<$sock>)
+	my @output;
+	while(<$sock>) 
 	{
 		chomp;
-		if($_ =~ /^(.[^:]+):\s(.+)$/)
+		# Did we cause an error? Save the data!
+		if(/^ACK \[(\d+)\@(\d+)\] {(.+)} (.+)$/)
+		{
+	    $self->{ack_error_id} = $1;
+	    $self->{ack_error_command_id} = $2;
+  	  $self->{ack_error_command} = $3;
+    	$self->{ack_error} = $4;
+			return undef;
+		}
+		last if /^OK/;
+		push @output, $_;
+	}
+	# Let's return the output for post-processing
+	return @output;
+}
+
+sub _get_status
+{
+	my($self) = shift;
+	$self->_connect;
+	my $update_pl = 0;
+	print $sock "status\n";
+	foreach($self->_process_feedback)
+	{
+		if(/^(.[^:]+):\s(.+)$/)
+		{
+			$update_pl = $2 if $1 eq 'playlist';
+	  	$self->{$1} = $2;
+		}
+	}
+	$self->_get_playlist($update_pl) if $playlist[0];
+	return 1;
+}
+
+sub _get_stats
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "stats\n";
+	foreach($self->_process_feedback)
+	{
+		$self->{$1} = $2 if /^(.[^:]+):\s(.+)$/;
+	}
+	return 1;
+}
+
+sub _get_playlist
+{
+	my($self,$old_playlist_id) = @_;
+	$self->_connect;
+	$old_playlist_id = -1 if !defined($old_playlist_id);
+	print $sock "plchanges $old_playlist_id\n";
+	my @tmp;
+	my %hash;
+	# Update playlist with new information
+	foreach($self->_process_feedback)
+	{
+		if(/^(.[^:]+):\s(.+)$/)
 		{
 			if($1 eq 'file')
 			{
-				push @list, { %hest } if %hest;
-				%hest = ();
-			}
-			$hest{$1} = $2;
-		}
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		if(/^OK/)
-		{
-					push @list, { %hest } if %hest;
-		  return @list;
+				$playlist[$hash{'Pos'}] = { %hash } if $hash{'Pos'};
+				%hash = ();
+			} 
+			$hash{$1} = $2;
 		}
 	}
-}
+	$playlist[$hash{'Pos'}] = { %hash } if $hash{'Pos'};
 
-=item $foo->list ($foo, [$bar])
-
-Lists tags
-@param string Tagtype (album / artist)
-@param string Artist (if tagtype = album)
-@return array/integer Tags
-
-=cut
-sub list
-{
-	my($self,$foo,$bar) = @_;
-	$self->connect;
-	return "Must be list((artist|album),[artist])" if $foo !~ /^(artist|album)$/;
-	my $command;
-	$bar = '' if !$bar;
-		if($foo eq 'album') {
-			$command = "list $foo $bar\n";
-		} else {
-			$command = "list $foo\n";
-		}
-	print $sock $command;
-	my @tmp;
-	while(<$sock>)
+	# Deletes songs no longer in the playlist
+	for(my $i = ($#playlist - ($self->{playlistlength} -1)) ; $i != 0 ; $i--)
 	{
-		chomp;
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-			return undef; 
-		}
-		last if /^OK/;
-		push @tmp, $1 if $_ =~ /^(?:Artist|Album):\s(.+)$/;
-	} 
-	return @tmp;
-
-}
-
-=item $foo->listall ([$path])
-
-Lists songs and directories
-@param string Path
-@return array/integer Entries
-
-=cut 
-sub listall
-{
-	my($self, $path) = @_;
-	$self->connect;
-	$path = '' if !$path;
-	print $sock "listall \"$path\"\n";
-	my @tmp;
-	while(<$sock>)
-	{
-		chomp;
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return undef;
-		}
-		last if /^OK/;
-		push @tmp, $_;
+		delete($playlist[$#playlist]);
 	}
-	return @tmp;
+	return 1;
 }
 
-=item $foo->listallinfo ([$path]) 
+#-------------------------------------------#
+#           INTERNAL METHODS - END          #
+#-------------------------------------------#
 
-Lists songs and directories recursively w/ metadata
-Must be used in conjunction with nextinfo()
-@param string Path
-@return void
+###############################################################
+#               METHODS FOR ALTERING SETTINGS                 #
+#-------------------------------------------------------------#
+#  This section contains methods used for altering different  #
+#                     settings in MPD.                        #
+###############################################################
 
-=cut
-sub listallinfo
+sub set_repeat
 {
-	my($self, $path) = @_;
-	$self->connect;
-	$path = '' if !$path;
-	print $sock "listallinfo \"$path\"\n";
+	my($self,$mode) = @_;
+	$self->_connect;
+	
+	# If the mode is not set, and ALLOW_TOGGLE_STATUS is, return false!
+	return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/); 
+	
+	# If mode is not set, shift the current status
+	$mode = ($self->{repeat} == 1 ? 0 : 1) if !defined($mode);
+	
+	print $sock "repeat $mode\n";
+	$self->{repeat} = $mode;
+	return $self->_process_feedback;
 }
 
-=item $foo->lsinfo ([$path])
-
-Lists songs and directories w/ metadata
-Must be used in conjunction with nextinfo()
-@param string Path
-@return void
-
-=cut
-sub lsinfo
+sub set_random
 {
-	my($self, $path) = @_;
-	$self->connect;
-	$path = '' if !$path;
-	print $sock "lsinfo \"$path\"\n";
+	my($self,$mode) = @_;
+	$self->_connect;
+
+	# If the mode is not set, and ALLOW_TOGGLE_STATUS is, return false!
+	return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/); 
+	
+	# If mode is not set, shift the current status
+	$mode = ($self->{random} == 1 ? 0 : 1) if !defined($mode);
+	
+	print "random $mode\n";
+  print $sock "random $mode\n";
+	$self->{random} = $mode;
+  return $self->_process_feedback;
 }
 
-=item $foo->nextinfo ()
+sub set_fade
+{
+	my($self,$fade_value) = @_;
+	$self->_connect;
+	$fade_value = 0 if !defined($fade_value);
+	print $sock "crossfade $fade_value\n";
+	$self->{xfade} = $fade_value;
+	return $self->_process_feedback;
+}
 
-Returns next element from lsinfo() or listallinfo()
-@example while(%bar = $foo->nextinfo) { print $bar{'file'}; }
-@return hash Element
+sub set_volume
+{
+	my($self,$volume) = @_;
+	$self->_connect;
 
-=cut
-sub nextinfo
+	if($volume =~ /^(-|\+)(\d+)/ && defined($self->{volume}))
+	{
+		$volume = $self->{volume} + $2 if $1 eq '+';
+		$volume = $self->{volume} + $2 if $1 eq '-';
+	}
+	
+	return undef if !defined($volume) || $volume < 0 || $volume > 100;
+
+	print $sock "setvol $volume\n";
+	$self->{volume} = $volume;
+	return $self->_process_feedback;
+}
+
+###############################################################
+#                METHODS FOR COMMON PLAYBACK                  #
+#-------------------------------------------------------------#
+#   This section contains the most commonly used methods for  #
+#                    altering playback.                       #
+###############################################################
+
+sub play
+{
+	my($self,$number,$from_id) = @_;
+	$self->_connect;
+	$number = '' if !defined($number);
+	my $command = (defined($from_id) && $from_id == 1 ? 'playid' : 'play');
+	print $sock "$command $number\n";
+	return $self->_process_feedback;
+}
+
+sub playid
+{
+	my($self,$number) = @_;
+	$number = '' if !defined($number);
+	return $self->play($number,1);
+}
+
+sub pause
 {
 	my($self) = shift;
-	my %hash;
-	while(<$sock>)
+	$self->_connect;
+	print $sock "pause\n";
+	return $self->_process_feedback;
+}
+
+sub stop
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "stop\n";
+	return $self->_process_feedback;
+}
+
+sub next
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "next\n";
+	return $self->_process_feedback;
+}
+
+sub prev
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "prev\n";
+	return $self->_process_feedback;
+}
+
+sub seek
+{
+	my($self,$position,$song,$from_id) = @_;
+	$self->_connect;
+	my $command = (defined($from_id) && $from_id == 1 ? 'seekid' : 'seek');
+	if(defined($song) && defined($position) && $song =~ /^\d+$/ && $position =~ /^\d+$/)
 	{
-				chomp;
-		$hash{$1} = $2 if($_ =~ /^(.[^:]+):\s(.+)$/);
-		if(/^ACK/)
-		{
-			$self->seterror($_);
-		  return;
-		}
-		return if /^OK/; # Unfortunately, we can't have 'return 1' on succes, as a while(nextinfo) won't stop
-		last if /^(Time|directory|playlist):\s/;
+		print $sock "$command $song $position\n";
+	} elsif(defined($position) && $position =~ /\d+$/ && $self->{song}) {
+		print $sock "$command ".$self->{song}." $position\n";
+	} else {
+		return undef;
 	}
-	return %hash;
-} 
-
-#-------------------------------------------------------------#
-#                     SUBS USING SONG ID                      #
-#-------------------------------------------------------------#
-
-=item $foo->deleteid ($songid)
-
-Deletes song[s] from the playlist
-@param integer/string Songid[-range] to delete
-@return integer Completion status
-
-=cut
-sub deleteid
-{
-  my($self,$songid) = @_;
-  $self->connect;
-  if($songid =~ /^(\w)-(\w)$/)
-  {
-    for(my $i = $1 ; $i <= $2 ; $i++)
-    {
-      $self->deleteid($i);
-    }
-  } else {
-    print $sock "deleteid $songid\n";
-  }
-  while(<$sock>)
-  {
-    if(/^ACK/)
-    {
-      $self->seterror($_);
-      return undef;
-    }
-    if(/^OK/)
-    {
-      #$self->{playlist}++;
-      return 1;
-    }
-  }
+	return $self->_process_feedback;
 }
 
-=item $foo->moveid ($from, $to)
-
-Moves song in playlist
-@param integer Song id to move
-@param integer Position in playlist
-@return integer Completion status
-
-=cut
-sub moveid
-{
-  my($self,$from,$to) = @_;
-  $self->connect;
-  if($from && $to && $from =~ /\w+/ && $to =~ /\w+/)
-  {
-    print $sock "moveid $from $to\n";
-  } else {
-    return "Must be moveid(int, int)!";
-  }
-  while(<$sock>)
-  {
-    if(/^ACK/)
-    {
-      $self->seterror($_);
-      return undef;
-    }
-    if(/^OK/)
-    {
-      $self->{playlist}++;
-      return 1;
-    }
-  }
-}
-
-=item $foo->playid ([$songid])
-
-Starts playback
-@param integer Songid to play
-@return integer Completion status
-
-=cut
-sub playid 
-{   
-  my($self,$number) = @_;
-  $self->connect;
-  $number = '' if !$number;
-  print $sock "playid $number\n";
-  while(<$sock>)
-  { 
-    if($_ =~ /^ACK/)
-    {
-      $self->seterror($_);
-      return undef;
-    }
-    return 1 if $_ =~ /^OK/;
-  }
-}
-
-=item $foo->swapid ($foo, $bar)
-
-Swaps songs in playlist
-@param integer Songid 1 
-@param integer Songid 2
-@return integer Completion status
-  
-=cut
-sub swapid
-{   
-  my($self,$foo,$bar) = @_;
-  $self->connect;
-  if($foo && $bar && $foo =~ /\w+/ && $bar =~ /\w+/)
-  { 
-    print $sock "swapid $foo $bar\n";
-  } else {
-    return "Must be swapid(int, int)!";
-  } 
-  while(<$sock>)
-  { 
-    if(/^ACK/)
-    { 
-      $self->seterror($_);
-      return undef;
-    }
-    if(/^OK/)
-    {
-      $self->{playlist}++;
-      return 1;
-    }
-  }
-}
-
-=item $foo->seekid ($time, $songid)
-
-Seeks to specific position
-@param integer Position in seconds
-@param integer Songid
-@return integer Completion status
-  
-=cut
 sub seekid
-{   
-  my($self,$time,$songid) = @_;
-  $self->connect;
-  if($songid && $time && $songid =~ /^\w+$/ && $time =~ /^\w+$/)
-  {
-    print $sock "seekid $songid $time\n";
-  } elsif($time && $time =~ /^\w+$/ && $self->{song}) {
-    print $sock "seekid ",$self->{song}," $time\n";
-  } else {
-    return 0; 
-  } 
-  while(<$sock>)
-  {
-    if(/^ACK/)
-    {
-      $self->seterror($_);
-      return undef;
-    }
-    return 1 if /^OK/;
-  }
+{
+  my($self,$position,$songid) = @_;
+	return undef if !defined($position) || !defined($songid);
+	return $self->seek($position,$songid,1);
 }
 
+###############################################################
+#               METHODS FOR PLAYLIST-HANDLING                 #
 #-------------------------------------------------------------#
-#                         CUSTOM SUBS                         #
+#  This section contains all methods which has anything to do #
+#            with the current og saved playlists.             #
+###############################################################
+
+sub clear
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "clear\n";
+	return $self->_process_feedback;
+}
+
+sub add
+{
+	my($self,$path) = @_;
+	$self->_connect;
+	$path = '' if !defined($path);
+	print $sock "add \"$path\"\n";
+	return $self->_process_feedback;
+}
+
+sub delete
+{
+	my($self,$song,$from_id) = @_;
+	$self->_connect;
+	return undef if !defined($song) || $song !~ /^\d+$/;
+	my $command = (defined($from_id) && $from_id == 1 ? 'deleteid' : 'delete');
+	if($song =~ /^(\d+)-(\d+)$/)
+	{
+		for(my $i = $1 ; $i <= $2 ; $i++)
+		{
+			$self->$command($i);
+		}
+	} else {
+		print $sock "$command $song\n";
+		return $self->_process_feedback;
+	}
+	return 1;
+}
+
+sub deleteid
+{   
+  my($self,$songid) = @_;
+  return undef if !defined($songid) || $songid !~ /^\d+$/;
+	return $self->delete($songid,1);
+}
+
+sub load
+{
+	my($self,$playlist) = @_;
+	return undef if !defined($playlist);
+	$self->_connect;
+	print $sock "load \"$playlist\"\n";
+	return $self->_process_feedback;
+}
+
+sub updatedb
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "update\n";
+	return $self->_process_feedback;
+}
+
+sub swap
+{
+	my($self,$song_from,$song_to,$from_id) = @_;
+	$self->_connect;
+	if(defined($song_from) && defined($song_to) && $song_from =~ /^\d+$/ && $song_to =~ /^\d+$/)
+	{
+		my $command = (defined($from_id) && $from_id == 1 ? 'swapid' : 'swap');
+		print $sock "$command $song_from $song_to\n";
+	} else {
+		return undef;
+	}
+	return $self->_process_feedback;
+}
+
+sub swapid
+{
+  my($self,$songid_from,$songid_to) = @_;
+	return undef if !defined($songid_from) || !defined($songid_to) || $songid_from !~ /^\d+$/ || $songid_to !~ /^\d+$/;
+	return $self->swap($songid_from,$songid_to,1);
+}
+
+sub shuffle
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "shuffle\n";
+	return $self->_process_feedback;
+}
+
+sub move
+{
+	my($self,$song,$new_pos,$from_id) = @_;
+	$self->_connect;
+	if(defined($song) && defined($new_pos) && $song =~ /^\d+$/ && $new_pos =~ /^\d+$/)
+	{
+		my $command = (defined($from_id) && $from_id == 1 ? 'moveid' : 'move');
+		print $sock "$command $song $new_pos\n";
+	} else {
+		return undef;
+	}
+	return $self->_process_feedback;
+}
+
+sub moveid
+{     
+  my($self,$songid,$new_pos) = @_;
+	return undef if !defined($songid) || !defined($new_pos) || $songid !~ /^\d+$/ || $new_pos !~ /^\d+$/;
+	return $self->move($songid,$new_pos,1);
+}
+
+sub rm
+{
+	my($self,$playlist) = @_;
+	return undef if !defined($playlist);
+	$self->_connect;
+	print $sock "rm \"$playlist\"\n";
+	return $self->_process_feedback;
+}
+
+sub save
+{
+	my($self,$playlist) = @_;
+	return undef if !defined($playlist);
+	$self->_connect;
+	print $sock "save \"$playlist\"\n";
+	if(!$self->_process_feedback)
+	{
+		# Does the playlist already exist?
+		if(${$self->get_error}[0] == 56 && $config{'OVERWRITE_PLAYLIST'})
+		{
+			$self->rm($playlist);
+			$self->save($playlist);
+			return 1;
+		}
+	}
+	return 1;
+}
+
+sub search
+{
+	my($self,$type,$string,$strict) = @_;
+	return undef if !defined($type) || !defined($string) || $type !~ /^(artist|album|title|filename)$/;
+	$self->_connect;
+	my $command = (!defined($strict) || $strict == 0 ? 'search' : 'find');
+	print $sock "$command $type \"$string\"\n";
+
+	my @list;
+	my %hash;
+	foreach($self->_process_feedback)
+	{
+		if(/^(.[^:]+):\s(.+)$/)
+		{
+			if($1 eq 'file')
+			{
+				push @list, { %hash } if %hash;
+				%hash = ();
+			}
+			$hash{$1} = $2;
+		}
+	}
+	push @list, { %hash } if %hash; # Remember the last entry
+	return @list;
+}
+
+sub list
+{
+	my($self,$type,$artist) = @_;
+	return undef if !defined($type) || $type !~ /^(artist|album)$/;
+	$self->_connect;
+	$artist = '' if !defined($artist);
+	print $sock ($type eq 'album' ? "list album \"$artist\"\n" : "list artist\n");
+	
+	#	Strip unneccesary information
+	my @tmp;
+	foreach($self->_process_feedback)
+	{
+		push @tmp, $1 if /^(?:Artist|Album):\s(.+)$/;
+	}
+	return @tmp;
+}
+
+sub listall
+{
+	my($self,$path) = @_;
+	$self->_connect;
+	$path = '' if !defined($path);
+	print $sock "listall \"$path\"\n";
+	return $self->_process_feedback;
+}
+
+sub listallinfo
+{
+	my($self,$path) = @_;
+	$self->_connect;
+	$path = '' if !defined($path);
+	print $sock "listallinfo \"$path\"\n";
+	my @results;
+	my %element;
+	foreach($self->_process_feedback)
+	{
+		if(/^(.[^:]+):\s(.+)$/)
+		{
+			if($1 eq 'file')
+			{
+				push @results, { %element } if %element;
+				%element = ();
+			}
+			$element{$1} = $2
+		}
+	}
+	push @results, { %element } if %element;
+	return @results;
+}
+
+sub lsinfo
+{
+	my($self,$path) = @_;
+	$self->_connect;
+	$path = '' if !defined($path);
+	print $sock "lsinfo \"$path\"\n";
+	my @results;
+	my %element;
+	foreach($self->_process_feedback)
+	{
+		if(/^(.[^:]+):\s(.+)$/)
+		{
+			#if($1 =~ /^(?:file|playlist|directory)$/)
+			if($1 eq 'file' || $1 eq 'playlist' || $1 eq 'directory')
+			{
+				push @results, { %element } if %element;
+				%element = ();
+			}
+			$element{$1} = $2;
+		}
+	}
+	push @results, { %element } if %element;
+	return @results;
+}
+
+###############################################################
+#                     CUSTOM METHODS                          #
 #-------------------------------------------------------------#
+#   This section contains all methods not directly accessing  #
+#   MPD, but may be useful for most people using the module.  #
+###############################################################
 
-=item $foo->searchadd ($type, $string)
+sub get_song_info
+{
+	my($self,$song,$from_id) = @_;
+	return undef if !defined($song);
+	print $sock "playlist".(defined($from_id) && $from_id == 1 ? 'id' : 'info')." $song\n";
+	my %metadata;
+	foreach($self->_process_feedback)
+	{
+		$metadata{$1} = $2 if /^(.[^:]+):\s(.+)$/;
+	}
+	return %metadata;
+}
 
-Searches and adds songs
-@param string Search-criteria-type (artist / album / artist / filename)
-@param string Search-criteria-string
-@returns integer Completion status
+sub get_song_info_from_id
+{
+	my($self,$song) = @_;
+	# No reason to write it all again :)
+	$self->get_song_info($song,1);
+}
 
-=cut
 sub searchadd
 {
 	my($self,$type,$string) = @_;
-	my @songs = $self->search($type, $string);
-	if($#songs > -1) {
-	  print $sock "command_list_begin\n";
-	  foreach my $foo (@songs)
-	  {
-		  my %hash = %$foo;
-		  print $sock "add \"".$hash{'file'}."\"\n";
-	  }
-	  print $sock "command_list_end\n";  
-	  while(<$sock>)
-	  {
-		  if(/^ACK/)
-		  {
-				$self->seterror($_);
-				return undef;
-		  }
-		  if(/^OK/)
-		  {
-				$self->{playlist} = $self->{playlist} + $#songs + 1;
-				return 1;
-		  }
-	  }    
+	return undef if !defined($type) || !defined($string);
+	$self->_connect;
+	my @results = $self->search($type, $string);
+	if($#results > -1)
+	{
+		print $sock "command_list_begin\n";
+		foreach(@results)
+		{
+			my %hash = %$_;
+			print $sock "add \"".$hash{'file'}."\"\n";
+		}
+		print $sock "command_list_end\n";
+		if($self->_process_feedback)
+		{
+			$self->{playlist} = $self->{playlist} + $#results + 1;
+		}
 	}
-	return 0;
+	return 1;
 }
 
-=item $foo->playlist ()
-
-Returns reference to playlist
-@return ref
-
-=cut
 sub playlist
 {
 	my($self) = shift;
-	$self->getplaylist if !$playlist[0];
+	$self->_connect;
+	$self->_get_playlist if !defined($playlist[0]);
 	return \@playlist;
 }
 
-=item $foo->gettitle ([$song])
-
-Return songtitle
-@param integer Songnumber
-@return string Songtitle
-
-=cut
-sub gettitle
+sub get_title
 {
 	my($self,$song) = @_;
-	my($artist, $title);
-	
-	$self->getstatus;
-	$self->getplaylist if !$playlist[0];
-	my $info = $song || $self->{song} || 'false';
-	return '' if !$self->{playlistlength} || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
-	return $playlist[$info]{'Artist'}.' - '.$playlist[$info]{'Title'} if($playlist[$info]{'Artist'} && $playlist[$info]{'Title'});
-	return $playlist[$info]{'file'};
+	$self->_connect;
+	my $info;
+	$info = $self->{song} unless !defined($self->{song}) || $self->{song} =~ /^\D+$/;
+	$info = $song unless !defined($song) || $song =~ /^\D+$/;
+	return 'n/a' if !defined($info);
+	return '' if !defined($self->{playlistlength}) || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
+	my %metadata = $self->get_song_info($info);
+	return $metadata{'Artist'}.' - '.$metadata{'Title'} if $metadata{'Artist'} && $metadata{'Title'};
+	return $metadata{'file'};
 }
 
-=item $foo->gettimeformat ()
-Written by decius (jesper@noehr.org)
-
-Returns formatted time of currently playing song
-@return string Time
-
-=cut
-sub gettimeformat
+sub get_time_format
 {
-	my($self) = shift;
-	$self->getstatus;
-	return '' if !$self->{playlistlength} || !$self->{song};
-	my($psf,$tst) = split /:/, $self->{'time'};
-	return sprintf("%d:%02d/%d:%02d",
-		   ($psf / 60), # minutes so far
-		   ($psf % 60), # seconds - minutes so far
-		   ($tst / 60), # minutes total
-		   ($tst % 60));# seconds - minutes total
+  my($self) = shift;
+  return '' if !defined($self->{playlistlength}) || !defined($self->{song});
+	$self->_connect;
+  my($psf,$tst) = split /:/, $self->{'time'};
+  return sprintf("%d:%02d/%d:%02d",
+       ($psf / 60), # minutes so far
+       ($psf % 60), # seconds - minutes so far
+       ($tst / 60), # minutes total
+       ($tst % 60));# seconds - minutes total
 }
 
 1;

@@ -1,11 +1,11 @@
 #!/usr/bin/perl -w
 use strict;
+use Encode;
 use constant VERSION => '0.10.0';
 
 die("MPD.pm not found!\n") unless -f "MPD.pm";
 require("MPD.pm");
-my $x = MPD->new('freya',2100);
-$x->connect();
+my $x = MPD->new();
 
 # mpctime() - For getting the time in the same format as `mpc` writes it
 sub mpctime
@@ -32,13 +32,13 @@ sub help
   print "mpc clear\t\t\tClears the current playlist\n";
   print "mpc shuffle\t\t\tShuffle the current playlist\n";
   print "mpc move <from> <to>\t\tMove song in playlist\n";
-  #print "mpc playlist\t\t\tPrint the current playlist\n";
-  #print "mpc listall [<song>]\t\tList all songs in the music dir\n";
-  #print "mpc ls [<dir>]\t\t\tList the contents of <dir>\n";
-  #print "mpc lsplaylists\t\t\tLists currently available playlists\n";
-  #print "mpc load <file>\t\t\tLoad <file> as a playlist\n";
-  #print "mpc save <file>\t\t\tSaves a playlist as <file>\n";
-  #print "mpc rm <file>\t\t\tRemoves a playlist\n";
+  print "mpc playlist\t\t\tPrint the current playlist\n";
+  print "mpc listall [<song>]\t\tList all songs in the music dir\n";
+  print "mpc ls [<dir>]\t\t\tList the contents of <dir>\n";
+  print "mpc lsplaylists\t\t\tLists currently available playlists\n";
+  print "mpc load <file>\t\t\tLoad <file> as a playlist\n";
+  print "mpc save <file>\t\t\tSaves a playlist as <file>\n";
+  print "mpc rm <file>\t\t\tRemoves a playlist\n";
   print "mpc volume [+-]<num>\t\tSets volume to <num> or adjusts by [+-]<num>\n";
   print "mpc repeat <on|off>\t\tToggle repeat mode, or specify state\n";
   print "mpc random <on|off>\t\tToggle random mode, or specify state\n";
@@ -53,12 +53,11 @@ sub help
 # status() - For showing the current status
 sub status
 {
-  $x->getstatus; # Better update to be sure we get the real information
+	$x->_get_status;
   my $repeat = ($x->{repeat} == 1 ? 'on ' : 'off'); # Let's show the repeat-status a bit nicer
   my $random = ($x->{random} == 1 ? 'on ' : 'off'); # And the same for random
-  
   if($x->{state} eq 'play' || $x->{state} eq 'pause') { # If MPD is either playing or paused
-    print $x->gettitle."\n";
+    print decode_utf8($x->get_title)."\n";
     print "[".($x->{state} eq 'play' ? 'playing' : 'paused')."] #".($x->{song}+1)."/".$x->{playlistlength}."\t".mpctime."\n";
     print "volume: ".$x->{volume}."%   repeat: ".$repeat."  random: ".$random."\n";
   } elsif($x->{state} eq 'stop') { # If MPD is stopped, we don't show much
@@ -67,7 +66,7 @@ sub status
   exit;
 }
 
-sub play { $x->play(($ARGV[1]-1) || 0); status; }
+sub play { $x->play($ARGV[1] ? ($ARGV[1]-1) : 0); status; }
 sub stop { $x->stop(); status; }
 sub pause { $x->pause(); status; }
 sub add {
@@ -106,9 +105,9 @@ sub listall
 }
 sub ls
 { 
-	$x->lsinfo($ARGV[1]);
-	while(my %hash = $x->nextinfo)
+	foreach my $tmp ($x->lsinfo($ARGV[1]))
 	{
+		my %hash = %{$tmp};
 		if($hash{'directory'} || $hash{'file'})
 		{
 			print $hash{'directory'} || $hash{'file'};
@@ -118,18 +117,19 @@ sub ls
 }
 sub lsplaylists
 {
-	$x->lsinfo();
-	while(my %hash = $x->nextinfo)
+	#while(my %hash = $x->nextinfo)
+	foreach my $tmp ($x->lsinfo())
 	{
+		my %hash = %{$tmp};
 		print $hash{'playlist'}."\n" if $hash{'playlist'};
 	}
 }
 sub load { $x->load($ARGV[1]); }
 sub save { $x->save($ARGV[1]); }
 sub rm { $x->rm($ARGV[1]); }
-sub volume { $x->setvolume($ARGV[1]); status; }
-sub repeat { $x->setrepeat($ARGV[1]); }
-sub random { $x->setrandom($ARGV[1]); }
+sub volume { $x->set_volume($ARGV[1]); status; }
+sub repeat { print $ARGV[1]; $x->set_repeat($ARGV[1]); status; }
+sub random { $x->set_random($ARGV[1]); status; }
 sub search
 {
 	die('No way!') if $ARGV[1] !~ /^(filename|artist|title|album)$/;
@@ -140,7 +140,7 @@ sub search
 		print $song{'file'}."\n";
 	}
 }
-sub crossfade { $x->crossfade($ARGV[1]); }
+sub crossfade { $x->set_fade($ARGV[1]); }
 sub update { $x->update(); }
 sub version { print "mpd version: ".$x->{version}."\n"; }
 
