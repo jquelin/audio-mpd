@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use Encode;
+use Data::Dumper;
 use constant VERSION => '0.10.0';
 
 die("MPD.pm not found!\n") unless -f "MPD.pm";

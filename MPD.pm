@@ -270,13 +270,13 @@ sub _get_playlist
 		{
 			if($1 eq 'file')
 			{
-				$playlist[$hash{'Pos'}] = { %hash } if $hash{'Pos'};
+				$playlist[$hash{'Pos'}] = { %hash } if defined($hash{'Pos'});
 				%hash = ();
 			} 
 			$hash{$1} = $2;
 		}
 	}
-	$playlist[$hash{'Pos'}] = { %hash } if $hash{'Pos'};
+	$playlist[$hash{'Pos'}] = { %hash } if defined($hash{'Pos'});
 
 	# Deletes songs no longer in the playlist
 	for(my $i = ($#playlist - ($self->{playlistlength} -1)) ; $i != 0 ; $i--)
