@@ -1137,7 +1137,7 @@ sub searchadd
           }
           if($_ =~ /^OK/)
           {
-            $self->{playlist} = $self->{playlist} + $#songs;;
+            $self->{playlist} = $self->{playlist} + $#songs;
             return 1;
           }
       }    
