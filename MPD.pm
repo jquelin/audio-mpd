@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 # MPD perl module
-# Written for MPD 0.10.0, but should work for most versions.
+# Written for MPD 0.11.1
 #
 # Copyright (C) 2004 Tue Abrahamsen (twoface@wtf.dk)
 # This project's homepage is: http://www.musicpd.org
@@ -25,7 +25,7 @@ package MPD;
 use strict;
 use IO::Socket;
 use Data::Dumper;
-use constant VERSION => '0.10.0-rc1';
+use constant VERSION => '0.12.0-rc2';
 
 my $sock;
 my @playlist;
@@ -36,6 +36,7 @@ my @playlist;
 
 my %config = ( 
 			   OVERWRITE_PLAYLIST => 1,   # Overwrites playlist, if already exists on save()
+				 ALLOW_TOGGLE_STATES => 0,  # Allows random and repeat states to be toggled by not giving parameter
 			 );
 
 #-------------------------------------------------------------#
@@ -156,6 +157,7 @@ sub seterror
 	}
 	return 1;
 }
+
 =item $foo->getstatus ()
 
 Reads server-status into module variables.
@@ -398,17 +400,15 @@ sub urlhandlers
 	}
 }
 
-=item $foo->DESTROY ()
+=item END ()
 
 Destructor
-Closes connection to MPD
-@return void
+Closes connection to MPD on script-termination
 
 =cut
-sub DESTROY
+sub END
 {
-	my($self) = shift;
-	#$self->close; # Why, oh why, does it complain over this? Find out!
+	print $sock "close\n";
 }
 
 #-------------------------------------------------------------#
@@ -427,12 +427,13 @@ sub setrepeat
 	my($self,$status) = @_;
 	$self->connect;
 	my $command;
-		if($status && $status =~ /^(0|1|on|off)$/) {
-			$status =~ s/off/0/ if $status;
-			$status =~ s/on/1/ if $status;
-		} else {
-			$status = ($self->{repeat} == 1 ? 0 : 1);
-		} 
+	return undef if(!$status && !$config{'ALLOW_TOGGLE_STATUS'}); # We wan't clients to behave nicely!
+	if($status && $status =~ /^(0|1|on|off)$/) {
+		$status =~ s/off/0/ if $status;
+		$status =~ s/on/1/ if $status;
+	} else {
+		$status = ($self->{repeat} == 1 ? 0 : 1);
+	} 
 	$command = "repeat $status\n";
 	print $sock $command;
 	$self->{repeat} = $status;
@@ -459,12 +460,13 @@ sub setrandom
 	my($self,$status) = @_;
 	$self->connect;
 	my $command;
-		if($status && $status =~ /^(0|1|on|off)$/) {
-			$status =~ s/off/0/ if $status;
-			$status =~ s/on/1/ if $status;
-		} else {
-			$status = ($self->{random} == 1 ? 0 : 1);
-		}
+	return undef if(!$status && !$config{'ALLOW_TOGGLE_STATUS'}); # We wan't clients to behave nicely!
+	if($status && $status =~ /^(0|1|on|off)$/) {
+		$status =~ s/off/0/ if $status;
+		$status =~ s/on/1/ if $status;
+	} else {
+		$status = ($self->{random} == 1 ? 0 : 1);
+	}
 	$command = "random $status\n";
 	print $sock $command;
 	$self->{random} = $status;
@@ -553,12 +555,8 @@ sub play
 {
 	my($self,$number) = @_;
 	$self->connect;
-	if($self->{state} eq 'pause') {
-	  print $sock "pause\n";
-	} else {
-		$number = '' if !$number;
-	  print $sock "play $number\n";
-	}
+	$number = '' if !$number;
+  print $sock "play $number\n";
 	while(<$sock>)
 	{
 		if($_ =~ /^ACK/)
@@ -1152,6 +1150,166 @@ sub nextinfo
 	}
 	return %hash;
 } 
+
+#-------------------------------------------------------------#
+#                     SUBS USING SONG ID                      #
+#-------------------------------------------------------------#
+
+=item $foo->deleteid ($songid)
+
+Deletes song[s] from the playlist
+@param integer/string Songid[-range] to delete
+@return integer Completion status
+
+=cut
+sub deleteid
+{
+  my($self,$songid) = @_;
+  $self->connect;
+  if($songid =~ /^(\w)-(\w)$/)
+  {
+    for(my $i = $1 ; $i <= $2 ; $i++)
+    {
+      $self->deleteid($i);
+    }
+  } else {
+    print $sock "deleteid $songid\n";
+  }
+  while(<$sock>)
+  {
+    if(/^ACK/)
+    {
+      $self->seterror($_);
+      return undef;
+    }
+    if(/^OK/)
+    {
+      #$self->{playlist}++;
+      return 1;
+    }
+  }
+}
+
+=item $foo->moveid ($from, $to)
+
+Moves song in playlist
+@param integer Song id to move
+@param integer Position in playlist
+@return integer Completion status
+
+=cut
+sub moveid
+{
+  my($self,$from,$to) = @_;
+  $self->connect;
+  if($from && $to && $from =~ /\w+/ && $to =~ /\w+/)
+  {
+    print $sock "moveid $from $to\n";
+  } else {
+    return "Must be moveid(int, int)!";
+  }
+  while(<$sock>)
+  {
+    if(/^ACK/)
+    {
+      $self->seterror($_);
+      return undef;
+    }
+    if(/^OK/)
+    {
+      $self->{playlist}++;
+      return 1;
+    }
+  }
+}
+
+=item $foo->playid ([$songid])
+
+Starts playback
+@param integer Songid to play
+@return integer Completion status
+
+=cut
+sub playid 
+{   
+  my($self,$number) = @_;
+  $self->connect;
+  $number = '' if !$number;
+  print $sock "playid $number\n";
+  while(<$sock>)
+  { 
+    if($_ =~ /^ACK/)
+    {
+      $self->seterror($_);
+      return undef;
+    }
+    return 1 if $_ =~ /^OK/;
+  }
+}
+
+=item $foo->swapid ($foo, $bar)
+
+Swaps songs in playlist
+@param integer Songid 1 
+@param integer Songid 2
+@return integer Completion status
+  
+=cut
+sub swapid
+{   
+  my($self,$foo,$bar) = @_;
+  $self->connect;
+  if($foo && $bar && $foo =~ /\w+/ && $bar =~ /\w+/)
+  { 
+    print $sock "swapid $foo $bar\n";
+  } else {
+    return "Must be swapid(int, int)!";
+  } 
+  while(<$sock>)
+  { 
+    if(/^ACK/)
+    { 
+      $self->seterror($_);
+      return undef;
+    }
+    if(/^OK/)
+    {
+      $self->{playlist}++;
+      return 1;
+    }
+  }
+}
+
+=item $foo->seekid ($time, $songid)
+
+Seeks to specific position
+@param integer Position in seconds
+@param integer Songid
+@return integer Completion status
+  
+=cut
+sub seekid
+{   
+  my($self,$time,$songid) = @_;
+  $self->connect;
+  if($songid && $time && $songid =~ /^\w+$/ && $time =~ /^\w+$/)
+  {
+    print $sock "seekid $songid $time\n";
+  } elsif($time && $time =~ /^\w+$/ && $self->{song}) {
+    print $sock "seekid ",$self->{song}," $time\n";
+  } else {
+    return 0; 
+  } 
+  while(<$sock>)
+  {
+    if(/^ACK/)
+    {
+      $self->seterror($_);
+      return undef;
+    }
+    return 1 if /^OK/;
+  }
+}
 
 #-------------------------------------------------------------#
 #                         CUSTOM SUBS                         #

@@ -1,1 +1,2 @@
-Make 'repeat' and 'random' un-toggleable in config. People have to specify new state.
+Rewrite most code to be much more structured
+Write documentation
