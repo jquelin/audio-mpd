@@ -921,8 +921,6 @@ sub nextinfo
 
 Shift all playlist-numbers to equal mpc
 
-Fix connect()
-
 =cut
 
 1;
