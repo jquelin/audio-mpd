@@ -3,7 +3,7 @@
 # MPD perl module
 # Written for MPD 0.11.1
 #
-# Copyright (C) 2004 Tue Abrahamsen (twoface@wtf.dk)
+# Written by: Tue Abrahamsen (twoface@wtf.dk)
 # This project's homepage is: http://www.musicpd.org
 # Report bugs at: http://www.musicpd.org/mantis/
 #
@@ -24,8 +24,7 @@
 package MPD;
 use strict;
 use IO::Socket;
-use Data::Dumper;
-use constant VERSION => '0.12.0-rc4';
+use constant VERSION => '0.12.0-rc5';
 
 # Socket handle
 my $sock;
@@ -98,6 +97,10 @@ sub new
 		db_playtime => undef,
 		db_update => undef,
 		playtime => undef,
+		# 0.12.0 stuff
+		outputs => undef,
+		commands => undef,
+		notcommands => undef,
 	};
 	bless($self);
 	$self->_connect;
@@ -199,6 +202,8 @@ sub _connect
 		die("Could not connect: $!\n");
 	}
 	$self->_get_status;
+	$self->_get_outputs;
+	$self->_get_commands;
 	return 1;
 }
 
@@ -286,6 +291,47 @@ sub _get_playlist
 	return 1;
 }
 
+sub _get_outputs
+{
+	my($self) = shift;
+	$self->_connect;
+	print $sock "outputs\n";
+	my @outputs;
+	my %output;
+	foreach($self->_process_feedback)
+	{
+		if(/^outputid:/)
+		{
+			push @outputs, { %output } if %output;
+			%output = ();
+		}
+		$output{$1} = $2 if /^output(.+): (.+)$/;
+	}
+	push @outputs, { %output } if %output;
+	$self->{outputs} = \@outputs;
+	return 1;
+}
+
+sub _get_commands
+{
+	my($self) = shift;
+	$self->_connect;
+	my(@commands,@notcommands);
+	print $sock "commands\n";
+	foreach($self->_process_feedback)
+	{
+		push @commands, $1 if /^command: (.+)$/;
+	}
+	print $sock "notcommands\n";
+	foreach($self->_process_feedback)
+	{
+		push @notcommands, $1 if /^command: (.+)$/;
+	}
+	$self->{commands} = \@commands;
+	$self->{notcommands} = \@notcommands;
+	return 1;
+}
+
 #-------------------------------------------#
 #           INTERNAL METHODS - END          #
 #-------------------------------------------#
@@ -324,7 +370,6 @@ sub set_random
 	# If mode is not set, shift the current status
 	$mode = ($self->{random} == 1 ? 0 : 1) if !defined($mode);
 	
-	print "random $mode\n";
   print $sock "random $mode\n";
 	$self->{random} = $mode;
   return $self->_process_feedback;
@@ -356,6 +401,28 @@ sub set_volume
 	print $sock "setvol $volume\n";
 	$self->{volume} = $volume;
 	return $self->_process_feedback;
+}
+
+sub output_enable
+{
+	my($self,$output) = @_;
+	$self->_connect;
+	return undef if(!defined($output) || $output !~ /^\d+$/);
+	print $sock "enableoutput $output\n";
+	my @tmp = $self->_process_feedback;
+	$self->_get_outputs;
+	return @tmp;
+}
+
+sub output_disable
+{
+	my($self,$output) = @_;
+	$self->_connect;
+	return undef if(!defined($output) || $output !~ /^\d+$/);
+	print $sock "disableoutput $output\n";
+	my @tmp = $self->_process_feedback;
+	$self->_get_outputs;
+	return @tmp;
 }
 
 ###############################################################
@@ -422,7 +489,7 @@ sub seek
 	if(defined($song) && defined($position) && $song =~ /^\d+$/ && $position =~ /^\d+$/)
 	{
 		print $sock "$command $song $position\n";
-	} elsif(defined($position) && $position =~ /\d+$/ && $self->{song}) {
+	} elsif(defined($position) && $position =~ /\d+$/ && defined($self->{song})) {
 		print $sock "$command ".$self->{song}." $position\n";
 	} else {
 		return undef;
@@ -783,5 +850,61 @@ sub crop
 	print $sock "command_list_end\n";
 	$self->_process_feedback;
 }
+
+sub get_time_info
+{
+  my ($self) = shift;
+
+  return '' if !defined($self->{playlistlength}) || !defined($self->{song});
+
+  #The return variable
+  my $rv = {};
+
+  $self->_connect;
+  $self->_get_status;
+
+  #Get the time from MPD; example: 49:395 (seconds so far:total seconds)
+  my($so_far,$total) = split /:/, $self->{'time'};
+  my $left = $total-$so_far;
+
+  #Store seconds for everything
+  $rv->{seconds_so_far} = $so_far;
+  $rv->{seconds_total}  = $total;
+  $rv->{seconds_left}   = $left;
+
+  #Store the percentage; use one decimal point
+  $rv->{percentage} =
+    $rv->{seconds_total}
+    ? 100*$rv->{seconds_so_far}/$rv->{seconds_total}
+    : 0;
+  $rv->{percentage} = sprintf "%.1f",$rv->{percentage};
+
+  #Parse the time so far
+  my $min_so_far = ($so_far / 60);
+  my $sec_so_far = ($so_far % 60);
+
+  $rv->{time_so_far} = sprintf "%d:%02d",
+    $min_so_far,
+    $sec_so_far;
+
+  #Parse the total time
+  my $min_tot = ($total / 60);
+  my $sec_tot = ($total % 60);
+
+  $rv->{time_total} = sprintf "%d:%02d",
+    $min_tot,
+    $sec_tot;
+
+  #Parse the time left
+  my $min_left = ($left / 60);
+  my $sec_left = ($left % 60);
+
+  $rv->{time_left} = sprintf "-%d:%02d",
+    $min_left,
+    $sec_left;
+
+  return $rv;
+}
+
 
 1;

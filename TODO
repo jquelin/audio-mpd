@@ -1,2 +1,8 @@
-Rewrite most code to be much more structured
-Write documentation
+Must:
+	Write documentation
+
+Maybe:
+	Make subs check for permissions before executing
+	Make it possible to use MPD.pm in "light"-mode:
+		For small clients/scripts
+		Don't fetch outputs, commands etc.

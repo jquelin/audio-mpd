@@ -1,5 +1,10 @@
 0.12.0-rc5 (No more fires!-release)
  - Fixed bug in save() (Thanks Laurent Monrouzies)
+ - Removed annoying line in set_random() (Thanks Dale Francum)
+ - Added get_time_info (Thanks Dale Francum)
+ - Removed 'use Data::Dumper;' from mpc.pl and MPD.pm
+ - Added support for new MPD-functions:
+ 'outputs', 'enableoutputs', 'disableoutputs', 'commands' and 'notcommands'
 
 0.12.0-rc4
  - Old bug where $playlist[0] contained undef removed again :)
