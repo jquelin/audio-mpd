@@ -234,17 +234,15 @@ sub _get_status
 {
 	my($self) = shift;
 	$self->_connect;
-	my $update_pl = 0;
 	print $sock "status\n";
+	$self->_get_playlist($self->{playlist}) if $playlist[0];
 	foreach($self->_process_feedback)
 	{
 		if(/^(.[^:]+):\s(.+)$/)
 		{
-			$update_pl = $2 if $1 eq 'playlist';
 	  	$self->{$1} = $2;
 		}
 	}
-	$self->_get_playlist($update_pl) if $playlist[0];
 	return 1;
 }
 
@@ -264,30 +262,16 @@ sub _get_playlist
 {
 	my($self,$old_playlist_id) = @_;
 	$self->_connect;
-	$old_playlist_id = -1 if !defined($old_playlist_id);
-	print $sock "plchanges $old_playlist_id\n";
-	my @tmp;
-	my %hash;
-	# Update playlist with new information
-	foreach($self->_process_feedback)
-	{
-		if(/^(.[^:]+):\s(.+)$/)
-		{
-			if($1 eq 'file')
-			{
-				$playlist[$hash{'Pos'}] = { %hash } if defined($hash{'Pos'});
-				%hash = ();
-			} 
-			$hash{$1} = $2;
-		}
+	my %changes = $self->playlist_changes($old_playlist_id);
+	for my $pos (keys %changes)
+  {
+  	warn $pos;
+		$playlist[$pos] = $changes{$pos};
 	}
-	$playlist[$hash{'Pos'}] = { %hash } if defined($hash{'Pos'});
 
 	# Deletes songs no longer in the playlist
-	for(my $i = ($#playlist - ($self->{playlistlength} -1)) ; $i != 0 ; $i--)
-	{
-		delete($playlist[$#playlist]);
-	}
+	pop @playlist while($#playlist > $self->{playlistlength} - 1);
+
 	return 1;
 }
 
@@ -804,7 +788,7 @@ sub playlist
 {
 	my($self) = shift;
 	$self->_connect;
-	$self->_get_playlist;
+	$self->_get_playlist if !defined($playlist[0]);
 	return \@playlist;
 }
 
@@ -907,5 +891,30 @@ sub get_time_info
   return $rv;
 }
 
+sub playlist_changes
+{
+  my($self,$old_playlist_id) = @_;
+  $old_playlist_id = -1 if !defined($old_playlist_id);
+  my %changeset;
+
+  $self->_connect;
+  print $sock "plchanges $old_playlist_id\n";
+  my $changedEntry; # hash reference
+  foreach($self->_process_feedback)
+    {
+      if(/^(.[^:]+):\s(.+)$/)
+    {
+      my($key, $value) = ($1, $2);
+      # create a new hash for the start of each entry
+      $changedEntry = {} if($key eq 'file');
+      # save a ref to the entry as soon as we know where it goes
+      $changeset{$value} = $changedEntry if $key eq 'Pos';
+      # save all attributes of the entry
+      $changedEntry->{$key} = $value;
+    }
+    }
+
+  return %changeset;
+}
 
 1;
