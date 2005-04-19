@@ -127,7 +127,7 @@ sub is_connected
 sub close_connection
 {
 	my($self) = shift;
-	print $sock "close\n";
+	print $sock "close\n" if $sock;
 	return 1;
 }
 
@@ -265,7 +265,6 @@ sub _get_playlist
 	my %changes = $self->playlist_changes($old_playlist_id);
 	for my $pos (keys %changes)
   {
-  	warn $pos;
 		$playlist[$pos] = $changes{$pos};
 	}
 
@@ -474,7 +473,7 @@ sub seek
 	if(defined($song) && defined($position) && $song =~ /^\d+$/ && $position =~ /^\d+$/)
 	{
 		print $sock "$command $song $position\n";
-	} elsif(defined($position) && $position =~ /\d+$/ && defined($self->{song})) {
+	} elsif(defined($position) && $position =~ /^\d+$/ && defined($self->{song})) {
 		print $sock "$command ".$self->{song}." $position\n";
 	} else {
 		return undef;
