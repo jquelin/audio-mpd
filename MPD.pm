@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 # MPD perl module
-# Written for MPD 0.11.1
+# Written for MPD 0.12.0 (SVN)
 #
 # Written by: Tue Abrahamsen (twoface@wtf.dk)
 # This project's homepage is: http://www.musicpd.org
@@ -24,7 +24,7 @@
 package MPD;
 use strict;
 use IO::Socket;
-use constant VERSION => '0.12.0-rc5';
+use constant VERSION => '0.12.0-rc6';
 
 # Socket handle
 my $sock;
@@ -215,7 +215,7 @@ sub _process_feedback
 	{
 		chomp;
 		# Did we cause an error? Save the data!
-		if(/^ACK \[(\d+)\@(\d+)\] {(.+)} (.+)$/)
+		if(/^ACK \[(\d+)\@(\d+)\] {(.*)} (.+)$/)
 		{
 	    $self->{ack_error_id} = $1;
 	    $self->{ack_error_command_id} = $2;
@@ -283,6 +283,7 @@ sub _get_outputs
 	my %output;
 	foreach($self->_process_feedback)
 	{
+		next if !defined;
 		if(/^outputid:/)
 		{
 			push @outputs, { %output } if %output;
@@ -303,11 +304,13 @@ sub _get_commands
 	print $sock "commands\n";
 	foreach($self->_process_feedback)
 	{
+		next if !defined;
 		push @commands, $1 if /^command: (.+)$/;
 	}
 	print $sock "notcommands\n";
 	foreach($self->_process_feedback)
 	{
+		next if !defined;
 		push @notcommands, $1 if /^command: (.+)$/;
 	}
 	$self->{commands} = \@commands;
@@ -758,6 +761,18 @@ sub get_song_info
 	return %metadata;
 }
 
+sub get_current_song_info
+{
+	my($self) = @_;
+ 	print $sock "currentsong\n";
+	my %metadata;
+	foreach($self->_process_feedback)
+	{
+  	$metadata{$1} = $2 if /^(.[^:]+):\s(.+)$/;
+	}
+	return %metadata;
+}
+
 sub get_song_info_from_id
 {
 	my($self,$song) = @_;
@@ -799,16 +814,22 @@ sub playlist
 sub get_title
 {
 	my($self,$song) = @_;
-	$self->_connect;
-	$self->_get_status;
-	my $info;
-	$info = $self->{song} unless !defined($self->{song}) || $self->{song} =~ /^\D+$/;
-	$info = $song unless !defined($song) || $song =~ /^\D+$/;
-	return 'n/a' if !defined($info);
-	return '' if !defined($self->{playlistlength}) || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
-	my %metadata = $self->get_song_info($info);
-	return $metadata{'Artist'}.' - '.$metadata{'Title'} if $metadata{'Artist'} && $metadata{'Title'};
-	return $metadata{'file'};
+	my %metadata;
+	if(defined($song)) {
+		$self->_connect;
+		$self->_get_status;
+		my $info;
+		$info = $self->{song} unless !defined($self->{song}) || $self->{song} =~ /^\D+$/;
+		$info = $song unless $song =~ /^\D+$/;
+		return 'n/a' if !defined($info);
+		return '' if !defined($self->{playlistlength}) || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
+		%metadata = $self->get_song_info($info);
+	} else {
+		%metadata = $self->get_current_song_info();
+	}
+  return $metadata{'Artist'}.' - '.$metadata{'Title'} if $metadata{'Artist'} && $metadata{'Title'};
+	return $metadata{'Title'} if $metadata{'Title'};
+  return $metadata{'file'};
 }
 
 sub get_time_format

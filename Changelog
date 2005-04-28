@@ -3,18 +3,22 @@
  - mpc.pl now says that 'seek' is in seconds instead of percentage
  - Fixed bug in close()
  - Removed warn() in _get_playlist()
+ - Made MPD.pm more backwards compatible (Martin Stolle)
+ - Added get_current_song_info() (Martin Stolle)
+ - Made internal sub _process_feedback() more robust (Martin Stolle)
+ - Update get_title() to be more flexible (Martin Stolle)
 
 0.12.0-rc5 (No more fires!-release)
- - Fixed bug in save() (Thanks Laurent Monrouzies)
- - Removed annoying line in set_random() (Thanks Dale Francum)
+ - Fixed bug in save() (Laurent Monrouzies)
+ - Removed annoying line in set_random() (Dale Francum)
  - Added get_time_info (Thanks Dale Francum)
  - Removed 'use Data::Dumper;' from mpc.pl and MPD.pm
  - Added support for new MPD-functions:
  'outputs', 'enableoutputs', 'disableoutputs', 'commands' and 'notcommands'
  - Fixed bug in get_title() where old title would get returned
- - Fixed bug where playlist was not updated (Thanks hannes)
- - Added playlist_changes() so clients can update their playlist (Thanks hannes)
- - Updated _get_playlist() (Thanks hannes)
+ - Fixed bug where playlist was not updated (hannes)
+ - Added playlist_changes() so clients can update their playlist (hannes)
+ - Updated _get_playlist() (hannes)
 
 0.12.0-rc4
  - Old bug where $playlist[0] contained undef removed again :)

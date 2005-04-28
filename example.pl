@@ -14,13 +14,17 @@ print("volume: ".$x->{volume}."%  repeat: ".$x->{repeat}."   random: ".$x->{rand
 
 print "\n\nExample: Shows list of all files, directories and playlists in a specific directory.\n";
 
-my @array = $x->listallinfo('Alternative');
+
+
+my @array = $x->listallinfo('Misc');
 foreach(@array)
 {
 	print $_->{'file'} || $_->{'directory'} || $_->{'playlist'},"\n";
 }
 
+
+
 print "\n\nExample: Shows how to get information from the playlist. \@playlist is a reference, so don't change it :)\n\n";
 my $playlist = $x->playlist;
 print "Song 42 filename: ".$playlist->[42]{'file'}."\n";
-print "Song 13 time: ".$playlist->[13]{'Time'}."\n";
+print "Song 13 time: ".$playlist->[13]{'Time'}." seconds\n";

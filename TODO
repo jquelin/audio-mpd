@@ -2,6 +2,7 @@ Must:
 	Write documentation
 
 Maybe:
+	More errorhandling
 	Make subs check for permissions before executing
 	Make it possible to use MPD.pm in "light"-mode:
 		For small clients/scripts
