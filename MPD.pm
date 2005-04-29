@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 #
 # MPD perl module
 # Written for MPD 0.12.0 (SVN)
@@ -23,6 +23,7 @@
 #
 package MPD;
 use strict;
+use warnings;
 use IO::Socket;
 use constant VERSION => '0.12.0-rc6';
 
@@ -174,7 +175,7 @@ sub get_error
 
 sub END
 {
-	print $sock "close\n";
+	print $sock "close\n" if $sock;
 }
 
 #-------------------------------------------#
