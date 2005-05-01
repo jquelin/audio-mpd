@@ -1,3 +1,7 @@
+0.12.0-rc7
+ - better password-handling, including possibility to connect to
+ password@mpdhost (William Pettersson)
+
 0.12.0-rc6
  - get_song_info() now uses current song, if none is specified
  - mpc.pl now says that 'seek' is in seconds instead of percentage

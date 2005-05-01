@@ -104,7 +104,12 @@ sub new
 		notcommands => undef,
 	};
 	bless($self);
+	if($self->{mpd_host} =~ /@/)
+	{
+		($self->{password},$self->{mpd_host}) = split('@',$self->{mpd_host});
+	}
 	$self->_connect;
+	$self->send_password if $self->{password};
 	return $self;
 }
 
@@ -202,6 +207,7 @@ sub _connect
 	} else {
 		die("Could not connect: $!\n");
 	}
+	$self->send_password if $self->{password};
 	$self->_get_status;
 	$self->_get_outputs;
 	$self->_get_commands;
