@@ -913,6 +913,9 @@ sub get_time_info
   $rv->{time_total} = sprintf "%d:%02d",
     $min_tot,
     $sec_tot;
+	
+	$rv->{minutes} = $min_tot;
+	$rv->{seconds} = $sec_tot;
 
   #Parse the time left
   my $min_left = ($left / 60);
