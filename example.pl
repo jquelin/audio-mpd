@@ -2,6 +2,11 @@
 use strict;
 use Data::Dumper;
 
+### NOTE! ###
+# THIS SCRIPT DOES NOT CONTAIN ERRORHANDLING, AND MAY THEREFORE FAIL ON
+# CERTAIN ACTIONS
+############
+
 die("MPD.pm not found!\n") unless -f "MPD.pm";
 require("MPD.pm");
 
@@ -26,5 +31,10 @@ foreach(@array)
 
 print "\n\nExample: Shows how to get information from the playlist. \@playlist is a reference, so don't change it :)\n\n";
 my $playlist = $x->playlist;
-print "Song 42 filename: ".$playlist->[42]{'file'}."\n";
-print "Song 13 time: ".$playlist->[13]{'Time'}." seconds\n";
+print "Song 1 filename: ".$playlist->[1]{'file'}."\n";
+print "Song 2 time: ".$playlist->[2]{'Time'}." seconds\n";
+
+my $foo = $x->get_time_info;
+print "Current song info: \n";
+print "Minutes: ".$foo->{'minutes_so_far'}."\n";
+print "Seconds: ".$foo->{'seconds_so_far'}."\n";

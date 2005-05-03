@@ -878,7 +878,6 @@ sub get_time_info
   my $rv = {};
 
   $self->_connect;
-  $self->_get_status;
 
   #Get the time from MPD; example: 49:395 (seconds so far:total seconds)
   my($so_far,$total) = split /:/, $self->{'time'};
@@ -904,6 +903,9 @@ sub get_time_info
     $min_so_far,
     $sec_so_far;
 
+	$rv->{minutes_so_far} = sprintf "%00d", $min_so_far;
+	$rv->{seconds_so_far} = (length($sec_so_far) == 1 ? "0$sec_so_far" : $sec_so_far);
+
   #Parse the total time
   my $min_tot = ($total / 60);
   my $sec_tot = ($total % 60);
@@ -914,7 +916,7 @@ sub get_time_info
 
   #Parse the time left
   my $min_left = ($left / 60);
-	my $sec_left;
+	my $sec_left = ($left % 60);
   $rv->{time_left} = sprintf "-%d:%02d",
     $min_left,
     $sec_left;
