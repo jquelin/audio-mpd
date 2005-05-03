@@ -45,8 +45,8 @@ my %config = (
 				# name. Otherwise, an error is returned. Default: yes
 				OVERWRITE_PLAYLIST => 1,
 				# Allows toggling repeat and random states by not specifying
-				# parameteres. Default: no
-				ALLOW_TOGGLE_STATES => 0,
+				# parameteres. Default: yes
+				ALLOW_TOGGLE_STATES => 1,
 				# The default host to connect to, if no other host is specified.
 				DEFAULT_MPD_HOST => 'localhost',
 				# The default port to connect to, if no other port is specified.

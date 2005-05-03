@@ -2,6 +2,7 @@
  - better password-handling, including possibility to connect to
  password@mpdhost (William Pettersson)
  - made get_time_info work, and added more to the output
+ - made ALLOW_TOGGLE_STATES 1 by default
 
 0.12.0-rc6
  - get_song_info() now uses current song, if none is specified
