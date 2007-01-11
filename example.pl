@@ -5,7 +5,7 @@ use Data::Dumper;
 ### NOTE! ###
 # THIS SCRIPT DOES NOT CONTAIN ERRORHANDLING, AND MAY THEREFORE FAIL ON
 # CERTAIN ACTIONS
-############
+#############
 
 die("MPD.pm not found!\n") unless -f "MPD.pm";
 require("MPD.pm");
