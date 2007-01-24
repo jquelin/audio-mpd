@@ -839,6 +839,16 @@ sub _connect
     return 1;
 }
 
+sub _disconnect
+{
+    my($self) = shift;
+
+    if ($self->{sock}) {
+        $self->{sock}->print("close\n") ;
+        $self->{sock}->close();
+    }
+}
+
 sub _process_feedback
 {
     my($self) = shift;
@@ -948,6 +958,14 @@ sub _get_commands
     $self->{commands} = \@commands;
     $self->{notcommands} = \@notcommands;
     return 1;
+}
+
+
+sub DESTROY
+{
+    my($self) = shift;
+
+    $self->_disconnect();
 }
 
 #-------------------------------------------#
