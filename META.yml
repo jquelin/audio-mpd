@@ -1,0 +1,19 @@
+---
+name: Audio-MPD
+version: 0.12.3
+author:
+  - Written by Tue Abrahamsen (twoface@wtf.dk)
+  - 'Documented by Nicholas J. Humfrey, njh@aelius.com'
+abstract: Class for talking to MPD (Music Player Daemon) servers
+license: gpl
+resources:
+  license: http://www.opensource.org/licenses/gpl-license.php
+requires:
+  IO::Socket: 1.00
+  Test: 1.00
+build_requires:
+  Module::Build: 0.20
+generated_by: Module::Build version 0.2806
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
