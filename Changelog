@@ -1,3 +1,21 @@
+0.12.3 (Nicholas J Humfrey)
+ - Added Makefile.PL support
+
+0.12.2 (Nicholas J Humfrey)
+ - Fixed bug in parsing parmeters in pause()
+
+0.12.0-rc7+njh (Nicholas J Humfrey)
+ - Moved $sock and @playlists into object so that you can talk to 
+   multiple MPDs in the same script.
+ - Added Module::Build based build/install system
+ - Changed namespace to Audio::MPD so that it can be added to CPAN
+ - Documented class
+ - Changing 'END' handler to 'DESTROY'
+ - Changed <$sock> to $sock->getline
+ - Changed print $sock "foo" to $sock->print("foo")
+ - Corrected pause() so that it didn't use depricated lack of argument
+ - Added optional path parameter to updatedb()
+ 
 0.12.0-rc7
  - better password-handling, including possibility to connect to
  password@mpdhost (William Pettersson)
