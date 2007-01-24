@@ -183,151 +183,6 @@ sub END
     print $sock "close\n" if $sock;
 }
 
-#-------------------------------------------#
-#             INTERNAL METHODS              #
-#-------------------------------------------#
-# This sub-section is only used for methods #
-# not meant to be accessed from the outside.#
-#-------------------------------------------#
-
-sub _connect
-{
-    my($self) = shift;
-    return 1 if $self->is_connected;
-    $sock = new IO::Socket::INET
-    (
-        PeerAddr => $self->{mpd_host},
-        PeerPort => $self->{mpd_port},
-        Proto => 'tcp',
-    );
-    die("Could not create socket: $!\n") unless $sock;
-    if(<$sock> =~ /^OK MPD (.+)$/)
-    {
-        $self->{version} = $1;
-    } else {
-        die("Could not connect: $!\n");
-    }
-    $self->send_password if $self->{password};
-    $self->_get_status;
-    $self->_get_outputs;
-    $self->_get_commands;
-    return 1;
-}
-
-sub _process_feedback
-{
-    my($self) = shift;
-    my @output;
-    while(<$sock>)
-    {
-        chomp;
-        # Did we cause an error? Save the data!
-        if(/^ACK \[(\d+)\@(\d+)\] {(.*)} (.+)$/)
-        {
-        $self->{ack_error_id} = $1;
-        $self->{ack_error_command_id} = $2;
-      $self->{ack_error_command} = $3;
-        $self->{ack_error} = $4;
-            return undef;
-        }
-        last if /^OK/;
-        push @output, $_;
-    }
-    # Let's return the output for post-processing
-    return @output;
-}
-
-sub _get_status
-{
-    my($self) = shift;
-    $self->_connect;
-    print $sock "status\n";
-    $self->_get_playlist($self->{playlist}) if $playlist[0];
-    foreach($self->_process_feedback)
-    {
-        if(/^(.[^:]+):\s(.+)$/)
-        {
-        $self->{$1} = $2;
-        }
-    }
-    return 1;
-}
-
-sub _get_stats
-{
-    my($self) = shift;
-    $self->_connect;
-    print $sock "stats\n";
-    foreach($self->_process_feedback)
-    {
-        $self->{$1} = $2 if /^(.[^:]+):\s(.+)$/;
-    }
-    return 1;
-}
-
-sub _get_playlist
-{
-    my($self,$old_playlist_id) = @_;
-    $self->_connect;
-    my %changes = $self->playlist_changes($old_playlist_id);
-    for my $pos (keys %changes)
-  {
-        $playlist[$pos] = $changes{$pos};
-    }
-
-    # Deletes songs no longer in the playlist
-    pop @playlist while($#playlist > $self->{playlistlength} - 1);
-
-    return 1;
-}
-
-sub _get_outputs
-{
-    my($self) = shift;
-    $self->_connect;
-    print $sock "outputs\n";
-    my @outputs;
-    my %output;
-    foreach($self->_process_feedback)
-    {
-        next if !defined;
-        if(/^outputid:/)
-        {
-            push @outputs, { %output } if %output;
-            %output = ();
-        }
-        $output{$1} = $2 if /^output(.+): (.+)$/;
-    }
-    push @outputs, { %output } if %output;
-    $self->{outputs} = \@outputs;
-    return 1;
-}
-
-sub _get_commands
-{
-    my($self) = shift;
-    $self->_connect;
-    my(@commands,@notcommands);
-    print $sock "commands\n";
-    foreach($self->_process_feedback)
-    {
-        next if !defined;
-        push @commands, $1 if /^command: (.+)$/;
-    }
-    print $sock "notcommands\n";
-    foreach($self->_process_feedback)
-    {
-        next if !defined;
-        push @notcommands, $1 if /^command: (.+)$/;
-    }
-    $self->{commands} = \@commands;
-    $self->{notcommands} = \@notcommands;
-    return 1;
-}
-
-#-------------------------------------------#
-#           INTERNAL METHODS - END          #
-#-------------------------------------------#
 
 ###############################################################
 #               METHODS FOR ALTERING SETTINGS                 #
@@ -952,6 +807,152 @@ sub playlist_changes
 
   return %changeset;
 }
+
+#-------------------------------------------#
+#             INTERNAL METHODS              #
+#-------------------------------------------#
+# This sub-section is only used for methods #
+# not meant to be accessed from the outside.#
+#-------------------------------------------#
+
+sub _connect
+{
+    my($self) = shift;
+    return 1 if $self->is_connected;
+    $sock = new IO::Socket::INET
+    (
+        PeerAddr => $self->{mpd_host},
+        PeerPort => $self->{mpd_port},
+        Proto => 'tcp',
+    );
+    die("Could not create socket: $!\n") unless $sock;
+    if(<$sock> =~ /^OK MPD (.+)$/)
+    {
+        $self->{version} = $1;
+    } else {
+        die("Could not connect: $!\n");
+    }
+    $self->send_password if $self->{password};
+    $self->_get_status;
+    $self->_get_outputs;
+    $self->_get_commands;
+    return 1;
+}
+
+sub _process_feedback
+{
+    my($self) = shift;
+    my @output;
+    while(<$sock>)
+    {
+        chomp;
+        # Did we cause an error? Save the data!
+        if(/^ACK \[(\d+)\@(\d+)\] {(.*)} (.+)$/)
+        {
+        $self->{ack_error_id} = $1;
+        $self->{ack_error_command_id} = $2;
+      $self->{ack_error_command} = $3;
+        $self->{ack_error} = $4;
+            return undef;
+        }
+        last if /^OK/;
+        push @output, $_;
+    }
+    # Let's return the output for post-processing
+    return @output;
+}
+
+sub _get_status
+{
+    my($self) = shift;
+    $self->_connect;
+    print $sock "status\n";
+    $self->_get_playlist($self->{playlist}) if $playlist[0];
+    foreach($self->_process_feedback)
+    {
+        if(/^(.[^:]+):\s(.+)$/)
+        {
+        $self->{$1} = $2;
+        }
+    }
+    return 1;
+}
+
+sub _get_stats
+{
+    my($self) = shift;
+    $self->_connect;
+    print $sock "stats\n";
+    foreach($self->_process_feedback)
+    {
+        $self->{$1} = $2 if /^(.[^:]+):\s(.+)$/;
+    }
+    return 1;
+}
+
+sub _get_playlist
+{
+    my($self,$old_playlist_id) = @_;
+    $self->_connect;
+    my %changes = $self->playlist_changes($old_playlist_id);
+    for my $pos (keys %changes)
+  {
+        $playlist[$pos] = $changes{$pos};
+    }
+
+    # Deletes songs no longer in the playlist
+    pop @playlist while($#playlist > $self->{playlistlength} - 1);
+
+    return 1;
+}
+
+sub _get_outputs
+{
+    my($self) = shift;
+    $self->_connect;
+    print $sock "outputs\n";
+    my @outputs;
+    my %output;
+    foreach($self->_process_feedback)
+    {
+        next if !defined;
+        if(/^outputid:/)
+        {
+            push @outputs, { %output } if %output;
+            %output = ();
+        }
+        $output{$1} = $2 if /^output(.+): (.+)$/;
+    }
+    push @outputs, { %output } if %output;
+    $self->{outputs} = \@outputs;
+    return 1;
+}
+
+sub _get_commands
+{
+    my($self) = shift;
+    $self->_connect;
+    my(@commands,@notcommands);
+    print $sock "commands\n";
+    foreach($self->_process_feedback)
+    {
+        next if !defined;
+        push @commands, $1 if /^command: (.+)$/;
+    }
+    print $sock "notcommands\n";
+    foreach($self->_process_feedback)
+    {
+        next if !defined;
+        push @notcommands, $1 if /^command: (.+)$/;
+    }
+    $self->{commands} = \@commands;
+    $self->{notcommands} = \@notcommands;
+    return 1;
+}
+
+#-------------------------------------------#
+#           INTERNAL METHODS - END          #
+#-------------------------------------------#
 
 1;
 
