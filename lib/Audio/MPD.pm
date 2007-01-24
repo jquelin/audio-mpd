@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# trunk
+# 0.12.3
 # MPD perl module
 # Written for MPD 0.12.0 (SVN)
 #
@@ -21,16 +21,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-package MPD;
-use strict;
-use warnings;
+package Audio::MPD;
 use IO::Socket;
-use constant VERSION => '0.12.0-rc6';
+use warnings;
+use strict;
 
-# Socket handle
-my $sock;
-# Array holding playlist-entries in hashes
-my @playlist;
+our $VERSION = '0.12.3';
+
+
 
 ###############################################################
 #                        CONFIGURATION                        #
@@ -41,17 +39,18 @@ my @playlist;
 ###############################################################
 
 my %config = (
-                # Overwrites old playlist, if a playlist is saved with the same
-                # name. Otherwise, an error is returned. Default: yes
-                OVERWRITE_PLAYLIST => 1,
-                # Allows toggling repeat and random states by not specifying
-                # parameteres. Default: yes
-                ALLOW_TOGGLE_STATES => 1,
-                # The default host to connect to, if no other host is specified.
-                DEFAULT_MPD_HOST => 'localhost',
-                # The default port to connect to, if no other port is specified.
-                DEFAULT_MPD_PORT => 6600,
-            );
+    # Overwrites old playlist, if a playlist is saved with the same
+    # name. Otherwise, an error is returned. Default: yes
+    OVERWRITE_PLAYLIST => 1,
+    # Allows toggling repeat and random states by not specifying
+    # parameteres. Default: yes
+    ALLOW_TOGGLE_STATES => 1,
+    # The default host to connect to, if no other host is specified.
+    DEFAULT_MPD_HOST => 'localhost',
+    # The default port to connect to, if no other port is specified.
+    DEFAULT_MPD_PORT => 6600,
+);
+
 
 ###############################################################
 #                       BASIC METHODS                         #
@@ -63,11 +62,12 @@ my %config = (
 
 sub new
 {
-    my($self,$mpd_host,$mpd_port) = @_;
-    $self = {
-        # Variables set by class
-        module_version => VERSION,
-        mpd_version => undef,
+    my $class = shift;
+    my($mpd_host,$mpd_port) = @_;
+
+    my $self = {
+        # Version of MPD server
+        server_version => undef,
         password => undef,
         # Variables for ACK error
         ack_error_id => undef,
@@ -77,6 +77,10 @@ sub new
         # MPD connection information
         mpd_host => $mpd_host || $ENV{'MPD_HOST'} || $config{'DEFAULT_MPD_HOST'},
         mpd_port => $mpd_port || $ENV{'MPD_PORT'} || $config{'DEFAULT_MPD_PORT'},
+        # Socket handle
+        sock => undef,
+        # Array holding playlist-entries in hashes
+        playlistref => [],
         # Variables set by command 'status'
         volume => undef,
         repeat => undef,
@@ -103,11 +107,14 @@ sub new
         commands => undef,
         notcommands => undef,
     };
-    bless($self);
+    bless($self,$class);
+
+    # Check for password in host name
     if($self->{mpd_host} =~ /@/)
     {
         ($self->{password},$self->{mpd_host}) = split('@',$self->{mpd_host});
     }
+
     $self->_connect;
     $self->send_password if $self->{password};
     return $self;
@@ -117,10 +124,10 @@ sub is_connected
 {
     my($self) = shift;
     # No need to check, if socket has not been initialized
-    if($sock)
+    if($self->{sock})
     {
-        print $sock "ping\n";
-        if(<$sock> =~ /^OK/)
+        $self->{sock}->print("ping\n");
+        if($self->{sock}->getline() =~ /^OK/)
         {
             return 1;
         } else {
@@ -133,7 +140,7 @@ sub is_connected
 sub close_connection
 {
     my($self) = shift;
-    print $sock "close\n" if $sock;
+    $self->_disconnect();
     return 1;
 }
 
@@ -141,7 +148,7 @@ sub kill_mpd
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "kill\n";
+    $self->{sock}->print("kill\n");
     return 1;
 }
 
@@ -149,7 +156,7 @@ sub send_password
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "password ".$self->{password}."\n";
+    $self->{sock}->print("password ".$self->{password}."\n");
     $self->_process_feedback;
     return 1;
 }
@@ -159,10 +166,10 @@ sub get_urlhandlers
     my($self) = shift;
     $self->_connect;
     my @handlers;
-    print $sock "urlhandlers\n";
+    $self->{sock}->print("urlhandlers\n");
     foreach($self->_process_feedback)
     {
-        push @handlers, $1 if /^handler: (.+)$/;
+        push(@handlers, $1) if /^handler: (.+)$/;
     }
     return @handlers;
 }
@@ -170,17 +177,18 @@ sub get_urlhandlers
 sub get_error
 {
     my($self) = shift;
-    return (                                                    # Let's return an array
-            $self->{ack_error_id},              # [0] What is the ID of the error?
-            $self->{ack_error},                     # [1] Human readable error-message
-            $self->{ack_error_command},     # [2] The command that caused the error
-            $self->{ack_error_command_id}   # [3] What number the command was in the command_list (if used)
-        );
+    return (                            # Let's return an array
+        $self->{ack_error_id},          # [0] What is the ID of the error?
+        $self->{ack_error},             # [1] Human readable error-message
+        $self->{ack_error_command},     # [2] The command that caused the error
+        $self->{ack_error_command_id}   # [3] What number the command was in the command_list (if used)
+    );
 }
 
-sub END
+sub get_server_version
 {
-    print $sock "close\n" if $sock;
+    my($self) = shift;
+    return $self->{server_version};
 }
 
 
@@ -202,7 +210,7 @@ sub set_repeat
     # If mode is not set, shift the current status
     $mode = ($self->{repeat} == 1 ? 0 : 1) if !defined($mode);
 
-    print $sock "repeat $mode\n";
+    $self->{sock}->print("repeat $mode\n");
     $self->{repeat} = $mode;
     return $self->_process_feedback;
 }
@@ -218,9 +226,9 @@ sub set_random
     # If mode is not set, shift the current status
     $mode = ($self->{random} == 1 ? 0 : 1) if !defined($mode);
 
-  print $sock "random $mode\n";
+    $self->{sock}->print("random $mode\n");
     $self->{random} = $mode;
-  return $self->_process_feedback;
+    return $self->_process_feedback;
 }
 
 sub set_fade
@@ -228,7 +236,7 @@ sub set_fade
     my($self,$fade_value) = @_;
     $self->_connect;
     $fade_value = 0 if !defined($fade_value);
-    print $sock "crossfade $fade_value\n";
+    $self->{sock}->print("crossfade $fade_value\n");
     $self->{xfade} = $fade_value;
     return $self->_process_feedback;
 }
@@ -246,7 +254,7 @@ sub set_volume
 
     return undef if !defined($volume) || $volume < 0 || $volume > 100;
 
-    print $sock "setvol $volume\n";
+    $self->{sock}->print("setvol $volume\n");
     $self->{volume} = $volume;
     return $self->_process_feedback;
 }
@@ -256,7 +264,7 @@ sub output_enable
     my($self,$output) = @_;
     $self->_connect;
     return undef if(!defined($output) || $output !~ /^\d+$/);
-    print $sock "enableoutput $output\n";
+    $self->{sock}->print("enableoutput $output\n");
     my @tmp = $self->_process_feedback;
     $self->_get_outputs;
     return @tmp;
@@ -267,7 +275,7 @@ sub output_disable
     my($self,$output) = @_;
     $self->_connect;
     return undef if(!defined($output) || $output !~ /^\d+$/);
-    print $sock "disableoutput $output\n";
+    $self->{sock}->print("disableoutput $output\n");
     my @tmp = $self->_process_feedback;
     $self->_get_outputs;
     return @tmp;
@@ -286,7 +294,7 @@ sub play
     $self->_connect;
     $number = '' if !defined($number);
     my $command = (defined($from_id) && $from_id == 1 ? 'playid' : 'play');
-    print $sock "$command $number\n";
+    $self->{sock}->print("$command $number\n");
     return $self->_process_feedback;
 }
 
@@ -299,9 +307,13 @@ sub playid
 
 sub pause
 {
-    my($self) = shift;
+    my($self,$state) = @_;
+
+    # Default is to pause
+    $state = 1 unless (defined $state);
+
     $self->_connect;
-    print $sock "pause\n";
+    $self->{sock}->print("pause $state\n");
     return $self->_process_feedback;
 }
 
@@ -309,7 +321,7 @@ sub stop
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "stop\n";
+    $self->{sock}->print("stop\n");
     return $self->_process_feedback;
 }
 
@@ -317,7 +329,7 @@ sub next
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "next\n";
+    $self->{sock}->print("next\n");
     return $self->_process_feedback;
 }
 
@@ -325,7 +337,7 @@ sub prev
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "previous\n";
+    $self->{sock}->print("previous\n");
     return $self->_process_feedback;
 }
 
@@ -337,9 +349,9 @@ sub seek
     $position = int($position) if(defined($position)); # Go INT!
     if(defined($song) && defined($position) && $song =~ /^\d+$/ && $position =~ /^\d+$/)
     {
-        print $sock "$command $song $position\n";
+        $self->{sock}->print("$command $song $position\n");
     } elsif(defined($position) && $position =~ /^\d+$/ && defined($self->{song})) {
-        print $sock "$command ".$self->{song}." $position\n";
+        $self->{sock}->print("$command ".$self->{song}." $position\n");
     } else {
         return undef;
     }
@@ -348,7 +360,7 @@ sub seek
 
 sub seekid
 {
-  my($self,$position,$songid) = @_;
+    my($self,$position,$songid) = @_;
     return undef if !defined($position) || !defined($songid);
     return $self->seek($position,$songid,1);
 }
@@ -364,7 +376,7 @@ sub clear
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "clear\n";
+    $self->{sock}->print("clear\n");
     return $self->_process_feedback;
 }
 
@@ -373,7 +385,7 @@ sub add
     my($self,$path) = @_;
     $self->_connect;
     $path = '' if !defined($path);
-    print $sock "add \"$path\"\n";
+    $self->{sock}->print("add \"$path\"\n");
     return $self->_process_feedback;
 }
 
@@ -390,7 +402,7 @@ sub delete
             $self->$command($i);
         }
     } else {
-        print $sock "$command $song\n";
+        $self->{sock}->print("$command $song\n");
         return $self->_process_feedback;
     }
     return 1;
@@ -398,8 +410,8 @@ sub delete
 
 sub deleteid
 {
-  my($self,$songid) = @_;
-  return undef if !defined($songid) || $songid !~ /^\d+$/;
+    my($self,$songid) = @_;
+    return undef if !defined($songid) || $songid !~ /^\d+$/;
     return $self->delete($songid,1);
 }
 
@@ -408,15 +420,18 @@ sub load
     my($self,$playlist) = @_;
     return undef if !defined($playlist);
     $self->_connect;
-    print $sock "load \"$playlist\"\n";
+    $self->{sock}->print("load \"$playlist\"\n");
     return $self->_process_feedback;
 }
 
 sub updatedb
 {
-    my($self) = shift;
+    my($self, $path) = shift;
+
+    $path = '' unless (defined $path);
+
     $self->_connect;
-    print $sock "update\n";
+    $self->{sock}->print("update $path\n");
     return $self->_process_feedback;
 }
 
@@ -427,7 +442,7 @@ sub swap
     if(defined($song_from) && defined($song_to) && $song_from =~ /^\d+$/ && $song_to =~ /^\d+$/)
     {
         my $command = (defined($from_id) && $from_id == 1 ? 'swapid' : 'swap');
-        print $sock "$command $song_from $song_to\n";
+        $self->{sock}->print("$command $song_from $song_to\n");
     } else {
         return undef;
     }
@@ -436,7 +451,7 @@ sub swap
 
 sub swapid
 {
-  my($self,$songid_from,$songid_to) = @_;
+    my($self,$songid_from,$songid_to) = @_;
     return undef if !defined($songid_from) || !defined($songid_to) || $songid_from !~ /^\d+$/ || $songid_to !~ /^\d+$/;
     return $self->swap($songid_from,$songid_to,1);
 }
@@ -445,7 +460,7 @@ sub shuffle
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "shuffle\n";
+    $self->{sock}->print("shuffle\n");
     return $self->_process_feedback;
 }
 
@@ -456,7 +471,7 @@ sub move
     if(defined($song) && defined($new_pos) && $song =~ /^\d+$/ && $new_pos =~ /^\d+$/)
     {
         my $command = (defined($from_id) && $from_id == 1 ? 'moveid' : 'move');
-        print $sock "$command $song $new_pos\n";
+        $self->{sock}->print("$command $song $new_pos\n");
     } else {
         return undef;
     }
@@ -465,7 +480,7 @@ sub move
 
 sub moveid
 {
-  my($self,$songid,$new_pos) = @_;
+    my($self,$songid,$new_pos) = @_;
     return undef if !defined($songid) || !defined($new_pos) || $songid !~ /^\d+$/ || $new_pos !~ /^\d+$/;
     return $self->move($songid,$new_pos,1);
 }
@@ -475,7 +490,7 @@ sub rm
     my($self,$playlist) = @_;
     return undef if !defined($playlist);
     $self->_connect;
-    print $sock "rm \"$playlist\"\n";
+    $self->{sock}->print("rm \"$playlist\"\n");
     return $self->_process_feedback;
 }
 
@@ -484,7 +499,7 @@ sub save
     my($self,$playlist) = @_;
     return undef if !defined($playlist);
     $self->_connect;
-    print $sock "save \"$playlist\"\n";
+    $self->{sock}->print("save \"$playlist\"\n");
     if(!$self->_process_feedback)
     {
         # Does the playlist already exist?
@@ -504,7 +519,7 @@ sub search
     return undef if !defined($type) || !defined($string) || $type !~ /^(artist|album|title|filename)$/;
     $self->_connect;
     my $command = (!defined($strict) || $strict == 0 ? 'search' : 'find');
-    print $sock "$command $type \"$string\"\n";
+    $self->{sock}->print("$command $type \"$string\"\n");
 
     my @list;
     my %hash;
@@ -530,7 +545,7 @@ sub list
     return undef if !defined($type) || $type !~ /^(artist|album)$/;
     $self->_connect;
     $artist = '' if !defined($artist);
-    print $sock ($type eq 'album' ? "list album \"$artist\"\n" : "list artist\n");
+    print $self->{sock} ($type eq 'album' ? "list album \"$artist\"\n" : "list artist\n");
 
     #   Strip unneccesary information
     my @tmp;
@@ -546,7 +561,7 @@ sub listall
     my($self,$path) = @_;
     $self->_connect;
     $path = '' if !defined($path);
-    print $sock "listall \"$path\"\n";
+    $self->{sock}->print("listall \"$path\"\n");
     return $self->_process_feedback;
 }
 
@@ -555,7 +570,7 @@ sub listallinfo
     my($self,$path) = @_;
     $self->_connect;
     $path = '' if !defined($path);
-    print $sock "listallinfo \"$path\"\n";
+    $self->{sock}->print("listallinfo \"$path\"\n");
     my @results;
     my %element;
     foreach($self->_process_feedback)
@@ -579,7 +594,7 @@ sub lsinfo
     my($self,$path) = @_;
     $self->_connect;
     $path = '' if !defined($path);
-    print $sock "lsinfo \"$path\"\n";
+    $self->{sock}->print("lsinfo \"$path\"\n");
     my @results;
     my %element;
     foreach($self->_process_feedback)
@@ -614,7 +629,7 @@ sub get_song_info
         $self->_get_status;
         $song = $self->{song};
     }
-    print $sock "playlist".(defined($from_id) && $from_id == 1 ? 'id' : 'info')." $song\n";
+    $self->{sock}->print("playlist".(defined($from_id) && $from_id == 1 ? 'id' : 'info')." $song\n");
     my %metadata;
     foreach($self->_process_feedback)
     {
@@ -626,11 +641,11 @@ sub get_song_info
 sub get_current_song_info
 {
     my($self) = @_;
-    print $sock "currentsong\n";
+    $self->{sock}->print("currentsong\n");
     my %metadata;
     foreach($self->_process_feedback)
     {
-    $metadata{$1} = $2 if /^(.[^:]+):\s(.+)$/;
+        $metadata{$1} = $2 if /^(.[^:]+):\s(.+)$/;
     }
     return %metadata;
 }
@@ -650,13 +665,13 @@ sub searchadd
     my @results = $self->search($type, $string);
     if($#results > -1)
     {
-        print $sock "command_list_begin\n";
+        $self->{sock}->print("command_list_begin\n");
         foreach(@results)
         {
             my %hash = %$_;
-            print $sock "add \"".$hash{'file'}."\"\n";
+            $self->{sock}->print("add \"".$hash{'file'}."\"\n");
         }
-        print $sock "command_list_end\n";
+        $self->{sock}->print("command_list_end\n");
         if($self->_process_feedback)
         {
             $self->{playlist} = $self->{playlist} + $#results + 1;
@@ -665,12 +680,30 @@ sub searchadd
     return 1;
 }
 
+
+sub crop
+{
+    my($self) = shift;
+    $self->{sock}->print("command_list_begin\n");
+    for(my $i = ($self->{playlistlength}-1) ; $i >= ($self->{song}+1) ; $i--)
+    {
+        $self->{sock}->print("delete $i\n");
+    }
+    for(my $i = ($self->{song}-1) ; $i >= 0 ; $i--)
+    {
+        $self->{sock}->print("delete $i\n");
+    }
+    $self->{sock}->print("command_list_end\n");
+    $self->_process_feedback;
+}
+
+
 sub playlist
 {
     my($self) = shift;
     $self->_connect;
-    $self->_get_playlist if !defined($playlist[0]);
-    return \@playlist;
+    $self->_get_playlist if !defined($self->{playlistref}->[0]);
+    return $self->{playlistref};
 }
 
 sub get_title
@@ -689,124 +722,106 @@ sub get_title
     } else {
         %metadata = $self->get_current_song_info();
     }
-  return $metadata{'Artist'}.' - '.$metadata{'Title'} if $metadata{'Artist'} && $metadata{'Title'};
+    return $metadata{'Artist'}.' - '.$metadata{'Title'} if $metadata{'Artist'} && $metadata{'Title'};
     return $metadata{'Title'} if $metadata{'Title'};
-  return $metadata{'file'};
+    return $metadata{'file'};
 }
 
 sub get_time_format
 {
-  my($self) = shift;
-  return '' if !defined($self->{playlistlength}) || !defined($self->{song});
-    $self->_connect;
-  my($psf,$tst) = split /:/, $self->{'time'};
-  return sprintf("%d:%02d/%d:%02d",
-       ($psf / 60), # minutes so far
-       ($psf % 60), # seconds - minutes so far
-       ($tst / 60), # minutes total
-       ($tst % 60));# seconds - minutes total
-}
-
-sub crop
-{
     my($self) = shift;
-    print $sock "command_list_begin\n";
-    for(my $i = ($self->{playlistlength}-1) ; $i >= ($self->{song}+1) ; $i--)
-    {
-        print $sock "delete $i\n";
-    }
-    for(my $i = ($self->{song}-1) ; $i >= 0 ; $i--)
-    {
-        print $sock "delete $i\n";
-    }
-    print $sock "command_list_end\n";
-    $self->_process_feedback;
+
+    $self->_get_status;
+    return '' if !defined($self->{playlistlength}) || !defined($self->{song});
+
+    #Get the time from MPD; example: 49:395 (seconds so far:total seconds)
+    my($psf,$tst) = split /:/, $self->{'time'};
+    return sprintf("%d:%02d/%d:%02d",
+        ($psf / 60), # minutes so far
+        ($psf % 60), # seconds - minutes so far
+        ($tst / 60), # minutes total
+        ($tst % 60));# seconds - minutes total
 }
 
 sub get_time_info
 {
-  my ($self) = shift;
+    my ($self) = shift;
 
-  return '' if !defined($self->{playlistlength}) || !defined($self->{song});
+    return '' if !defined($self->{playlistlength}) || !defined($self->{song});
 
-  #The return variable
-  my $rv = {};
+    #The return variable
+    my $rv = {};
 
-  $self->_connect;
+    #Get the time from MPD; example: 49:395 (seconds so far:total seconds)
+    $self->_get_status;
+    my($so_far,$total) = split(/:/, $self->{'time'});
+    my $left = $total-$so_far;
 
-  #Get the time from MPD; example: 49:395 (seconds so far:total seconds)
-  my($so_far,$total) = split /:/, $self->{'time'};
-  my $left = $total-$so_far;
+    #Store seconds for everything
+    $rv->{seconds_so_far} = $so_far;
+    $rv->{seconds_total}  = $total;
+    $rv->{seconds_left}   = $left;
 
-  #Store seconds for everything
-  $rv->{seconds_so_far} = $so_far;
-  $rv->{seconds_total}  = $total;
-  $rv->{seconds_left}   = $left;
-
-  #Store the percentage; use one decimal point
-  $rv->{percentage} =
+    #Store the percentage; use one decimal point
+    $rv->{percentage} =
     $rv->{seconds_total}
     ? 100*$rv->{seconds_so_far}/$rv->{seconds_total}
     : 0;
-  $rv->{percentage} = sprintf "%.1f",$rv->{percentage};
+    $rv->{percentage} = sprintf("%.1f",$rv->{percentage});
 
-  #Parse the time so far
-  my $min_so_far = ($so_far / 60);
-  my $sec_so_far = ($so_far % 60);
 
-  $rv->{time_so_far} = sprintf "%d:%02d",
-    $min_so_far,
-    $sec_so_far;
+    #Parse the time so far
+    my $min_so_far = ($so_far / 60);
+    my $sec_so_far = ($so_far % 60);
 
-    $rv->{minutes_so_far} = sprintf "%00d", $min_so_far;
-    $rv->{seconds_so_far} = (length($sec_so_far) == 1 ? "0$sec_so_far" : $sec_so_far);
+    $rv->{time_so_far} = sprintf("%d:%02d", $min_so_far, $sec_so_far);
+    $rv->{minutes_so_far} = sprintf("%00d", $min_so_far);
+    $rv->{seconds_so_far} = sprintf("%00d", $sec_so_far);
 
-  #Parse the total time
-  my $min_tot = ($total / 60);
-  my $sec_tot = ($total % 60);
 
-  $rv->{time_total} = sprintf "%d:%02d",
-    $min_tot,
-    $sec_tot;
+    #Parse the total time
+    my $min_tot = ($total / 60);
+    my $sec_tot = ($total % 60);
 
+    $rv->{time_total} = sprintf("%d:%02d", $min_tot, $sec_tot);
     $rv->{minutes} = $min_tot;
     $rv->{seconds} = $sec_tot;
 
-  #Parse the time left
-  my $min_left = ($left / 60);
+    #Parse the time left
+    my $min_left = ($left / 60);
     my $sec_left = ($left % 60);
-  $rv->{time_left} = sprintf "-%d:%02d",
-    $min_left,
-    $sec_left;
+    $rv->{time_left} = sprintf("-%d:%02d", $min_left, $sec_left);
 
-  return $rv;
+    return $rv;
 }
 
 sub playlist_changes
 {
-  my($self,$old_playlist_id) = @_;
-  $old_playlist_id = -1 if !defined($old_playlist_id);
-  my %changeset;
+    my($self,$old_playlist_id) = @_;
+    $old_playlist_id = -1 if !defined($old_playlist_id);
+    my %changeset;
 
-  $self->_connect;
-  print $sock "plchanges $old_playlist_id\n";
-  my $changedEntry; # hash reference
-  foreach($self->_process_feedback)
+    $self->_connect;
+    $self->{sock}->print("plchanges $old_playlist_id\n");
+    my $changedEntry; # hash reference
+    foreach($self->_process_feedback)
     {
-      if(/^(.[^:]+):\s(.+)$/)
-    {
-      my($key, $value) = ($1, $2);
-      # create a new hash for the start of each entry
-      $changedEntry = {} if($key eq 'file');
-      # save a ref to the entry as soon as we know where it goes
-      $changeset{$value} = $changedEntry if $key eq 'Pos';
-      # save all attributes of the entry
-      $changedEntry->{$key} = $value;
-    }
+        if(/^(.[^:]+):\s(.+)$/)
+        {
+            my($key, $value) = ($1, $2);
+            # create a new hash for the start of each entry
+            $changedEntry = {} if($key eq 'file');
+            # save a ref to the entry as soon as we know where it goes
+            $changeset{$value} = $changedEntry if $key eq 'Pos';
+            # save all attributes of the entry
+            $changedEntry->{$key} = $value;
+        }
     }
 
-  return %changeset;
+    return %changeset;
 }
+
+
 
 #-------------------------------------------#
 #             INTERNAL METHODS              #
@@ -819,16 +834,17 @@ sub _connect
 {
     my($self) = shift;
     return 1 if $self->is_connected;
-    $sock = new IO::Socket::INET
+    $self->{sock} = new IO::Socket::INET
     (
         PeerAddr => $self->{mpd_host},
         PeerPort => $self->{mpd_port},
         Proto => 'tcp',
     );
-    die("Could not create socket: $!\n") unless $sock;
-    if(<$sock> =~ /^OK MPD (.+)$/)
+    die("Could not create socket: $!\n") unless $self->{sock};
+
+    if($self->{sock}->getline() =~ /^OK MPD (.+)$/)
     {
-        $self->{version} = $1;
+        $self->{sever_version} = $1;
     } else {
         die("Could not connect: $!\n");
     }
@@ -853,21 +869,24 @@ sub _process_feedback
 {
     my($self) = shift;
     my @output;
-    while(<$sock>)
+    while(my $line = $self->{sock}->getline())
     {
-        chomp;
+        chomp($line);
+
         # Did we cause an error? Save the data!
-        if(/^ACK \[(\d+)\@(\d+)\] {(.*)} (.+)$/)
+        if($line =~ /^ACK \[(\d+)\@(\d+)\] {(.*)} (.+)$/)
         {
-        $self->{ack_error_id} = $1;
-        $self->{ack_error_command_id} = $2;
-      $self->{ack_error_command} = $3;
-        $self->{ack_error} = $4;
+            $self->{ack_error_id} = $1;
+            $self->{ack_error_command_id} = $2;
+            $self->{ack_error_command} = $3;
+            $self->{ack_error} = $4;
             return undef;
         }
-        last if /^OK/;
-        push @output, $_;
+
+        last if ($line =~ /^OK/);
+        push(@output, $line);
     }
+
     # Let's return the output for post-processing
     return @output;
 }
@@ -876,13 +895,11 @@ sub _get_status
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "status\n";
-    $self->_get_playlist($self->{playlist}) if $playlist[0];
+    $self->{sock}->print("status\n");
     foreach($self->_process_feedback)
     {
-        if(/^(.[^:]+):\s(.+)$/)
-        {
-        $self->{$1} = $2;
+        if(/^(.[^:]+):\s(.+)$/) {
+            $self->{$1} = $2;
         }
     }
     return 1;
@@ -892,7 +909,7 @@ sub _get_stats
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "stats\n";
+    $self->{sock}->print("stats\n");
     foreach($self->_process_feedback)
     {
         $self->{$1} = $2 if /^(.[^:]+):\s(.+)$/;
@@ -906,12 +923,14 @@ sub _get_playlist
     $self->_connect;
     my %changes = $self->playlist_changes($old_playlist_id);
     for my $pos (keys %changes)
-  {
-        $playlist[$pos] = $changes{$pos};
+    {
+        $self->{playlistref}->[$pos] = $changes{$pos};
     }
 
     # Deletes songs no longer in the playlist
-    pop @playlist while($#playlist > $self->{playlistlength} - 1);
+    while($#{$self->{playlistref}} > $self->{playlistlength} - 1) {
+        pop @{$self->{playlistref}};
+    }
 
     return 1;
 }
@@ -920,7 +939,7 @@ sub _get_outputs
 {
     my($self) = shift;
     $self->_connect;
-    print $sock "outputs\n";
+    $self->{sock}->print("outputs\n");
     my @outputs;
     my %output;
     foreach($self->_process_feedback)
@@ -943,13 +962,13 @@ sub _get_commands
     my($self) = shift;
     $self->_connect;
     my(@commands,@notcommands);
-    print $sock "commands\n";
+    $self->{sock}->print("commands\n");
     foreach($self->_process_feedback)
     {
         next if !defined;
         push @commands, $1 if /^command: (.+)$/;
     }
-    print $sock "notcommands\n";
+    $self->{sock}->print("notcommands\n");
     foreach($self->_process_feedback)
     {
         next if !defined;
