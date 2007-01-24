@@ -1,11 +1,10 @@
 #!/usr/bin/perl -w
 use strict;
 use Encode;
+use Audio::MPD;
 use constant VERSION => '0.10.0';
 
-die("MPD.pm not found!\n") unless -f "MPD.pm";
-require("MPD.pm");
-my $x = MPD->new('localhost',6600);
+my $x = Audio::MPD->new('localhost',6600);
 
 # mpctime() - For getting the time in the same format as `mpc` writes it
 sub mpctime
