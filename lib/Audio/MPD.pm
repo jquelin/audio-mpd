@@ -218,7 +218,7 @@ sub _process_feedback
 {
 	my($self) = shift;
 	my @output;
-	while(<$sock>) 
+	while(<$sock>)
 	{
 		chomp;
 		# Did we cause an error? Save the data!
@@ -340,13 +340,13 @@ sub set_repeat
 {
 	my($self,$mode) = @_;
 	$self->_connect;
-	
+
 	# If the mode is not set, and ALLOW_TOGGLE_STATUS is, return false!
-	return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/); 
-	
+	return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/);
+
 	# If mode is not set, shift the current status
 	$mode = ($self->{repeat} == 1 ? 0 : 1) if !defined($mode);
-	
+
 	print $sock "repeat $mode\n";
 	$self->{repeat} = $mode;
 	return $self->_process_feedback;
@@ -358,11 +358,11 @@ sub set_random
 	$self->_connect;
 
 	# If the mode is not set, and ALLOW_TOGGLE_STATUS is, return false!
-	return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/); 
-	
+	return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/);
+
 	# If mode is not set, shift the current status
 	$mode = ($self->{random} == 1 ? 0 : 1) if !defined($mode);
-	
+
   print $sock "random $mode\n";
 	$self->{random} = $mode;
   return $self->_process_feedback;
@@ -388,7 +388,7 @@ sub set_volume
 		$volume = $self->{volume} + $2 if $1 eq '+';
 		$volume = $self->{volume} - $2 if $1 eq '-';
 	}
-	
+
 	return undef if !defined($volume) || $volume < 0 || $volume > 100;
 
 	print $sock "setvol $volume\n";
@@ -542,7 +542,7 @@ sub delete
 }
 
 sub deleteid
-{   
+{
   my($self,$songid) = @_;
   return undef if !defined($songid) || $songid !~ /^\d+$/;
 	return $self->delete($songid,1);
@@ -609,7 +609,7 @@ sub move
 }
 
 sub moveid
-{     
+{
   my($self,$songid,$new_pos) = @_;
 	return undef if !defined($songid) || !defined($new_pos) || $songid !~ /^\d+$/ || $new_pos !~ /^\d+$/;
 	return $self->move($songid,$new_pos,1);
@@ -676,7 +676,7 @@ sub list
 	$self->_connect;
 	$artist = '' if !defined($artist);
 	print $sock ($type eq 'album' ? "list album \"$artist\"\n" : "list artist\n");
-	
+
 	#	Strip unneccesary information
 	my @tmp;
 	foreach($self->_process_feedback)
@@ -913,7 +913,7 @@ sub get_time_info
   $rv->{time_total} = sprintf "%d:%02d",
     $min_tot,
     $sec_tot;
-	
+
 	$rv->{minutes} = $min_tot;
 	$rv->{seconds} = $sec_tot;
 
