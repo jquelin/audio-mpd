@@ -9,5 +9,7 @@ META.yml
 README
 scripts/example.pl
 scripts/mpc.pl
+t/00-pod-coverage.t
+t/00-pod.t
 t/00use.t
 TODO
