@@ -3,7 +3,7 @@
 # MPD perl module
 # Written for MPD 0.12.0 (SVN)
 #
-# Written by: Tue Abrahamsen (twoface@wtf.dk)
+# Written by: Tue Abrahamsen (tue.abrahamsen@gmail.com)
 # This project's homepage is: http://www.musicpd.org
 # Report bugs at: http://www.musicpd.org/mantis/
 #
@@ -1338,7 +1338,7 @@ contained in a hashref with the following keys:
 
 =head1 AUTHOR
 
-Written by Tue Abrahamsen (twoface@wtf.dk)
+Written by Tue Abrahamsen (tue.abrahamsen@gmail.com)
 
 Documented by Nicholas J. Humfrey, njh@aelius.com
 
