@@ -1,3 +1,11 @@
+0.12.4 Thu Jan 25 21:52:05 CET 2007 [JQ]
+ - grouped pod in sections for easier reading
+ - corrected pod typos here and there
+ - added contact information
+ - new tests for pod correctness and pod coverage
+ - added missing pod for 3 subs
+
+
 0.12.3 (Nicholas J Humfrey)
  - Added Makefile.PL support
 
@@ -5,7 +13,7 @@
  - Fixed bug in parsing parmeters in pause()
 
 0.12.0-rc7+njh (Nicholas J Humfrey)
- - Moved $sock and @playlists into object so that you can talk to 
+ - Moved $sock and @playlists into object so that you can talk to
    multiple MPDs in the same script.
  - Added Module::Build based build/install system
  - Changed namespace to Audio::MPD so that it can be added to CPAN
@@ -15,7 +23,7 @@
  - Changed print $sock "foo" to $sock->print("foo")
  - Corrected pause() so that it didn't use depricated lack of argument
  - Added optional path parameter to updatedb()
- 
+
 0.12.0-rc7
  - better password-handling, including possibility to connect to
  password@mpdhost (William Pettersson)
@@ -90,7 +98,7 @@
  - Removed deprecated getsonginfo()
  - Moved gettitle() and gettimeformat() to 'Custom subs'
  - Altered gettitle()'s errorhandling a bit
- 
+
 0.10.0-alpha5
  - Made getsonginfo() return a hash instead of an array
  - Streamlined add()/delete()/move()/swap()

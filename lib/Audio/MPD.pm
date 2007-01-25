@@ -22,7 +22,7 @@ use IO::Socket;
 use warnings;
 use strict;
 
-our $VERSION = '0.12.3';
+our $VERSION = '0.12.4';
 
 
 
