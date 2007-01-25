@@ -1,8 +1,51 @@
-Must:
-	More tests
+no time plan associated - not even an order implied.
+
+the indication in parens forecasts the difficulty / bump in version implied.
+can be either minor, medium or major.
+
+
+** distribution:
+
+- sign module using Module::Signature. (minor)
+
+
+** documentation:
+
+- correct some pod & add missing documentation. (minor)
+- add comments in code. (minor)
+- better pod sections. (minor)
+- run pod coverage. (minor)
+
+
+** tests:
+
+- write more tests. really. (minor)
+- perform test coverage and fill in the blanks. (medium when 100%)
+
+
+** dialog with mpd:
+
+- more error handling. (medium)
+- more extensive coverage of supported mpd instruction set. (medium)
+- make Audio::MPD utf-8 aware. (medium)
+
+
+** internals:
+
+- new Audio::MPD::Item module, with AMI::Song & AMI::Directory subclasses to
+  better encapsulate data returned. (major)
+- new Audio::MPD::Collection module, using AM::Item. (major)
+- accessors using Class::Accessor. (medium)
+
+
+** mpd enhancements:
+
+- song ratings. (major)
+- support for notifications. (major)
+
+
 
 Maybe:
-	More errorhandling
 	Make subs check for permissions before executing
 	Make it possible to use MPD.pm in "light"-mode:
 		For small clients/scripts
