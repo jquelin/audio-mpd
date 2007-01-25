@@ -13,8 +13,6 @@ can be either minor, medium or major.
 
 - correct some pod & add missing documentation. (minor)
 - add comments in code. (minor)
-- better pod sections. (minor)
-- run pod coverage. (minor)
 
 
 ** tests:
@@ -28,6 +26,7 @@ can be either minor, medium or major.
 - more error handling. (medium)
 - more extensive coverage of supported mpd instruction set. (medium)
 - make Audio::MPD utf-8 aware. (medium)
+- auto-reconnect. (medium)
 
 
 ** internals:

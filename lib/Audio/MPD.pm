@@ -1,11 +1,3 @@
-#!/usr/bin/perl
-# 0.12.3
-# MPD perl module
-# Written for MPD 0.12.0 (SVN)
-#
-# Written by: Tue Abrahamsen (tue.abrahamsen@gmail.com)
-# This project's homepage is: http://www.musicpd.org
-# Report bugs at: http://www.musicpd.org/mantis/
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,8 +13,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
+#
+
 package Audio::MPD;
+
 use IO::Socket;
+
 use warnings;
 use strict;
 
@@ -60,6 +56,18 @@ my %config = (
 #      or altering information about playback and alike.      #
 ###############################################################
 
+
+
+#
+# my $mpd = Audio::MPD->new( [[$password@]$hostname], [$port] )
+#
+# This is the constructor for Audio::MPD. One can specify a $hostname and a
+# $port - if none is specified then defaults to environment vars MPD_HOST and
+# MPD_PORt. If those aren't set, defaults to 'localhost', 6600.
+#
+# An optional $password can be specified by prepending it to $hostname,
+# seperated with an '@' character.
+#
 sub new
 {
     my $class = shift;
@@ -75,8 +83,8 @@ sub new
         ack_error_command => undef,
         ack_error => undef,
         # MPD connection information
-        mpd_host => $mpd_host || $ENV{'MPD_HOST'} || $config{'DEFAULT_MPD_HOST'},
-        mpd_port => $mpd_port || $ENV{'MPD_PORT'} || $config{'DEFAULT_MPD_PORT'},
+        mpd_host => $mpd_host || $ENV{MPD_HOST} || $config{DEFAULT_MPD_HOST},
+        mpd_port => $mpd_port || $ENV{MPD_PORT} || $config{DEFAULT_MPD_PORT},
         # Socket handle
         sock => undef,
         # Array holding playlist-entries in hashes
@@ -372,13 +380,20 @@ sub seekid
 #            with the current or saved playlists.             #
 ###############################################################
 
+#
+# $mpd->clear()
+#
+# Remove all the songs from the current playlist. No return value.
+#
 sub clear
 {
-    my($self) = shift;
+    my ($self) = shift;
     $self->_connect;
     $self->{sock}->print("clear\n");
     return $self->_process_feedback;
 }
+
+
 
 sub add
 {
@@ -1003,14 +1018,15 @@ __END__
 
 Audio::MPD - Class for talking to MPD (Music Player Daemon) servers
 
+
 =head1 SYNOPSIS
 
-  use Audio::MPD;
+    use Audio::MPD;
 
-  my $mpd = new Audio::MPD();
-  $mpd->play();
-  sleep 10;
-  $mpd->next();
+    my $mpd = Audio::MPD->new();
+    $mpd->play();
+    sleep 10;
+    $mpd->next();
 
 
 =head1 DESCRIPTION
@@ -1018,52 +1034,70 @@ Audio::MPD - Class for talking to MPD (Music Player Daemon) servers
 Audio::MPD gives a clear object-oriented interface for talking to and
 controlling MPD (Music Player Daemon) servers. A connection to the MPD
 server is established as soon as a new Audio::MPD object is created.
-Commands are then send to the server as the class's methods are called.
+Commands are then sent to the server as the class's methods are called.
+
 
 =head1 METHODS
 
-=head2 $mpd = new Audio::MPD( [[$password@]$host], [$port] )
+=head2 Constructor
 
-The new() method is the constructor for the C<Audio::MPD> class.
-You may specify a hostname and port, if none is specified then
-the enviroment variables 'MPD_HOST' and 'MPD_PORT' are checked.
+=over 4
+
+=item new( [[$password@]$host], [$port] )
+
+The C<new()> method is the constructor for the C<Audio::MPD> class.
+You may specify a hostname and port - if none is specified then
+the enviroment variables C<MPD_HOST> and C<MPD_PORT> are checked.
 Finally if all else fails the defaults 'localhost' and '6600' are used.
 
 An optional  password can be specified by prepending it to the
-hostname, seperated an '@' character.
+hostname, seperated with an '@' character.
+
+=back
 
 
-=head2 $mpd->is_connected()
+=head2 Controlling the server
 
-Checks to see if there is a valid connection to the MPD server.
-First checks that the socket is connected and then sends a Ping command
-checks that the replyis 'OK'. Returns '1' if connected and undef if not.
+=over 4
+
+=item $mpd->is_connected()
+
+Check to see if there is a valid connection to the MPD server.
+First check that the socket is connected and then send a Ping command
+check that the replyis 'OK'. Return '1' if connected and undef if not.
 
 
-=head2 $mpd->close_connection()
+=item $mpd->close_connection()
 
-Closes the connection to the MPD server.
+Close the connection to the MPD server.
 
 
-=head2 $mpd->kill_mpd()
+=item $mpd->kill_mpd()
 
 Send a message to the MPD server telling it to shut down.
 
 
-=head2 $mpd->send_password( password )
+=item $mpd->updatedb( [$path] )
+
+Force mpd to recan its collection. If $path (relative to MPD's music directory)
+is supplied, MPD will only scan it - otherwise, MPD will rescan its whole
+collection.
+
+
+=item $mpd->send_password( password )
 
 Send a plaintext password to the server,
 which can enable optionally password protected functionality.
 
 
-=head2 $mpd->get_urlhandlers()
+=item $mpd->get_urlhandlers()
 
-Returns an array of supported URL schemes.
+Return an array of supported URL schemes.
 
 
-=head2 $mpd->get_error()
+=item $mpd->get_error()
 
-Returns an array containing information about the last error that occured.
+Return an array containing information about the last error that occured.
 
  - Item 0: The ID number of the error
  - Item 1: Human readable error message
@@ -1071,79 +1105,91 @@ Returns an array containing information about the last error that occured.
  - Item 3: The position in the command_list of the command (if used)
 
 
-=head2 $mpd->get_server_version()
+=item $mpd->get_server_version()
 
-Returns the version number for the server we are connected to.
+Return the version number for the server we are connected to.
+
+=back
 
 
-=head2 $mpd->set_repeat( [$repeat] )
+=head2 Changing MPD settings
+
+=over 4
+
+=item $mpd->set_repeat( [$repeat] )
 
 Set the repeat mode to $repeat (1 or 0). If $repeat is not specified then
 the repeat mode is toggled.
 
 
-=head2 $mpd->set_random( [$random] )
+=item $mpd->set_random( [$random] )
 
 Set the random mode to $random (1 or 0). If $random is not specified then
 the random mode is toggled.
 
 
-=head2 $mpd->set_fade( [$seconds] )
+=item $mpd->set_fade( [$seconds] )
 
-Enabled and sets the duration of crossfade between songs.
-If $seconds is not sepcified or $seconds is 0, then crossfading is disabled.
+Enable crossfading and set the duration of crossfade between songs.
+If $seconds is not specified or $seconds is 0, then crossfading is disabled.
 
 
-=head2 $mpd->set_volume( [+][-]$volume )
+=item $mpd->set_volume( [+][-]$volume )
 
 Sets the audio output volume percentage to absolute $volume.
-If $volume is prefixed by '+' or '-' then the volume is changed relativly
+If $volume is prefixed by '+' or '-' then the volume is changed relatively
 by that value.
 
 
-=head2 $mpd->output_enable( $output )
+=item $mpd->output_enable( $output )
 
-Enables the specified audio output. $output is the ID of the audio output.
-
-
-=head2 $mpd->output_disable( $output )
-
-Disables the specified audio output. $output is the ID of the audio output.
+Enable the specified audio output. $output is the ID of the audio output.
 
 
-=head2 $mpd->play( [$number], [$fromid] )
+=item $mpd->output_disable( $output )
+
+Disable the specified audio output. $output is the ID of the audio output.
+
+=back
+
+
+=head2 Controlling playback
+
+=over 4
+
+=item $mpd->play( [$number], [$fromid] )
 
 Begin playing playlist at song number $number.
 If $fromid is true then begin playing at song with ID $number.
 
 
-=head2 $mpd->playid( [$songid] )
+=item $mpd->playid( [$songid] )
 
 Begin playing playlist at song ID $songid.
 
 
-=head2 $mpd->pause( [$state] )
+=item $mpd->pause( [$state] )
 
 Pause playback. If $state is 0 then the current track is unpaused,
 if $state is 1 then the current track is paused.
 
 
-=head2 $mpd->stop()
+=item $mpd->stop()
 
 Stop playback.
 
 
-=head2 $mpd->next()
+=item $mpd->next()
 
 Play next song in playlist.
 
 
-=head2 $mpd->prev()
+=item $mpd->prev()
 
-Plays previous song in playlist.
+Play previous song in playlist.
 
 
-=head2 $mpd->seek( $position, [$song], [$fromid] )
+=item $mpd->seek( $position, [$song], [$fromid] )
 
 Seek to $position seconds.
 If $song number is not specified then the perl module will try and
@@ -1151,88 +1197,116 @@ seek to $position in the current song. If $fromid is true then
 $song is the ID of the song to seek in.
 
 
-=head2 $mpd->seekid( $position, $songid )
+=item $mpd->seekid( $position, $songid )
 
 Seek to $position seconds in song ID $songid.
 
-
-=head2 $mpd->clear()
-
-Removed all the songs from the current playlist.
+=back
 
 
-=head2 $mpd->add( $path )
+=head2 Playlist handling
 
-Adds a song specified by $path
-(relative to MPD's music directory) to the current playlist.
+=over 4
 
+=item $mpd->clear()
 
-=head2 $mpd->delete( $song, [$fromid] )
-
-Removes song number $song from the current playlist.
-If $fromid is true, then $song is the ID of the song to be removed.
+Remove all the songs from the current playlist. No return value.
 
 
-=head2 $mpd->deleteid( $songid )
+=item $mpd->crop()
 
-Removed the specified songid from the current playlist.
-
-
-=head2 $mpd->load( $playlist )
-
-Loads list of songs from specified playlist file.
+Remove all of the songs from the current playlist *except* the
+song currently playing.
 
 
-=head2 $mpd->swap( $song1, $song2, [$fromid] )
+=item $mpd->add( $path )
 
-Swaps positions of song number $song1 and $song2 on the current playlist.
-If $fromid is true, then $song1 and $song are the IDs of the songs.
-
-
-=head2 $mpd->swapid( $songid1, $songid2 )
-
-Swaps the postions of song ID $songid1 with song ID $songid2
-on the current playlist.
-
-=head2 $mpd->shuffle()
-
-Shuffles the current playlist.
+Add the song identified by $path (relative to MPD's music directory) to the
+current playlist. No return value.
 
 
-=head2 $mpd->move( $song, $newpos, [$fromid] )
+=item $mpd->delete( $song, [$fromid] )
 
-Moves the postion of song number $song to $newpos.
-If $fromid is true, then $song is the ID of the song.
-
-
-=head2 $mpd->moveid( $songid, $newpos )
-
-Moves the postion of song ID $songid to $newpos.
+Remove song number $song from the current playlist. If $fromid is true, then
+$song is the ID of the song to be removed. No return value.
 
 
-=head2 $mpd->rm( $playlist )
+=item $mpd->deleteid( $songid )
 
-Deletes playlist named $playlist from MPD's playlist directory.
-
-
-=head2 $mpd->save( $playlist )
-
-Saves the current playlist to a file called $playlist in
-MPD's playlist directory.
+Remove the specified $songid from the current playlist. No return value.
 
 
-=head2 $mpd->search( $type, $string, [$strict] )
+=item $mpd->swap( $song1, $song2, [$fromid] )
 
-Searches through MPD's database of music for matching songs.
-Where $type is the field to search in:
-"title","artist","album", or "filename".
-And $string is the keyword(s) to seach for. If $strict is
-true then only exact matches are returned.
-
-Returns an array of matching file paths.
+Swap positions of song number $song1 and $song2 on the current playlist. If
+$fromid is true, then $song1 and $song are the IDs of the songs. No return
+value.
 
 
-=head2 $mpd->list( $type, [$artist] )
+=item $mpd->swapid( $songid1, $songid2 )
+
+Swap the postions of song ID $songid1 with song ID $songid2 on the current
+playlist. No return value.
+
+
+=item $mpd->shuffle()
+
+Shuffle the current playlist. No return value.
+
+
+=item $mpd->move( $song, $newpos, [$fromid] )
+
+Move song number $song to the position $newpos. If $fromid is true, then $song
+is the ID of the song. No return value.
+
+
+=item $mpd->moveid( $songid, $newpos )
+
+Move song ID $songid to the position $newpos. No return value.
+
+
+=item $mpd->load( $playlist )
+
+Load list of songs from specified $playlist file. No return value.
+
+
+=item $mpd->save( $playlist )
+
+Save the current playlist to a file called $playlist in MPD's playlist
+directory. No return value.
+
+
+=item $mpd->rm( $playlist )
+
+Delete playlist named $playlist from MPD's playlist directory. No return value.
+
+
+=back
+
+
+=head2 Retrieving information from the collection
+
+=over 4
+
+=item $mpd->search( $type, $string, [$strict] )
+
+Search through MPD's database of music for matching songs.
+
+$type is the field to search in: "title","artist","album", or "filename", and
+$string is the keyword(s) to seach for. If $strict is true then only exact
+matches are returned.
+
+Return an array of matching file paths.
+
+
+=item $mpd->searchadd( $type, $string )
+
+Perform the same action as $mpd->search(), but add any
+matching songs to the current playlist, instead of just returning
+information about them.
+
+
+=item $mpd->list( $type, [$artist] )
 
 Returns an array of all the "album" or "artist" in
 the music database (as chosen by $type). $artist is an
@@ -1240,73 +1314,78 @@ optional parameter, which will only return albums by the
 specified $artist when $type is "album".
 
 
-=head2 $mpd->listall( [$path] )
+=item $mpd->listall( [$path] )
 
-Returns an array of all the songs in the music database.
+Return an array of all the songs in the music database.
 If $path is specified, then it only returns songs matching
 the directory/path.
 
 
-=head2 $mpd->listallinfo( [$path] )
+=item $mpd->listallinfo( [$path] )
 
 Returns an array of hashes containing all the paths and metadata about
 songs in the music database.  If $path is specified, then it only
 returns songs matching the directory/path.
 
 
-=head2 $mpd->lsinfo( [$directory] )
+=item $mpd->lsinfo( [$directory] )
 
 Returns an array of hashes containing all the paths and metadata about
 songs in the specified directory. If no directory is specified, then only
 the songs/directories in the root directory are listed.
 
-
-=head2 $mpd->crop()
-
-Removes all of the songs from the current playlist *except* the
-currently playing song.
+=back
 
 
-=head2 $mpd->playlist( )
+=head2 Retrieving information from current playlist
 
-Returns a arrayref, containing a hashref of metadata for each of the
+=over 4
+
+=item $mpd->get_current_song_info( )
+
+Return a hash of metadata for the song currently playing.
+
+
+=item $mpd->playlist( )
+
+Return an arrayref containing a hashref of metadata for each of the
 songs in the current playlist.
 
 
-=head2 $mpd->get_song_info( $song, $fromid )
+=item $mpd->playlist_changes( $plversion )
+
+Return a hash of hashref with all the differences in the playlist since
+playlist $plversion.
+
+
+=item $mpd->get_song_info( $song, $fromid )
 
 Returns an a hash containing information about song number $song.
 If $fromid is true, then $song is the ID of the song.
 
 
-=head2 $mpd->get_song_info_from_id( $songid )
+=item $mpd->get_song_info_from_id( $songid )
 
 Returns an a hash containing information about song ID $songid.
 
 
-=head2 $mpd->searchadd( $type, $string )
+=item $mpd->get_title( [$song] )
 
-Performs the same action as $mpd->search(), only it adds any
-matching songs to the current playlist, instead of just returning
-information about them.
-
-
-=head2 $mpd->get_title( [$song] )
-
-Returns the 'title string' of song number $song. The 'title' is the artist and
+Return the 'title string' of song number $song. The 'title' is the artist and
 title of the song. If the artist isn't available, then just the title is
 returned. If there is no title available, then the filename is returned.
 
 If $song is not specified, then the 'title' of the current song is returned.
 
 
-=head2 $mpd->get_time_format( [$song] )
+=item $mpd->get_time_format( [$song] )
 
 Returns the current position and duration of the current song.
-String is formatted at "M:SS/M:SS". With the current time first.
+String is formatted at "M:SS/M:SS", with current time first and total time
+after.
 
 
-=head2 $mpd->get_time_info( )
+=item $mpd->get_time_info( )
 
 Return current timing information in various different formats
 contained in a hashref with the following keys:
@@ -1335,16 +1414,63 @@ contained in a hashref with the following keys:
 
 =back
 
+=back
 
-=head1 AUTHOR
 
-Written by Tue Abrahamsen (tue.abrahamsen@gmail.com)
+=head1 SEE ALSO
 
-Documented by Nicholas J. Humfrey, njh@aelius.com
+You can find more information on the mpd project on its homepage at
+L<http://www.musicpd.org>, or its wiki L<http://mpd.wikia.com>.
+
+Regarding this Perl module, you can report bugs on CPAN via
+L<http://rt.cpan.org/Public/Bug/Report.html?Queue=Audio-MPD>.
+
+Audio::MPD development takes place on <audio-mpd@googlegroups.com>: feel free
+to join us. (use L<http://groups.google.com/group/audio-mpd> to sign in). Our
+subversion repository is located at L<https://svn.musicpd.org>.
+
+
+
+=head1 AUTHORS
+
+Written by:
+
+=over 4
+
+=item *
+
+Tue Abrahamsen <tue.abrahamsen@gmail.com>
+
+=item *
+
+Jerome Quelin <jquelin@cpan.org>
+
+=back
+
+
+Documented by:
+
+=over 4
+
+=item *
+
+Nicholas J. Humfrey <njh@aelius.com>
+
+=item *
+
+Jerome Quelin <jquelin@cpan.org>
+
+=back
+
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 Tue Abrahamsen
+Copyright (c) 2005 Tue Abrahamsen
+
+Copyright (c) 2006 Nicholas J. Humfrey
+
+Copyright (c) 2007 Jerome Quelin
+
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -1357,3 +1483,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 =cut
+

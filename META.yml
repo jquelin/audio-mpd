@@ -2,8 +2,10 @@
 name: Audio-MPD
 version: 0.12.3
 author:
-  - Written by Tue Abrahamsen (tue.abrahamsen@gmail.com)
-  - 'Documented by Nicholas J. Humfrey, njh@aelius.com'
+  - 'Tue Abrahamsen <tue.abrahamsen@gmail.com>'
+  - 'Jerome Quelin <jquelin@cpan.org>'
+  - 'Nicholas J. Humfrey <njh@aelius.com>'
+  - 'Jerome Quelin <jquelin@cpan.org>'
 abstract: Class for talking to MPD (Music Player Daemon) servers
 license: gpl
 resources:
