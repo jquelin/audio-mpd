@@ -17,61 +17,54 @@
 
 package Audio::MPD;
 
-use IO::Socket;
-
 use warnings;
 use strict;
+
+
+use IO::Socket;
+
+use base qw[ Class::Accessor::Fast ];
+__PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
+
 
 our $VERSION = '0.12.4';
 
 
-
-###############################################################
-#                        CONFIGURATION                        #
-#-------------------------------------------------------------#
-#   Only holds the hash specifying different configuration-   #
-#  values used by the module. These may not be changed during #
-#   runtime, but can be altered for the programmers wishes.   #
-###############################################################
-
-my %config = (
-    # Overwrites old playlist, if a playlist is saved with the same
-    # name. Otherwise, an error is returned. Default: yes
-    OVERWRITE_PLAYLIST => 1,
-    # Allows toggling repeat and random states by not specifying
-    # parameteres. Default: yes
-    ALLOW_TOGGLE_STATES => 1,
-    # The default host to connect to, if no other host is specified.
-    DEFAULT_MPD_HOST => 'localhost',
-    # The default port to connect to, if no other port is specified.
-    DEFAULT_MPD_PORT => 6600,
-);
-
-
-###############################################################
-#                       BASIC METHODS                         #
-#-------------------------------------------------------------#
-#  This section contains all basic methods for the module to  #
-#     function, internal methods and methods not returning    #
-#      or altering information about playback and alike.      #
-###############################################################
-
-
+#--
+# Constructor
 
 #
-# my $mpd = Audio::MPD->new( [[$password@]$hostname], [$port] )
+# my $mpd = Audio::MPD->new( [$hostname], [$port], [$password] )
 #
-# This is the constructor for Audio::MPD. One can specify a $hostname and a
-# $port - if none is specified then defaults to environment vars MPD_HOST and
-# MPD_PORt. If those aren't set, defaults to 'localhost', 6600.
+# This is the constructor for Audio::MPD. One can specify a $hostname, a
+# $port, and a $password.
+# If none is specified then defaults to environment vars MPD_HOST, MPD_PORT
+# and MPD_PASSWORD. If those aren't set, defaults to 'localhost', 6600 and ''.
 #
-# An optional $password can be specified by prepending it to $hostname,
-# seperated with an '@' character.
-#
-sub new
-{
+sub new {
     my $class = shift;
-    my($mpd_host,$mpd_port) = @_;
+    my ($host, $port, $password) = @_;
+
+    # use mpd defaults.
+    $host     ||= $ENV{MPD_HOST}     || 'localhost';
+    $port     ||= $ENV{MPD_PORT}     || '6600';
+    $password ||= $ENV{MPD_PASSWORD} || '';
+
+    # create & bless the object.
+    my $self = {
+        _host     => $host,
+        _port     => $port,
+        _password => $password,
+    };
+    bless $self, $class;
+
+    # try to issue a ping to test connection - this can die.
+    $self->ping;
+
+
+    return $self;
+
+=pod
 
     my $self = {
         # Version of MPD server
@@ -117,16 +110,137 @@ sub new
     };
     bless($self,$class);
 
-    # Check for password in host name
-    if($self->{mpd_host} =~ /@/)
-    {
-        ($self->{password},$self->{mpd_host}) = split('@',$self->{mpd_host});
-    }
-
     $self->_connect;
     $self->send_password if $self->{password};
     return $self;
+
+=cut
+
 }
+
+
+
+#--
+# Public methods
+
+
+#
+# $mpd->ping;
+#
+# Sends a ping command to the mpd server.
+#
+sub ping {
+    my ($self) = @_;
+    $self->_issue_a_command( "ping\n" );
+}
+
+
+#--
+# Private methods
+
+
+
+#
+# my @result = $mpd->_issue_a_command( $command );
+#
+# This method is central to the module. It is responsible for interacting with
+# mpd by sending the $command and reading output - that will be returned as an
+# array of chomped lines (status line will not be returned).
+#
+# Note that currently, this method will connect to mpd before sending any
+# command, and will disconnect after the command has been issued. This scheme
+# is far from optimal, but allows us not to care about timeout disconnections.
+#
+# /!\ Note that we're using high-level, blocking sockets. This means that if
+# the mpd server is slow, or hangs for whatever reason, or even crash abruptly,
+# the program will be hung forever in this sub. The POE::Component::Client::MPD
+# module is way safer - you're advised to use it instead of Audio::MPD.
+#
+# This method can die on several conditions:
+#  - if the server cannot be reached,
+#  - if it's not an mpd server,
+#  - if the password is incorrect,
+#  - or if the command is an invalid mpd command.
+# In the latter case, the mpd error message will be returned.
+#
+sub _issue_a_command {
+    my ($self, $command) = @_;
+
+    # try to connect to mpd.
+    my $socket = IO::Socket::INET->new(
+        PeerAddr => $self->_host,
+        PeerPort => $self->_port
+    )
+    or die "Could not create socket: $!\n";
+    my $line;
+
+    # parse version information.
+    $line = $socket->getline;
+    chomp $line;
+    die "Not a mpd server - welcome string was: [$line]\n"
+        if $line !~ /^OK MPD (.+)$/;
+    $self->version($1);
+
+    # send password.
+    if ( $self->_password ) {
+        $socket->print( 'password ' . $self->_password . "\n" );
+        $line = $socket->getline;
+        die $line if $line =~ s/^ACK //;
+    }
+
+    # ok, now we're connected - let's issue the command.
+    $socket->print( $command );
+    my @output;
+    while (defined ( $line = $socket->getline ) ) {
+        chomp $line;
+        die $line if $line =~ s/^ACK //; # oops - error.
+        last if $line =~ /^OK/;          # end of output.
+        push @output, $line;
+    }
+
+    # close the socket.
+    $socket->close;
+
+    return @output;
+}
+
+
+
+
+
+
+# -------------------------------
+# below is the original MPD.pm
+# -------------------------------
+
+###############################################################
+#                        CONFIGURATION                        #
+#-------------------------------------------------------------#
+#   Only holds the hash specifying different configuration-   #
+#  values used by the module. These may not be changed during #
+#   runtime, but can be altered for the programmers wishes.   #
+###############################################################
+
+my %config = (
+    # Overwrites old playlist, if a playlist is saved with the same
+    # name. Otherwise, an error is returned. Default: yes
+    OVERWRITE_PLAYLIST => 1,
+    # Allows toggling repeat and random states by not specifying
+    # parameteres. Default: yes
+    ALLOW_TOGGLE_STATES => 1,
+);
+
+
+###############################################################
+#                       BASIC METHODS                         #
+#-------------------------------------------------------------#
+#  This section contains all basic methods for the module to  #
+#     function, internal methods and methods not returning    #
+#      or altering information about playback and alike.      #
+###############################################################
+
+
+
 
 sub is_connected
 {
@@ -1059,6 +1173,11 @@ hostname, seperated with an '@' character.
 =head2 Controlling the server
 
 =over 4
+
+=item $mpd->ping()
+
+Sends a ping command to the mpd server.
+
 
 =item $mpd->is_connected()
 
