@@ -240,32 +240,6 @@ my %config = (
 ###############################################################
 
 
-
-
-sub is_connected
-{
-    my($self) = shift;
-    # No need to check, if socket has not been initialized
-    if($self->{sock})
-    {
-        $self->{sock}->print("ping\n");
-        if($self->{sock}->getline() =~ /^OK/)
-        {
-            return 1;
-        } else {
-            return undef;
-        }
-    }
-    return undef;
-}
-
-sub close_connection
-{
-    my($self) = shift;
-    $self->_disconnect();
-    return 1;
-}
-
 sub kill_mpd
 {
     my($self) = shift;
@@ -958,67 +932,6 @@ sub playlist_changes
 # This sub-section is only used for methods #
 # not meant to be accessed from the outside.#
 #-------------------------------------------#
-
-sub _connect
-{
-    my($self) = shift;
-    return 1 if $self->is_connected;
-    $self->{sock} = new IO::Socket::INET
-    (
-        PeerAddr => $self->{mpd_host},
-        PeerPort => $self->{mpd_port},
-        Proto => 'tcp',
-    );
-    die("Could not create socket: $!\n") unless $self->{sock};
-
-    if($self->{sock}->getline() =~ /^OK MPD (.+)$/)
-    {
-        $self->{sever_version} = $1;
-    } else {
-        die("Could not connect: $!\n");
-    }
-    $self->send_password if $self->{password};
-    $self->_get_status;
-    $self->_get_outputs;
-    $self->_get_commands;
-    return 1;
-}
-
-sub _disconnect
-{
-    my($self) = shift;
-
-    if ($self->{sock}) {
-        $self->{sock}->print("close\n") ;
-        $self->{sock}->close();
-    }
-}
-
-sub _process_feedback
-{
-    my($self) = shift;
-    my @output;
-    while(my $line = $self->{sock}->getline())
-    {
-        chomp($line);
-
-        # Did we cause an error? Save the data!
-        if($line =~ /^ACK \[(\d+)\@(\d+)\] {(.*)} (.+)$/)
-        {
-            $self->{ack_error_id} = $1;
-            $self->{ack_error_command_id} = $2;
-            $self->{ack_error_command} = $3;
-            $self->{ack_error} = $4;
-            return undef;
-        }
-
-        last if ($line =~ /^OK/);
-        push(@output, $line);
-    }
-
-    # Let's return the output for post-processing
-    return @output;
-}
 
 sub _get_status
 {
