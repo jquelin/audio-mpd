@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
 
 
-our $VERSION = '0.12.4';
+our $VERSION = '0.13.0';
 
 
 #--
@@ -1390,43 +1390,20 @@ subversion repository is located at L<https://svn.musicpd.org>.
 
 =head1 AUTHORS
 
-Written by:
-
-=over 4
-
-=item *
-
-Tue Abrahamsen <tue.abrahamsen@gmail.com>
-
-=item *
-
 Jerome Quelin <jquelin@cpan.org>
 
-=back
+Original code by Tue Abrahamsen <tue.abrahamsen@gmail.com>, documented by
+Nicholas J. Humfrey <njh@aelius.com>.
 
-
-Documented by:
-
-=over 4
-
-=item *
-
-Nicholas J. Humfrey <njh@aelius.com>
-
-=item *
-
-Jerome Quelin <jquelin@cpan.org>
-
-=back
 
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005 Tue Abrahamsen
+Copyright (c) 2005 Tue Abrahamsen <tue.abrahamsen@gmail.com>
 
-Copyright (c) 2006 Nicholas J. Humfrey
+Copyright (c) 2006 Nicholas J. Humfrey <njh@aelius.com>
 
-Copyright (c) 2007 Jerome Quelin
+Copyright (c) 2007 Jerome Quelin <jquelin@cpan.org>
 
 
 This program is free software; you can redistribute it and/or modify
