@@ -609,13 +609,10 @@ sub list
     return @tmp;
 }
 
-sub listall
-{
-    my($self,$path) = @_;
-    $self->_connect;
-    $path = '' if !defined($path);
-    $self->{sock}->print("listall \"$path\"\n");
-    return $self->_process_feedback;
+sub listall {
+    my ($self, $path) = @_;
+    $path ||= '';
+    return $self->_send_command( qq[listall "$path"\n] );
 }
 
 sub listallinfo
@@ -970,18 +967,6 @@ sub _get_commands
     $self->{notcommands} = \@notcommands;
     return 1;
 }
-
-
-sub DESTROY
-{
-    my($self) = shift;
-
-    $self->_disconnect();
-}
-
-#-------------------------------------------#
-#           INTERNAL METHODS - END          #
-#-------------------------------------------#
 
 1;
 
