@@ -131,7 +131,7 @@ sub new {
 #
 sub ping {
     my ($self) = @_;
-    $self->_issue_a_command( "ping\n" );
+    $self->_send_command( "ping\n" );
 }
 
 
@@ -141,7 +141,7 @@ sub ping {
 
 
 #
-# my @result = $mpd->_issue_a_command( $command );
+# my @result = $mpd->_send_command( $command );
 #
 # This method is central to the module. It is responsible for interacting with
 # mpd by sending the $command and reading output - that will be returned as an
@@ -163,7 +163,7 @@ sub ping {
 #  - or if the command is an invalid mpd command.
 # In the latter case, the mpd error message will be returned.
 #
-sub _issue_a_command {
+sub _send_command {
     my ($self, $command) = @_;
 
     # try to connect to mpd.
@@ -242,7 +242,7 @@ my %config = (
 
 sub kill_mpd
 {
-    my($self) = shift;
+    my ($self) = shift;
     $self->_connect;
     $self->{sock}->print("kill\n");
     return 1;
