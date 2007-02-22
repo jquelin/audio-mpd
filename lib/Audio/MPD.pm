@@ -64,7 +64,7 @@ sub new {
 
     return $self;
 
-=pod
+=begin FIXME
 
     my $self = {
         # Version of MPD server
@@ -112,6 +112,8 @@ sub new {
     $self->_connect;
     $self->send_password if $self->{password};
     return $self;
+
+=end FIXME
 
 =cut
 
@@ -442,13 +444,10 @@ sub clear {
 
 
 
-sub add
-{
-    my($self,$path) = @_;
-    $self->_connect;
-    $path = '' if !defined($path);
-    $self->{sock}->print("add \"$path\"\n");
-    return $self->_process_feedback;
+sub add {
+    my ($self, $path) = @_;
+    return unless defined $path;
+    $self->_send_command( qq[add "$path"\n] );
 }
 
 sub delete
@@ -477,24 +476,16 @@ sub deleteid
     return $self->delete($songid,1);
 }
 
-sub load
-{
-    my($self,$playlist) = @_;
-    return undef if !defined($playlist);
-    $self->_connect;
-    $self->{sock}->print("load \"$playlist\"\n");
-    return $self->_process_feedback;
+sub load {
+    my ($self, $playlist) = @_;
+    return unless defined $playlist;
+    $self->_send_command( qq[load "$playlist"\n] );
 }
 
-sub updatedb
-{
-    my($self, $path) = shift;
-
-    $path = '' unless (defined $path);
-
-    $self->_connect;
-    $self->{sock}->print("update $path\n");
-    return $self->_process_feedback;
+sub updatedb {
+    my ($self, $path) = @_;
+    $path ||= '';
+    $self->_send_command("update $path\n");
 }
 
 sub swap
@@ -518,12 +509,9 @@ sub swapid
     return $self->swap($songid_from,$songid_to,1);
 }
 
-sub shuffle
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("shuffle\n");
-    return $self->_process_feedback;
+sub shuffle {
+    my ($self) = @_;
+    $self->_send_command("shuffle\n");
 }
 
 sub move
@@ -547,21 +535,19 @@ sub moveid
     return $self->move($songid,$new_pos,1);
 }
 
-sub rm
-{
-    my($self,$playlist) = @_;
-    return undef if !defined($playlist);
-    $self->_connect;
-    $self->{sock}->print("rm \"$playlist\"\n");
-    return $self->_process_feedback;
+sub rm {
+    my ($self, $playlist) = @_;
+    return unless defined $playlist;
+    $self->_send_command( qq[rm "$playlist"\n] );
 }
 
-sub save
-{
-    my($self,$playlist) = @_;
-    return undef if !defined($playlist);
-    $self->_connect;
-    $self->{sock}->print("save \"$playlist\"\n");
+sub save {
+    my ($self, $playlist) = @_;
+    return unless defined $playlist;
+    $self->_send_command( qq[save "$playlist"\n] );
+
+=begin FIXME
+
     if(!$self->_process_feedback)
     {
         # Does the playlist already exist?
@@ -573,6 +559,11 @@ sub save
         }
     }
     return 1;
+
+=end FIXME
+
+=cut
+
 }
 
 sub search
