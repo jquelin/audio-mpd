@@ -240,51 +240,27 @@ my %config = (
 ###############################################################
 
 
-sub kill_mpd
-{
-    my ($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("kill\n");
-    return 1;
+sub kill_mpd {
+    my ($self) = @_;
+    $self->_send_command("kill\n");
 }
 
-sub send_password
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("password ".$self->{password}."\n");
-    $self->_process_feedback;
-    return 1;
+sub send_password {
+    my ($self) = @_;
+    $self->ping;
 }
 
-sub get_urlhandlers
-{
-    my($self) = shift;
-    $self->_connect;
-    my @handlers;
-    $self->{sock}->print("urlhandlers\n");
-    foreach($self->_process_feedback)
-    {
-        push(@handlers, $1) if /^handler: (.+)$/;
-    }
+sub get_urlhandlers {
+    my ($self) = @_;
+    my @handlers =
+        map { /^handler: (.+)$/ ? $1 : () }
+        $self->_send_command("urlhandlers\n");
     return @handlers;
 }
 
-sub get_error
-{
-    my($self) = shift;
-    return (                            # Let's return an array
-        $self->{ack_error_id},          # [0] What is the ID of the error?
-        $self->{ack_error},             # [1] Human readable error-message
-        $self->{ack_error_command},     # [2] The command that caused the error
-        $self->{ack_error_command_id}   # [3] What number the command was in the command_list (if used)
-    );
-}
-
-sub get_server_version
-{
-    my($self) = shift;
-    return $self->{server_version};
+sub get_server_version {
+    my ($self) = @_;
+    return $self->version;
 }
 
 
@@ -1125,16 +1101,6 @@ which can enable optionally password protected functionality.
 =item $mpd->get_urlhandlers()
 
 Return an array of supported URL schemes.
-
-
-=item $mpd->get_error()
-
-Return an array containing information about the last error that occured.
-
- - Item 0: The ID number of the error
- - Item 1: Human readable error message
- - Item 2: The command that caused the error
- - Item 3: The position in the command_list of the command (if used)
 
 
 =item $mpd->get_server_version()
