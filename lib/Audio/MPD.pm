@@ -357,21 +357,16 @@ sub output_disable
 #                    altering playback.                       #
 ###############################################################
 
-sub play
-{
-    my($self,$number,$from_id) = @_;
-    $self->_connect;
-    $number = '' if !defined($number);
-    my $command = (defined($from_id) && $from_id == 1 ? 'playid' : 'play');
-    $self->{sock}->print("$command $number\n");
-    return $self->_process_feedback;
+sub play {
+    my ($self, $number) = @_;
+    $number ||= '';
+    $self->_send_command("play $number");
 }
 
-sub playid
-{
-    my($self,$number) = @_;
-    $number = '' if !defined($number);
-    return $self->play($number,1);
+sub playid {
+    my ($self, $number) = @_;
+    $number ||= '';
+    $self->_send_command("playid $number");
 }
 
 sub pause
@@ -1114,10 +1109,9 @@ Disable the specified audio output. $output is the ID of the audio output.
 
 =over 4
 
-=item $mpd->play( [$number], [$fromid] )
+=item $mpd->play( [$number] )
 
 Begin playing playlist at song number $number.
-If $fromid is true then begin playing at song with ID $number.
 
 
 =item $mpd->playid( [$songid] )
