@@ -90,7 +90,6 @@ sub new {
         playlist => -1,
         playlistlength => undef,
         bitrate => undef,
-        xfade => undef,
         audio => undef,
         error => undef,
         song => undef,
@@ -303,19 +302,15 @@ sub set_random
     return $self->_process_feedback;
 }
 
-sub set_fade
-{
-    my($self,$fade_value) = @_;
-    $self->_connect;
-    $fade_value = 0 if !defined($fade_value);
-    $self->{sock}->print("crossfade $fade_value\n");
-    $self->{xfade} = $fade_value;
-    return $self->_process_feedback;
+sub set_fade {
+    my ($self, $fade_value) = @_;
+    $fade_value ||= 0;
+    $self->_send_command("crossfade $fade_value\n");
 }
 
 sub set_volume
 {
-    my($self,$volume) = @_;
+    my ($self, $volume) = @_;
     $self->_connect;
 
     if($volume =~ /^(-|\+)(\d+)/ && defined($self->{volume}))
@@ -389,28 +384,19 @@ sub pause
     return $self->_process_feedback;
 }
 
-sub stop
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("stop\n");
-    return $self->_process_feedback;
+sub stop {
+    my ($self) = @_;
+    $self->_send_command("stop\n");
 }
 
-sub next
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("next\n");
-    return $self->_process_feedback;
+sub next {
+    my ($self) = @_;
+    $self->_send_command("next\n");
 }
 
-sub prev
-{
+sub prev {
     my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("previous\n");
-    return $self->_process_feedback;
+    $self->_send_command("previous\n");
 }
 
 sub seek
@@ -449,12 +435,9 @@ sub seekid
 #
 # Remove all the songs from the current playlist. No return value.
 #
-sub clear
-{
-    my ($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("clear\n");
-    return $self->_process_feedback;
+sub clear {
+    my ($self) = @_;
+    $self->_send_command("clear\n");
 }
 
 
