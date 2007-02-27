@@ -83,10 +83,6 @@ sub new {
         # Array holding playlist-entries in hashes
         playlistref => [],
         # Variables set by command 'status'
-        volume => undef,
-        repeat => undef,
-        random => undef,
-        state => undef,
         playlist => -1,
         playlistlength => undef,
         bitrate => undef,
@@ -103,7 +99,6 @@ sub new {
         db_update => undef,
         playtime => undef,
         # 0.12.0 stuff
-        outputs => undef,
         commands => undef,
         notcommands => undef,
     };
@@ -135,6 +130,13 @@ sub ping {
     $self->_send_command( "ping\n" );
 }
 
+sub status {
+    my ($self) = @_;
+    my %kv =
+        map { /^([^:]+):\s+(\S+)$/ ? ($1 => $2) : () }
+        $self->_send_command( "status\n" );
+    return \%kv;
+}
 
 #--
 # Private methods
@@ -226,9 +228,6 @@ my %config = (
     # Overwrites old playlist, if a playlist is saved with the same
     # name. Otherwise, an error is returned. Default: yes
     OVERWRITE_PLAYLIST => 1,
-    # Allows toggling repeat and random states by not specifying
-    # parameteres. Default: yes
-    ALLOW_TOGGLE_STATES => 1,
 );
 
 
@@ -241,7 +240,7 @@ my %config = (
 ###############################################################
 
 
-sub kill_mpd {
+sub kill {
     my ($self) = @_;
     $self->_send_command("kill\n");
 }
@@ -259,11 +258,6 @@ sub get_urlhandlers {
     return @handlers;
 }
 
-sub get_server_version {
-    my ($self) = @_;
-    return $self->version;
-}
-
 
 ###############################################################
 #               METHODS FOR ALTERING SETTINGS                 #
@@ -272,82 +266,46 @@ sub get_server_version {
 #                     settings in MPD.                        #
 ###############################################################
 
-sub set_repeat
-{
-    my($self,$mode) = @_;
-    $self->_connect;
+sub repeat {
+    my ($self, $mode) = @_;
 
-    # If the mode is not set, and ALLOW_TOGGLE_STATUS is, return false!
-    return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/);
-
-    # If mode is not set, shift the current status
-    $mode = ($self->{repeat} == 1 ? 0 : 1) if !defined($mode);
-
-    $self->{sock}->print("repeat $mode\n");
-    $self->{repeat} = $mode;
-    return $self->_process_feedback;
+    $mode ||= not $self->status->{repeat}; # toggle if no param
+    $mode = $mode ? 1 : 0;                 # force integer
+    $self->_send_command("repeat $mode\n");
 }
 
-sub set_random
-{
-    my($self,$mode) = @_;
-    $self->_connect;
+sub random {
+    my ($self, $mode) = @_;
 
-    # If the mode is not set, and ALLOW_TOGGLE_STATUS is, return false!
-    return undef if((!defined($mode) && !$config{'ALLOW_TOGGLE_STATUS'}) || $mode !~ /^(0|1)$/);
-
-    # If mode is not set, shift the current status
-    $mode = ($self->{random} == 1 ? 0 : 1) if !defined($mode);
-
-    $self->{sock}->print("random $mode\n");
-    $self->{random} = $mode;
-    return $self->_process_feedback;
+    $mode ||= not $self->status->{random}; # toggle if no param
+    $mode = $mode ? 1 : 0;                 # force integer
+    $self->_send_command("random $mode\n");
 }
 
-sub set_fade {
+sub fade {
     my ($self, $fade_value) = @_;
     $fade_value ||= 0;
     $self->_send_command("crossfade $fade_value\n");
 }
 
-sub set_volume
-{
+sub volume {
     my ($self, $volume) = @_;
-    $self->_connect;
 
-    if($volume =~ /^(-|\+)(\d+)/ && defined($self->{volume}))
-    {
-        $volume = $self->{volume} + $2 if $1 eq '+';
-        $volume = $self->{volume} - $2 if $1 eq '-';
+    if ($volume =~ /^(-|\+)(\d+)/ )  {
+        my $current = $self->status->{volume};
+        $volume = $1 eq '+' ? $current + $2 : $current - $1;
     }
-
-    return undef if !defined($volume) || $volume < 0 || $volume > 100;
-
-    $self->{sock}->print("setvol $volume\n");
-    $self->{volume} = $volume;
-    return $self->_process_feedback;
+    $self->_send_command("setvol $volume\n");
 }
 
-sub output_enable
-{
-    my($self,$output) = @_;
-    $self->_connect;
-    return undef if(!defined($output) || $output !~ /^\d+$/);
-    $self->{sock}->print("enableoutput $output\n");
-    my @tmp = $self->_process_feedback;
-    $self->_get_outputs;
-    return @tmp;
+sub output_enable {
+    my ($self, $output) = @_;
+    $self->_send_command("enableoutput $output\n");
 }
 
-sub output_disable
-{
-    my($self,$output) = @_;
-    $self->_connect;
-    return undef if(!defined($output) || $output !~ /^\d+$/);
-    $self->{sock}->print("disableoutput $output\n");
-    my @tmp = $self->_process_feedback;
-    $self->_get_outputs;
-    return @tmp;
+sub output_disable {
+    my ($self, $output) = @_;
+    $self->_send_command("disableoutput $output\n");
 }
 
 ###############################################################
@@ -369,16 +327,10 @@ sub playid {
     $self->_send_command("playid $number");
 }
 
-sub pause
-{
-    my($self,$state) = @_;
-
-    # Default is to pause
-    $state = 1 unless (defined $state);
-
-    $self->_connect;
-    $self->{sock}->print("pause $state\n");
-    return $self->_process_feedback;
+sub pause {
+    my ($self, $state) = @_;
+    $state ||= ''; # default is to toggle
+    $self->_send_command("pause $state\n");
 }
 
 sub stop {
@@ -396,28 +348,18 @@ sub prev {
     $self->_send_command("previous\n");
 }
 
-sub seek
-{
-    my($self,$position,$song,$from_id) = @_;
-    $self->_connect;
-    my $command = (defined($from_id) && $from_id == 1 ? 'seekid' : 'seek');
-    $position = int($position) if(defined($position)); # Go INT!
-    if(defined($song) && defined($position) && $song =~ /^\d+$/ && $position =~ /^\d+$/)
-    {
-        $self->{sock}->print("$command $song $position\n");
-    } elsif(defined($position) && $position =~ /^\d+$/ && defined($self->{song})) {
-        $self->{sock}->print("$command ".$self->{song}." $position\n");
-    } else {
-        return undef;
-    }
-    return $self->_process_feedback;
+sub seek {
+    my ($self, $time, $song) = @_;
+    $time ||= 0; $time = int $time;
+    $song = $self->status->{song} || 0 if not defined $song; # seek in current song
+    $self->_send_command( "seek $song $time\n" );
 }
 
-sub seekid
-{
-    my($self,$position,$songid) = @_;
-    return undef if !defined($position) || !defined($songid);
-    return $self->seek($position,$songid,1);
+sub seekid {
+    my ($self, $time, $song) = @_;
+    $time ||= 0; $time = int $time;
+    $song ||= 0; $song = int $song;
+    $self->_send_command( "seekid $song $time\n" );
 }
 
 ###############################################################
@@ -445,30 +387,22 @@ sub add {
     $self->_send_command( qq[add "$path"\n] );
 }
 
-sub delete
-{
-    my($self,$song,$from_id) = @_;
-    $self->_connect;
-    return undef if !defined($song);
-    my $command = (defined($from_id) && $from_id == 1 ? 'deleteid' : 'delete');
-    if($song =~ /^(\d+)-(\d+)$/)
-    {
-        for(my $i = $2 ; $i >= $1 ; $i--)
-        {
-            $self->$command($i);
-        }
-    } else {
-        $self->{sock}->print("$command $song\n");
-        return $self->_process_feedback;
-    }
-    return 1;
+sub delete {
+    my ($self, @songs) = @_;
+    my $command =
+          "command_list_begin\n"
+        . map { "delete $_\n" } @songs
+        . "command_list_end\n";
+    $self->_send_command( $command );
 }
 
-sub deleteid
-{
-    my($self,$songid) = @_;
-    return undef if !defined($songid) || $songid !~ /^\d+$/;
-    return $self->delete($songid,1);
+sub deleteid {
+    my ($self, @songs) = @_;
+    my $command =
+          "command_list_begin\n"
+        . map { "delete $_\n" } @songs
+        . "command_list_end\n";
+    $self->_send_command( $command );
 }
 
 sub load {
@@ -919,28 +853,6 @@ sub _get_playlist
     return 1;
 }
 
-sub _get_outputs
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("outputs\n");
-    my @outputs;
-    my %output;
-    foreach($self->_process_feedback)
-    {
-        next if !defined;
-        if(/^outputid:/)
-        {
-            push @outputs, { %output } if %output;
-            %output = ();
-        }
-        $output{$1} = $2 if /^output(.+): (.+)$/;
-    }
-    push @outputs, { %output } if %output;
-    $self->{outputs} = \@outputs;
-    return 1;
-}
-
 sub _get_commands
 {
     my($self) = shift;
@@ -1034,7 +946,7 @@ check that the replyis 'OK'. Return '1' if connected and undef if not.
 Close the connection to the MPD server.
 
 
-=item $mpd->kill_mpd()
+=item $mpd->kill()
 
 Send a message to the MPD server telling it to shut down.
 
@@ -1057,7 +969,7 @@ which can enable optionally password protected functionality.
 Return an array of supported URL schemes.
 
 
-=item $mpd->get_server_version()
+=item $mpd->version()
 
 Return the version number for the server we are connected to.
 
@@ -1068,25 +980,25 @@ Return the version number for the server we are connected to.
 
 =over 4
 
-=item $mpd->set_repeat( [$repeat] )
+=item $mpd->repeat( [$repeat] )
 
 Set the repeat mode to $repeat (1 or 0). If $repeat is not specified then
 the repeat mode is toggled.
 
 
-=item $mpd->set_random( [$random] )
+=item $mpd->random( [$random] )
 
 Set the random mode to $random (1 or 0). If $random is not specified then
 the random mode is toggled.
 
 
-=item $mpd->set_fade( [$seconds] )
+=item $mpd->fade( [$seconds] )
 
 Enable crossfading and set the duration of crossfade between songs.
 If $seconds is not specified or $seconds is 0, then crossfading is disabled.
 
 
-=item $mpd->set_volume( [+][-]$volume )
+=item $mpd->volume( [+][-]$volume )
 
 Sets the audio output volume percentage to absolute $volume.
 If $volume is prefixed by '+' or '-' then the volume is changed relatively
@@ -1121,8 +1033,10 @@ Begin playing playlist at song ID $songid.
 
 =item $mpd->pause( [$state] )
 
-Pause playback. If $state is 0 then the current track is unpaused,
+Pause playback. If C<$state> is 0 then the current track is unpaused,
 if $state is 1 then the current track is paused.
+
+Note that if C<$state> is not given, pause state will be toggled.
 
 
 =item $mpd->stop()
@@ -1140,17 +1054,16 @@ Play next song in playlist.
 Play previous song in playlist.
 
 
-=item $mpd->seek( $position, [$song], [$fromid] )
+=item $mpd->seek( $time, [$song])
 
-Seek to $position seconds.
+Seek to $time seconds.
 If $song number is not specified then the perl module will try and
-seek to $position in the current song. If $fromid is true then
-$song is the ID of the song to seek in.
+seek to $time in the current song.
 
 
-=item $mpd->seekid( $position, $songid )
+=item $mpd->seekid( $time, $songid )
 
-Seek to $position seconds in song ID $songid.
+Seek to $time seconds in song ID $songid.
 
 =back
 
@@ -1176,10 +1089,9 @@ Add the song identified by $path (relative to MPD's music directory) to the
 current playlist. No return value.
 
 
-=item $mpd->delete( $song, [$fromid] )
+=item $mpd->delete( $song )
 
-Remove song number $song from the current playlist. If $fromid is true, then
-$song is the ID of the song to be removed. No return value.
+Remove song number $song from the current playlist.No return value.
 
 
 =item $mpd->deleteid( $songid )
