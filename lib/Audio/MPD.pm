@@ -75,11 +75,6 @@ sub new {
         ack_error_command_id => undef,
         ack_error_command => undef,
         ack_error => undef,
-        # MPD connection information
-        mpd_host => $mpd_host || $ENV{MPD_HOST} || $config{DEFAULT_MPD_HOST},
-        mpd_port => $mpd_port || $ENV{MPD_PORT} || $config{DEFAULT_MPD_PORT},
-        # Socket handle
-        sock => undef,
         # Array holding playlist-entries in hashes
         playlistref => [],
         # Variables set by command 'status'
@@ -283,9 +278,9 @@ sub random {
 }
 
 sub fade {
-    my ($self, $fade_value) = @_;
-    $fade_value ||= 0;
-    $self->_send_command("crossfade $fade_value\n");
+    my ($self, $value) = @_;
+    $value ||= 0;
+    $self->_send_command("crossfade $value\n");
 }
 
 sub volume {
@@ -417,25 +412,14 @@ sub updatedb {
     $self->_send_command("update $path\n");
 }
 
-sub swap
-{
-    my($self,$song_from,$song_to,$from_id) = @_;
-    $self->_connect;
-    if(defined($song_from) && defined($song_to) && $song_from =~ /^\d+$/ && $song_to =~ /^\d+$/)
-    {
-        my $command = (defined($from_id) && $from_id == 1 ? 'swapid' : 'swap');
-        $self->{sock}->print("$command $song_from $song_to\n");
-    } else {
-        return undef;
-    }
-    return $self->_process_feedback;
+sub swap {
+    my ($self, $from, $to) = @_;
+    $self->_send_command("swap $from $to\n");
 }
 
-sub swapid
-{
-    my($self,$songid_from,$songid_to) = @_;
-    return undef if !defined($songid_from) || !defined($songid_to) || $songid_from !~ /^\d+$/ || $songid_to !~ /^\d+$/;
-    return $self->swap($songid_from,$songid_to,1);
+sub swapid {
+    my ($self, $from, $to) = @_;
+    $self->_send_command("swapid $from $to\n");
 }
 
 sub shuffle {
@@ -443,25 +427,14 @@ sub shuffle {
     $self->_send_command("shuffle\n");
 }
 
-sub move
-{
-    my($self,$song,$new_pos,$from_id) = @_;
-    $self->_connect;
-    if(defined($song) && defined($new_pos) && $song =~ /^\d+$/ && $new_pos =~ /^\d+$/)
-    {
-        my $command = (defined($from_id) && $from_id == 1 ? 'moveid' : 'move');
-        $self->{sock}->print("$command $song $new_pos\n");
-    } else {
-        return undef;
-    }
-    return $self->_process_feedback;
+sub move {
+    my ($self, $song, $pos) = @_;
+    $self->_send_command("move $song $pos\n");
 }
 
-sub moveid
-{
-    my($self,$songid,$new_pos) = @_;
-    return undef if !defined($songid) || !defined($new_pos) || $songid !~ /^\d+$/ || $new_pos !~ /^\d+$/;
-    return $self->move($songid,$new_pos,1);
+sub moveid {
+    my ($self, $song, $pos) = @_;
+    $self->_send_command("moveid $song $pos\n");
 }
 
 sub rm {
@@ -521,77 +494,66 @@ sub search
     return @list;
 }
 
-sub list
-{
-    my($self,$type,$artist) = @_;
-    return undef if !defined($type) || $type !~ /^(artist|album)$/;
-    $self->_connect;
-    $artist = '' if !defined($artist);
-    print $self->{sock} ($type eq 'album' ? "list album \"$artist\"\n" : "list artist\n");
-
-    #   Strip unneccesary information
-    my @tmp;
-    foreach($self->_process_feedback)
-    {
-        push @tmp, $1 if /^(?:Artist|Album):\s(.+)$/;
-    }
-    return @tmp;
+sub list {
+    my ($self, $type, $artist) = @_;
+    my $command = "list $type " . $type eq 'album' ? qq["$artist"] : '';
+    return
+        map { /^[^:]+:\s+(.*)$/ ? $1 : () }
+        $self->_send_command( "$command\n" );
 }
 
+# recursively, but only dirs & files
 sub listall {
     my ($self, $path) = @_;
     $path ||= '';
     return $self->_send_command( qq[listall "$path"\n] );
+    # FIXME: return item::songs / item::directory
 }
 
-sub listallinfo
-{
-    my($self,$path) = @_;
-    $self->_connect;
-    $path = '' if !defined($path);
-    $self->{sock}->print("listallinfo \"$path\"\n");
+# recursive, with all tags
+sub listallinfo {
+    my ($self, $path) = @_;
+    $path ||= ''
+
+    my @lines = $self->_send_command( qq[listallinfo "$path"\n] );
+
     my @results;
     my %element;
-    foreach($self->_process_feedback)
-    {
-        if(/^(.[^:]+):\s(.+)$/)
-        {
-            if($1 eq 'file')
-            {
-                push @results, { %element } if %element;
-                %element = ();
-            }
-            $element{$1} = $2
+    foreach my $line (@lines) {
+        chomp $line;
+        next unless /^([^:]+):\s(.+)$/;
+        if ($1 eq 'file') {
+            push @results, \%element;
+            %element = ();
         }
+        $element{$1} = $2;
     }
-    push @results, { %element } if %element;
+    push @results, \%element;
     return @results;
 }
 
-sub lsinfo
-{
-    my($self,$path) = @_;
-    $self->_connect;
-    $path = '' if !defined($path);
-    $self->{sock}->print("lsinfo \"$path\"\n");
+# only in the current path, all tags
+sub lsinfo {
+    my ($self, $path) = @_;
+    $path ||= '';
+
+    my @lines = $self->_send_command( qq[lsinfo "$path"\n] );
+
     my @results;
     my %element;
-    foreach($self->_process_feedback)
-    {
-        if(/^(.[^:]+):\s(.+)$/)
-        {
-            #if($1 =~ /^(?:file|playlist|directory)$/)
-            if($1 eq 'file' || $1 eq 'playlist' || $1 eq 'directory')
-            {
-                push @results, { %element } if %element;
-                %element = ();
-            }
-            $element{$1} = $2;
+    foreach my $line (@lines) {
+        chomp $line;
+        next unless /^([^:]+):\s(.+)$/;
+        if ($1 eq 'file' || $1 eq 'playlist' || $1 eq 'directory') {
+            push @results, \%element;
+            %element = ();
         }
+        $element{$1} = $2;
     }
-    push @results, { %element } if %element;
+    push @results, \%element;
     return @results;
 }
+
 
 ###############################################################
 #                     CUSTOM METHODS                          #
@@ -1099,11 +1061,10 @@ Remove song number $song from the current playlist.No return value.
 Remove the specified $songid from the current playlist. No return value.
 
 
-=item $mpd->swap( $song1, $song2, [$fromid] )
+=item $mpd->swap( $song1, $song2 )
 
-Swap positions of song number $song1 and $song2 on the current playlist. If
-$fromid is true, then $song1 and $song are the IDs of the songs. No return
-value.
+Swap positions of song number $song1 and $song2 on the current playlist. No
+return value.
 
 
 =item $mpd->swapid( $songid1, $songid2 )
@@ -1117,10 +1078,9 @@ playlist. No return value.
 Shuffle the current playlist. No return value.
 
 
-=item $mpd->move( $song, $newpos, [$fromid] )
+=item $mpd->move( $song, $newpos )
 
-Move song number $song to the position $newpos. If $fromid is true, then $song
-is the ID of the song. No return value.
+Move song number $song to the position $newpos. No return value.
 
 
 =item $mpd->moveid( $songid, $newpos )
