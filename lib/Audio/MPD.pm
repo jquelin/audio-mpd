@@ -530,6 +530,7 @@ sub listallinfo {
     }
     push @results, \%element;
     return @results;
+    # FIXME: return item::songs / item::directory
 }
 
 # only in the current path, all tags
@@ -552,6 +553,7 @@ sub lsinfo {
     }
     push @results, \%element;
     return @results;
+    # FIXME: return item::songs / item::directory
 }
 
 
@@ -562,40 +564,30 @@ sub lsinfo {
 #   MPD, but may be useful for most people using the module.  #
 ###############################################################
 
-sub get_song_info
-{
-    my($self,$song,$from_id) = @_;
-    if(!defined($song)) {
-        $self->_connect;
-        $self->_get_status;
-        $song = $self->{song};
-    }
-    $self->{sock}->print("playlist".(defined($from_id) && $from_id == 1 ? 'id' : 'info')." $song\n");
-    my %metadata;
-    foreach($self->_process_feedback)
-    {
-        $metadata{$1} = $2 if /^(.[^:]+):\s(.+)$/;
-    }
-    return %metadata;
+sub get_song_info {
+    my ($self, $song) = @_;
+    $song ||= $self->status->{song};
+    return
+        map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
+        $self->_send_command("playlistinfo $song\n");
+    # FIXME: return item::songs / item::directory
 }
 
-sub get_current_song_info
-{
-    my($self) = @_;
-    $self->{sock}->print("currentsong\n");
-    my %metadata;
-    foreach($self->_process_feedback)
-    {
-        $metadata{$1} = $2 if /^(.[^:]+):\s(.+)$/;
-    }
-    return %metadata;
+sub get_current_song_info {
+    my ($self) = @_;
+    return
+        map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
+        $self->_send_command("currentsong\n");
 }
 
-sub get_song_info_from_id
-{
+sub get_song_info_from_id {
     my($self,$song) = @_;
-    # No reason to write it all again :)
-    $self->get_song_info($song,1);
+    my ($self, $song) = @_;
+    $song ||= $self->status->{song};
+    return
+        map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
+        $self->_send_command("playlistid $song\n");
+    # FIXME: return item::songs / item::directory
 }
 
 sub searchadd
@@ -668,59 +660,49 @@ sub get_title
     return $metadata{'file'};
 }
 
-sub get_time_format
-{
-    my($self) = shift;
-
-    $self->_get_status;
-    return '' if !defined($self->{playlistlength}) || !defined($self->{song});
-
-    #Get the time from MPD; example: 49:395 (seconds so far:total seconds)
-    my($psf,$tst) = split /:/, $self->{'time'};
-    return sprintf("%d:%02d/%d:%02d",
-        ($psf / 60), # minutes so far
-        ($psf % 60), # seconds - minutes so far
-        ($tst / 60), # minutes total
-        ($tst % 60));# seconds - minutes total
-}
-
-sub get_time_info
-{
+sub get_time_format {
     my ($self) = shift;
 
-    return '' if !defined($self->{playlistlength}) || !defined($self->{song});
+    # Get the time from MPD; example: 49:395 (seconds so far:total seconds)
+    my ($sofar, $total) = split /:/, $self->status->{time};
+    return sprintf "%d:%02d/%d:%02d",
+        ($sofar / 60), # minutes so far
+        ($sofar % 60), # seconds - minutes so far
+        ($total / 60), # minutes total
+        ($total % 60);# seconds - minutes total
+}
 
-    #The return variable
+sub get_time_info {
+    my ($self) = @_;
+
+    # Get the time from MPD; example: 49:395 (seconds so far:total seconds)
+    my ($sofar, $total) = split /:/, $self->status->{time};
+    my $left = $total - $sofar;
+
+    # Store seconds for everything
     my $rv = {};
-
-    #Get the time from MPD; example: 49:395 (seconds so far:total seconds)
-    $self->_get_status;
-    my($so_far,$total) = split(/:/, $self->{'time'});
-    my $left = $total-$so_far;
-
-    #Store seconds for everything
-    $rv->{seconds_so_far} = $so_far;
+    $rv->{seconds_so_far} = $sofar;
     $rv->{seconds_total}  = $total;
     $rv->{seconds_left}   = $left;
 
-    #Store the percentage; use one decimal point
+    # Store the percentage; use one decimal point
     $rv->{percentage} =
     $rv->{seconds_total}
     ? 100*$rv->{seconds_so_far}/$rv->{seconds_total}
     : 0;
-    $rv->{percentage} = sprintf("%.1f",$rv->{percentage});
+    $rv->{percentage} = sprintf "%.1f",$rv->{percentage};
 
 
-    #Parse the time so far
-    my $min_so_far = ($so_far / 60);
-    my $sec_so_far = ($so_far % 60);
+    # Parse the time so far
+    my $min_so_far = ($sofar / 60);
+    my $sec_so_far = ($sofar % 60);
 
     $rv->{time_so_far} = sprintf("%d:%02d", $min_so_far, $sec_so_far);
     $rv->{minutes_so_far} = sprintf("%00d", $min_so_far);
     $rv->{seconds_so_far} = sprintf("%00d", $sec_so_far);
 
 
-    #Parse the total time
+    # Parse the total time
     my $min_tot = ($total / 60);
     my $sec_tot = ($total % 60);
 
@@ -728,7 +710,7 @@ sub get_time_info
     $rv->{minutes} = $min_tot;
     $rv->{seconds} = $sec_tot;
 
-    #Parse the time left
+    # Parse the time left
     my $min_left = ($left / 60);
     my $sec_left = ($left % 60);
     $rv->{time_left} = sprintf("-%d:%02d", $min_left, $sec_left);
@@ -1181,10 +1163,9 @@ Return a hash of hashref with all the differences in the playlist since
 playlist $plversion.
 
 
-=item $mpd->get_song_info( $song, $fromid )
+=item $mpd->get_song_info( $song )
 
 Returns an a hash containing information about song number $song.
-If $fromid is true, then $song is the ID of the song.
 
 
 =item $mpd->get_song_info_from_id( $songid )
@@ -1201,7 +1182,7 @@ returned. If there is no title available, then the filename is returned.
 If $song is not specified, then the 'title' of the current song is returned.
 
 
-=item $mpd->get_time_format( [$song] )
+=item $mpd->get_time_format( )
 
 Returns the current position and duration of the current song.
 String is formatted at "M:SS/M:SS", with current time first and total time
