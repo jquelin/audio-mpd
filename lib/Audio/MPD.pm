@@ -83,7 +83,10 @@ sub ping {
 
 sub stats {
     my ($self) = @_;
-    return $self->_send_command("stats\n");
+    my %kv =
+        map { /^([^:]+):\s+(\S+)$/ ? ($1 => $2) : () }
+        $self->_send_command( "stats\n" );
+    return \%kv;
 }
 
 
@@ -451,8 +454,7 @@ sub listall {
 # recursive, with all tags
 sub listallinfo {
     my ($self, $path) = @_;
-    $path ||= ''
-
+    $path ||= '';
     my @lines = $self->_send_command( qq[listallinfo "$path"\n] );
 
     my @results;
@@ -520,7 +522,6 @@ sub get_current_song_info {
 }
 
 sub get_song_info_from_id {
-    my($self,$song) = @_;
     my ($self, $song) = @_;
     $song ||= $self->status->{song};
     return
@@ -552,7 +553,7 @@ sub crop {
 
     my $command =
           "command_list_begin\n"
-        . map { $_  != $song ? "delete $_\n" : '' } 0..$len
+        . map { $_  != $cur ? "delete $_\n" : '' } 0..$len
         . "command_list_end\n";
     $self->_send_command( $command );
 }
@@ -652,7 +653,7 @@ sub playlist_changes {
 
     my %changes;
 
-    $self->_send_command("plchanges $plid\n");
+    my @lines = $self->_send_command("plchanges $plid\n");
     my $entry; # hash reference
     foreach my $line (@lines) {
         if (/^([^:]+):\s(.+)$/) {
@@ -666,7 +667,7 @@ sub playlist_changes {
         }
     }
 
-    return %changeset;
+    return %changes;
 }
 
 
@@ -729,16 +730,19 @@ hostname, seperated with an '@' character.
 Sends a ping command to the mpd server.
 
 
-=item $mpd->is_connected()
+=item $mpd->stats()
 
-Check to see if there is a valid connection to the MPD server.
-First check that the socket is connected and then send a Ping command
-check that the replyis 'OK'. Return '1' if connected and undef if not.
+Return a hashref with the number of artists, albums, songs in the database,
+as well as mpd uptime, the playtime of the playlist / the database and the
+last update of the database
 
 
-=item $mpd->close_connection()
+=item $mpd->status()
 
-Close the connection to the MPD server.
+Return a hashref with various information on current mpd settings, such as
+repeat, crossfade and random mode, playlist version & length, the state
+(playing or not), the song played as well as its id, the bitrate and the
+audio output, and the time elapsed/of the song.
 
 
 =item $mpd->kill()
