@@ -332,7 +332,7 @@ sub delete {
     my ($self, @songs) = @_;
     my $command =
           "command_list_begin\n"
-        . map { "delete $_\n" } @songs
+        . join( '', map { "delete $_\n" } @songs )
         . "command_list_end\n";
     $self->_send_command( $command );
 }
@@ -341,7 +341,7 @@ sub deleteid {
     my ($self, @songs) = @_;
     my $command =
           "command_list_begin\n"
-        . map { "delete $_\n" } @songs
+        . join( '', map { "delete $_\n" } @songs )
         . "command_list_end\n";
     $self->_send_command( $command );
 }
@@ -423,15 +423,14 @@ sub search {
     my @list;
     my %hash;
     foreach my $line (@lines) {
-        if (/^([^:]+):\s(.+)$/) {
-            if($1 eq 'file') {
-                push @list, \%hash;
-                %hash = ();
-            }
-            $hash{$1} = $2;
+        next unless $line =~ /^([^:]+):\s(.+)$/;
+        if ($1 eq 'file') {
+            push @list, { %hash } if %hash;
+            %hash = ();
         }
+        $hash{$1} = $2;
     }
-    push @list, \%hash; # Remember the last entry
+    push @list, { %hash }; # Remember the last entry
     return @list;
 }
 
@@ -461,14 +460,14 @@ sub listallinfo {
     my %element;
     foreach my $line (@lines) {
         chomp $line;
-        next unless /^([^:]+):\s(.+)$/;
+        next unless $line =~ /^([^:]+):\s(.+)$/;
         if ($1 eq 'file') {
-            push @results, \%element;
+            push @results, { %element } if %element;
             %element = ();
         }
         $element{$1} = $2;
     }
-    push @results, \%element;
+    push @results, { %element };
     return @results;
     # FIXME: return item::songs / item::directory
 }
@@ -484,14 +483,14 @@ sub lsinfo {
     my %element;
     foreach my $line (@lines) {
         chomp $line;
-        next unless /^([^:]+):\s(.+)$/;
+        next unless $line =~ /^([^:]+):\s(.+)$/;
         if ($1 eq 'file' || $1 eq 'playlist' || $1 eq 'directory') {
-            push @results, \%element;
+            push @results, { %element } if %element;
             %element = ();
         }
         $element{$1} = $2;
     }
-    push @results, \%element;
+    push @results, { %element };
     return @results;
     # FIXME: return item::songs / item::directory
 }
@@ -538,7 +537,7 @@ sub searchadd {
 
     my $command =
           "command_list_begin\n"
-        . map { qq[add "$_->{file}"\n] } @results
+        . join( '', map { qq[add "$_->{file}"\n] } @results )
         . "command_list_end\n";
     $self->_send_command( $command );
 }
@@ -553,7 +552,7 @@ sub crop {
 
     my $command =
           "command_list_begin\n"
-        . map { $_  != $cur ? "delete $_\n" : '' } 0..$len
+        . join( '', map { $_  != $cur ? "delete $_\n" : '' } 0..$len )
         . "command_list_end\n";
     $self->_send_command( $command );
 }
@@ -567,16 +566,15 @@ sub playlist {
     my @list;
     my %hash;
     foreach my $line (@lines) {
-        if (/^([^:]+):\s(.+)$/) {
-            if($1 eq 'file') {
-                push @list, \%hash;
-                %hash = ();
-            }
-            $hash{$1} = $2;
+        next unless $line =~ /^([^:]+):\s(.+)$/;
+        if ($1 eq 'file') {
+            push @list, { %hash } if %hash;
+            %hash = ();
         }
+        $hash{$1} = $2;
     }
-    push @list, \%hash; # Remember the last entry
-    return @list;
+    push @list, { %hash }; # Remember the last entry
+    return \@list;
 }
 
 
@@ -656,15 +654,14 @@ sub playlist_changes {
     my @lines = $self->_send_command("plchanges $plid\n");
     my $entry; # hash reference
     foreach my $line (@lines) {
-        if (/^([^:]+):\s(.+)$/) {
-            my ($key, $value) = ($1, $2);
-            # create a new hash for the start of each entry
-            $entry = {} if $key eq 'file';
-            # save a ref to the entry as soon as we know where it goes
-            $changes{$value} = $entry if $key eq 'Pos';
-            # save all attributes of the entry
-            $entry->{$key} = $value;
-        }
+        next unless $line =~ /^([^:]+):\s(.+)$/;
+        my ($key, $value) = ($1, $2);
+        # create a new hash for the start of each entry
+        $entry = {} if $key eq 'file';
+        # save a ref to the entry as soon as we know where it goes
+        $changes{$value} = $entry if $key eq 'Pos';
+        # save all attributes of the entry
+        $entry->{$key} = $value;
     }
 
     return %changes;
