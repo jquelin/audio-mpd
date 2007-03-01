@@ -4,48 +4,52 @@ Audio::MPD
 Audio::MPD is a perl module for developing MPD (Music Player Daemon)
 clients and other scripts that control the MPD server.
 
-See scripts/example.pl for some simple examples of usage, 
+See scripts/example.pl for some simple examples of usage,
 or scripts/mpc.pl for a very simple pure-perl copy of 'mpc'.
 
 Read more about MPD on http://www.musicpd.org/
-Reports bugs at http://www.musicpd.org/mantis/
-
+Reports bugs at https://rt.cpan.org/Ticket/Create.html?Queue=Audio-MPD
 
 
 INSTALLATION
+============
 
-	The module is built using Module::Build  
-	(which you must have installed on your system).
-	To install this module type the following:
+The module is built using Module::Build (which you must have installed on
+your system).
+To install this module type the following:
 
-		perl Build.PL
-			./Build
-			./Build test
+	perl Build.PL
+		./Build
+		./Build test
 
-	And then as root:
-	
-		./Build install
+And then as root:
 
-	Module::Build is available in the debian package:
+	./Build install
 
-		libmodule-build-perl
+
+You can also try to install it directly as a package for your favorite Linux
+distribution:
+    - mandriva:  perl-Audio-MPD
 
 
 
 COPYRIGHT AND LICENSE
+=====================
 
-	Copyright (C) 2005 Tue Abrahamsen
+Copyright (c) 2005 Tue Abrahamsen <tue.abrahamsen@gmail.com>
+Copyright (c) 2006 Nicholas J. Humfrey <njh@aelius.com>
+Copyright (c) 2007 Jerome Quelin <jquelin@cpan.org>
 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
-	
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA

@@ -1,11 +1,11 @@
 ---
 name: Audio-MPD
-version: 0.12.4
+version: 0.13.0
 author:
-  - 'Tue Abrahamsen <tue.abrahamsen@gmail.com>'
   - 'Jerome Quelin <jquelin@cpan.org>'
-  - 'Nicholas J. Humfrey <njh@aelius.com>'
-  - 'Jerome Quelin <jquelin@cpan.org>'
+  - |-
+    Original code by Tue Abrahamsen <tue.abrahamsen@gmail.com>, documented by
+    Nicholas J. Humfrey <njh@aelius.com>.
 abstract: Class for talking to MPD (Music Player Daemon) servers
 license: gpl
 resources:
@@ -18,7 +18,9 @@ build_requires:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.12.4
+    version: 0.13.0
+  Audio::MPD::Test:
+    file: lib/Audio/MPD/Test.pm
 generated_by: Module::Build version 0.2806
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
