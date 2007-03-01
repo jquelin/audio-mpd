@@ -61,52 +61,7 @@ sub new {
     # try to issue a ping to test connection - this can die.
     $self->ping;
 
-
     return $self;
-
-=begin FIXME
-
-    my $self = {
-        # Version of MPD server
-        server_version => undef,
-        password => undef,
-        # Variables for ACK error
-        ack_error_id => undef,
-        ack_error_command_id => undef,
-        ack_error_command => undef,
-        ack_error => undef,
-        # Array holding playlist-entries in hashes
-        playlistref => [],
-        # Variables set by command 'status'
-        playlist => -1,
-        playlistlength => undef,
-        bitrate => undef,
-        audio => undef,
-        error => undef,
-        song => undef,
-        time => undef,
-        # Variables set by command 'stats'
-        artists => undef,
-        albums => undef,
-        songs => undef,
-        uptime => undef,
-        db_playtime => undef,
-        db_update => undef,
-        playtime => undef,
-        # 0.12.0 stuff
-        commands => undef,
-        notcommands => undef,
-    };
-    bless($self,$class);
-
-    $self->_connect;
-    $self->send_password if $self->{password};
-    return $self;
-
-=end FIXME
-
-=cut
-
 }
 
 
@@ -125,6 +80,13 @@ sub ping {
     $self->_send_command( "ping\n" );
 }
 
+
+sub stats {
+    my ($self) = @_;
+    return $self->_send_command("stats\n");
+}
+
+
 sub status {
     my ($self) = @_;
     my %kv =
@@ -132,6 +94,7 @@ sub status {
         $self->_send_command( "status\n" );
     return \%kv;
 }
+
 
 #--
 # Private methods
@@ -206,26 +169,6 @@ sub _send_command {
 
 
 
-
-# -------------------------------
-# below is the original MPD.pm
-# -------------------------------
-
-###############################################################
-#                        CONFIGURATION                        #
-#-------------------------------------------------------------#
-#   Only holds the hash specifying different configuration-   #
-#  values used by the module. These may not be changed during #
-#   runtime, but can be altered for the programmers wishes.   #
-###############################################################
-
-my %config = (
-    # Overwrites old playlist, if a playlist is saved with the same
-    # name. Otherwise, an error is returned. Default: yes
-    OVERWRITE_PLAYLIST => 1,
-);
-
-
 ###############################################################
 #                       BASIC METHODS                         #
 #-------------------------------------------------------------#
@@ -242,7 +185,7 @@ sub kill {
 
 sub send_password {
     my ($self) = @_;
-    $self->ping;
+    $self->ping; # ping sends a command, and thus the password is sent
 }
 
 sub get_urlhandlers {
@@ -468,29 +411,24 @@ sub save {
 
 }
 
-sub search
-{
-    my($self,$type,$string,$strict) = @_;
-    return undef if !defined($type) || !defined($string) || $type !~ /^(artist|album|title|filename)$/;
-    $self->_connect;
+sub search {
+    my ($self, $type, $string, $strict) = @_;
+
     my $command = (!defined($strict) || $strict == 0 ? 'search' : 'find');
-    $self->{sock}->print("$command $type \"$string\"\n");
+    my @lines = $self->_send_command( qq[$command $type "$string"\n] );
 
     my @list;
     my %hash;
-    foreach($self->_process_feedback)
-    {
-        if(/^(.[^:]+):\s(.+)$/)
-        {
-            if($1 eq 'file')
-            {
-                push @list, { %hash } if %hash;
+    foreach my $line (@lines) {
+        if (/^([^:]+):\s(.+)$/) {
+            if($1 eq 'file') {
+                push @list, \%hash;
                 %hash = ();
             }
             $hash{$1} = $2;
         }
     }
-    push @list, { %hash } if %hash; # Remember the last entry
+    push @list, \%hash; # Remember the last entry
     return @list;
 }
 
@@ -578,6 +516,7 @@ sub get_current_song_info {
     return
         map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
         $self->_send_command("currentsong\n");
+    # FIXME: return item::songs / item::directory
 }
 
 sub get_song_info_from_id {
@@ -590,74 +529,63 @@ sub get_song_info_from_id {
     # FIXME: return item::songs / item::directory
 }
 
-sub searchadd
-{
-    my($self,$type,$string) = @_;
-    return undef if !defined($type) || !defined($string);
-    $self->_connect;
+sub searchadd {
+    my ($self, $type, $string) = @_;
     my @results = $self->search($type, $string);
-    if($#results > -1)
-    {
-        $self->{sock}->print("command_list_begin\n");
-        foreach(@results)
-        {
-            my %hash = %$_;
-            $self->{sock}->print("add \"".$hash{'file'}."\"\n");
+
+    return unless @results;
+
+    my $command =
+          "command_list_begin\n"
+        . map { qq[add "$_->{file}"\n] } @results
+        . "command_list_end\n";
+    $self->_send_command( $command );
+}
+
+
+sub crop {
+    my ($self) = @_;
+
+    my $status = $self->status;
+    my $cur = $status->{song};
+    my $len = $status->{playlistlength} - 1;
+
+    my $command =
+          "command_list_begin\n"
+        . map { $_  != $song ? "delete $_\n" : '' } 0..$len
+        . "command_list_end\n";
+    $self->_send_command( $command );
+}
+
+
+sub playlist {
+    my ($self) = @_;
+
+    my @lines = $self->_send_command("playlistinfo\n");
+
+    my @list;
+    my %hash;
+    foreach my $line (@lines) {
+        if (/^([^:]+):\s(.+)$/) {
+            if($1 eq 'file') {
+                push @list, \%hash;
+                %hash = ();
+            }
+            $hash{$1} = $2;
         }
-        $self->{sock}->print("command_list_end\n");
-        if($self->_process_feedback)
-        {
-            $self->{playlist} = $self->{playlist} + $#results + 1;
-        }
     }
-    return 1;
+    push @list, \%hash; # Remember the last entry
+    return @list;
 }
 
 
-sub crop
-{
-    my($self) = shift;
-    $self->{sock}->print("command_list_begin\n");
-    for(my $i = ($self->{playlistlength}-1) ; $i >= ($self->{song}+1) ; $i--)
-    {
-        $self->{sock}->print("delete $i\n");
-    }
-    for(my $i = ($self->{song}-1) ; $i >= 0 ; $i--)
-    {
-        $self->{sock}->print("delete $i\n");
-    }
-    $self->{sock}->print("command_list_end\n");
-    $self->_process_feedback;
-}
+sub get_title {
+    my ($self, $song) = @_;
 
-
-sub playlist
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->_get_playlist if !defined($self->{playlistref}->[0]);
-    return $self->{playlistref};
-}
-
-sub get_title
-{
-    my($self,$song) = @_;
-    my %metadata;
-    if(defined($song)) {
-        $self->_connect;
-        $self->_get_status;
-        my $info;
-        $info = $self->{song} unless !defined($self->{song}) || $self->{song} =~ /^\D+$/;
-        $info = $song unless $song =~ /^\D+$/;
-        return 'n/a' if !defined($info);
-        return '' if !defined($self->{playlistlength}) || $info eq 'false' || ($info ne 'false' && $self->{playlistlength}-1 < $info);
-        %metadata = $self->get_song_info($info);
-    } else {
-        %metadata = $self->get_current_song_info();
-    }
-    return $metadata{'Artist'}.' - '.$metadata{'Title'} if $metadata{'Artist'} && $metadata{'Title'};
-    return $metadata{'Title'} if $metadata{'Title'};
-    return $metadata{'file'};
+    my %data = $self->get_song_info($song);
+    return $data{Artist}.' - '.$data{Title} if $data{Artist} && $data{Title};
+    return $data{Title} if $data{Title};
+    return $data{file};
 }
 
 sub get_time_format {
@@ -718,106 +646,29 @@ sub get_time_info {
     return $rv;
 }
 
-sub playlist_changes
-{
-    my($self,$old_playlist_id) = @_;
-    $old_playlist_id = -1 if !defined($old_playlist_id);
-    my %changeset;
 
-    $self->_connect;
-    $self->{sock}->print("plchanges $old_playlist_id\n");
-    my $changedEntry; # hash reference
-    foreach($self->_process_feedback)
-    {
-        if(/^(.[^:]+):\s(.+)$/)
-        {
-            my($key, $value) = ($1, $2);
+sub playlist_changes {
+    my ($self, $plid) = @_;
+
+    my %changes;
+
+    $self->_send_command("plchanges $plid\n");
+    my $entry; # hash reference
+    foreach my $line (@lines) {
+        if (/^([^:]+):\s(.+)$/) {
+            my ($key, $value) = ($1, $2);
             # create a new hash for the start of each entry
-            $changedEntry = {} if($key eq 'file');
+            $entry = {} if $key eq 'file';
             # save a ref to the entry as soon as we know where it goes
-            $changeset{$value} = $changedEntry if $key eq 'Pos';
+            $changes{$value} = $entry if $key eq 'Pos';
             # save all attributes of the entry
-            $changedEntry->{$key} = $value;
+            $entry->{$key} = $value;
         }
     }
 
     return %changeset;
 }
 
-
-
-#-------------------------------------------#
-#             INTERNAL METHODS              #
-#-------------------------------------------#
-# This sub-section is only used for methods #
-# not meant to be accessed from the outside.#
-#-------------------------------------------#
-
-sub _get_status
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("status\n");
-    foreach($self->_process_feedback)
-    {
-        if(/^(.[^:]+):\s(.+)$/) {
-            $self->{$1} = $2;
-        }
-    }
-    return 1;
-}
-
-sub _get_stats
-{
-    my($self) = shift;
-    $self->_connect;
-    $self->{sock}->print("stats\n");
-    foreach($self->_process_feedback)
-    {
-        $self->{$1} = $2 if /^(.[^:]+):\s(.+)$/;
-    }
-    return 1;
-}
-
-sub _get_playlist
-{
-    my($self,$old_playlist_id) = @_;
-    $self->_connect;
-    my %changes = $self->playlist_changes($old_playlist_id);
-    for my $pos (keys %changes)
-    {
-        $self->{playlistref}->[$pos] = $changes{$pos};
-    }
-
-    # Deletes songs no longer in the playlist
-    while($#{$self->{playlistref}} > $self->{playlistlength} - 1) {
-        pop @{$self->{playlistref}};
-    }
-
-    return 1;
-}
-
-sub _get_commands
-{
-    my($self) = shift;
-    $self->_connect;
-    my(@commands,@notcommands);
-    $self->{sock}->print("commands\n");
-    foreach($self->_process_feedback)
-    {
-        next if !defined;
-        push @commands, $1 if /^command: (.+)$/;
-    }
-    $self->{sock}->print("notcommands\n");
-    foreach($self->_process_feedback)
-    {
-        next if !defined;
-        push @notcommands, $1 if /^command: (.+)$/;
-    }
-    $self->{commands} = \@commands;
-    $self->{notcommands} = \@notcommands;
-    return 1;
-}
 
 1;
 
