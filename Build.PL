@@ -17,9 +17,9 @@ my $build = Module::Build->new
 	create_makefile_pl => 'passthrough',
 
 	requires => {
-        'Class::Accessor' => '1.00',
-		'IO::Socket'	=> '1.00',
-		'Test' 			=> '1.00',
+        'Class::Accessor' => '0',
+		'IO::Socket'	=> '0',
+		'Test' 			=> '0',
 	},
 );
 
