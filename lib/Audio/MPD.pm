@@ -20,8 +20,9 @@ package Audio::MPD;
 use warnings;
 use strict;
 
-
+use Audio::MPD::Status;
 use IO::Socket;
+
 
 use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
@@ -92,10 +93,9 @@ sub stats {
 
 sub status {
     my ($self) = @_;
-    my %kv =
-        map { /^([^:]+):\s+(\S+)$/ ? ($1 => $2) : () }
-        $self->_send_command( "status\n" );
-    return \%kv;
+    my @output = $self->_send_command( "status\n" );
+    my $status = Audio::MPD::Status->new( @output );
+    return $status;
 }
 
 
@@ -210,16 +210,16 @@ sub get_urlhandlers {
 sub repeat {
     my ($self, $mode) = @_;
 
-    $mode ||= not $self->status->{repeat}; # toggle if no param
-    $mode = $mode ? 1 : 0;                 # force integer
+    $mode ||= not $self->status->repeat; # toggle if no param
+    $mode = $mode ? 1 : 0;               # force integer
     $self->_send_command("repeat $mode\n");
 }
 
 sub random {
     my ($self, $mode) = @_;
 
-    $mode ||= not $self->status->{random}; # toggle if no param
-    $mode = $mode ? 1 : 0;                 # force integer
+    $mode ||= not $self->status->random; # toggle if no param
+    $mode = $mode ? 1 : 0;               # force integer
     $self->_send_command("random $mode\n");
 }
 
@@ -233,7 +233,7 @@ sub volume {
     my ($self, $volume) = @_;
 
     if ($volume =~ /^(-|\+)(\d+)/ )  {
-        my $current = $self->status->{volume};
+        my $current = $self->status->volume;
         $volume = $1 eq '+' ? $current + $2 : $current - $1;
     }
     $self->_send_command("setvol $volume\n");
@@ -292,7 +292,7 @@ sub prev {
 sub seek {
     my ($self, $time, $song) = @_;
     $time ||= 0; $time = int $time;
-    $song = $self->status->{song} || 0 if not defined $song; # seek in current song
+    $song = $self->status->song || 0 if not defined $song; # seek in current song
     $self->_send_command( "seek $song $time\n" );
 }
 
@@ -505,7 +505,7 @@ sub lsinfo {
 
 sub get_song_info {
     my ($self, $song) = @_;
-    $song ||= $self->status->{song};
+    $song ||= $self->status->song;
     return
         map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
         $self->_send_command("playlistinfo $song\n");
@@ -522,7 +522,7 @@ sub get_current_song_info {
 
 sub get_song_info_from_id {
     my ($self, $song) = @_;
-    $song ||= $self->status->{song};
+    $song ||= $self->status->song;
     return
         map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
         $self->_send_command("playlistid $song\n");
@@ -547,8 +547,8 @@ sub crop {
     my ($self) = @_;
 
     my $status = $self->status;
-    my $cur = $status->{song};
-    my $len = $status->{playlistlength} - 1;
+    my $cur = $status->song;
+    my $len = $status->playlistlength - 1;
 
     my $command =
           "command_list_begin\n"
@@ -591,7 +591,7 @@ sub get_time_format {
     my ($self) = shift;
 
     # Get the time from MPD; example: 49:395 (seconds so far:total seconds)
-    my ($sofar, $total) = split /:/, $self->status->{time};
+    my ($sofar, $total) = split /:/, $self->status->time;
     return sprintf "%d:%02d/%d:%02d",
         ($sofar / 60), # minutes so far
         ($sofar % 60), # seconds - minutes so far
@@ -603,7 +603,7 @@ sub get_time_info {
     my ($self) = @_;
 
     # Get the time from MPD; example: 49:395 (seconds so far:total seconds)
-    my ($sofar, $total) = split /:/, $self->status->{time};
+    my ($sofar, $total) = split /:/, $self->status->time;
     my $left = $total - $sofar;
 
     # Store seconds for everything
@@ -736,10 +736,9 @@ last update of the database
 
 =item $mpd->status()
 
-Return a hashref with various information on current mpd settings, such as
-repeat, crossfade and random mode, playlist version & length, the state
-(playing or not), the song played as well as its id, the bitrate and the
-audio output, and the time elapsed/of the song.
+Return a C<Audio::MPD::Status> object with various information on current
+MPD server settings. Check the embedded pod for more information on the
+available accessors.
 
 
 =item $mpd->kill()
