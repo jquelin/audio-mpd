@@ -1,3 +1,22 @@
+0.13.0 Fri Mar  2 12:55:38 CET 2007
+ - connection completely reworked to get rid of the most obvious problems
+   note: this does not mean that we're completely clean, but at least it's
+         better than what it was.
+ - is_connected and close_connection are no more needed, and therefore removed
+ - error handling is now done via die - get_error() is gone
+ - play, delete, move, get_song_info, seek & swap do not accept a third
+   fromid parameter anymore
+ - pause now toggle pause status if no parameter is sent
+ - renamed methods:
+    . kill_mpd -> kill
+    . get_server_version -> version
+    . set_fade -> fade
+    . set_random -> random
+    . set_repeat -> repeat
+    . set_volume -> volume
+ - new methods: stats, status
+ - delete and deleteid can take more than one song to delete
+
 0.12.4 Thu Jan 25 21:52:05 CET 2007 [JQ]
  - grouped pod in sections for easier reading
  - corrected pod typos here and there
