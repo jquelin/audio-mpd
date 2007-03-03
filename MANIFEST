@@ -11,9 +11,9 @@ META.yml
 README
 scripts/example.pl
 scripts/mpc.pl
-t/00-pod-coverage.t
-t/00-pod.t
-t/00use.t
-t/01-connection.t
+t/00-use.t
+t/01-pod-coverage.t
+t/01-pod.t
+t/10-connection.t
 t/mpd-test/mpd.conf.template
 TODO
