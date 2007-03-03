@@ -14,6 +14,8 @@ scripts/mpc.pl
 t/00-use.t
 t/01-pod-coverage.t
 t/01-pod.t
-t/10-connection.t
+t/10-status.t
+t/20-connection.t
+t/20-new.t
 t/mpd-test/mpd.conf.template
 TODO
