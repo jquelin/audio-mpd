@@ -1,0 +1,44 @@
+#!perl
+#
+# This file is part of Audio::MPD.
+# Copyright (c) 2007 Jerome Quelin <jquelin@cpan.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+#
+#
+
+use strict;
+use warnings;
+
+use Audio::MPD;
+use Test::More;
+
+# are we able to test module?
+eval 'use Audio::MPD::Test';
+plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
+
+plan tests => 1;
+my $mpd = Audio::MPD->new;
+
+#
+# testing constructor defaults.
+$mpd->ping;
+$mpd->kill;
+eval { $mpd->ping };
+like( $@, qr/^Could not create socket:/, 'kill shuts mpd down' );
+
+
+
+exit;

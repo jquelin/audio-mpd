@@ -17,5 +17,6 @@ t/01-pod.t
 t/10-status.t
 t/20-connection.t
 t/21-new.t
+t/22-general.t
 t/mpd-test/mpd.conf.template
 TODO
