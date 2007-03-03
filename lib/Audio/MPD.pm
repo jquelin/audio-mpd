@@ -47,9 +47,9 @@ sub new {
     my ($host, $port, $password) = @_;
 
     # use mpd defaults.
-    $host     ||= $ENV{MPD_HOST}     || 'localhost';
-    $port     ||= $ENV{MPD_PORT}     || '6600';
-    $password ||= $ENV{MPD_PASSWORD} || '';
+    $host     = $ENV{MPD_HOST}     || 'localhost' unless defined $host;
+    $port     = $ENV{MPD_PORT}     || '6600'      unless defined $port;
+    $password = $ENV{MPD_PASSWORD} || ''          unless defined $password;
 
     # create & bless the object.
     my $self = {
