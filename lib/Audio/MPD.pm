@@ -66,42 +66,8 @@ sub new {
 }
 
 
-
-#--
-# Public methods
-
-
-#
-# $mpd->ping;
-#
-# Sends a ping command to the mpd server.
-#
-sub ping {
-    my ($self) = @_;
-    $self->_send_command( "ping\n" );
-}
-
-
-sub stats {
-    my ($self) = @_;
-    my %kv =
-        map { /^([^:]+):\s+(\S+)$/ ? ($1 => $2) : () }
-        $self->_send_command( "stats\n" );
-    return \%kv;
-}
-
-
-sub status {
-    my ($self) = @_;
-    my @output = $self->_send_command( "status\n" );
-    my $status = Audio::MPD::Status->new( @output );
-    return $status;
-}
-
-
 #--
 # Private methods
-
 
 
 #
@@ -167,6 +133,40 @@ sub _send_command {
 
     return @output;
 }
+
+
+
+#--
+# Public methods
+
+
+#
+# $mpd->ping;
+#
+# Sends a ping command to the mpd server.
+#
+sub ping {
+    my ($self) = @_;
+    $self->_send_command( "ping\n" );
+}
+
+
+sub stats {
+    my ($self) = @_;
+    my %kv =
+        map { /^([^:]+):\s+(\S+)$/ ? ($1 => $2) : () }
+        $self->_send_command( "stats\n" );
+    return \%kv;
+}
+
+
+sub status {
+    my ($self) = @_;
+    my @output = $self->_send_command( "status\n" );
+    my $status = Audio::MPD::Status->new( @output );
+    return $status;
+}
+
 
 
 
