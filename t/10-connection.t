@@ -19,16 +19,15 @@ use strict;
 use warnings;
 
 use Audio::MPD;
-use Test::More tests => 1;
+use Test::More;
 
-SKIP: {
-    # try to load test framework.
-    eval { require Audio::MPD::Test; Audio::MPD::Test->import; };
-    skip $@, 1 if $@ =~ s/\n+Compilation failed.*//s;
+# are we able to test module?
+eval { require Audio::MPD::Test; Audio::MPD::Test->import; };
+plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-    my $mpd = Audio::MPD->new;
-    isa_ok($mpd, 'Audio::MPD');
-}
+plan tests => 1;
+
+my $mpd = Audio::MPD->new;
+isa_ok($mpd, 'Audio::MPD');
 
 exit;
-
