@@ -26,14 +26,14 @@ use Readonly;
 
 
 use base qw[ Exporter ];
-our @EXPORT = qw[ start_test_mpd stop_test_mpd ];
+our @EXPORT = qw[ customize_test_mpd_configuration start_test_mpd stop_test_mpd ];
 
 
 Readonly my $TEMPLATE => "$Bin/mpd-test/mpd.conf.template";
 Readonly my $CONFIG   => "$Bin/mpd-test/mpd.conf";
 
 { # this will be run when Audio::MPD::Test will be use-d.
-    _customize_test_mpd_configuration();
+    customize_test_mpd_configuration();
     my $restart = _stop_user_mpd_if_needed();
     start_test_mpd();
 
@@ -48,6 +48,34 @@ Readonly my $CONFIG   => "$Bin/mpd-test/mpd.conf";
 
 #--
 # public subs
+
+#
+# customize_test_mpd_configuration( [$port] )
+#
+# Create a fake mpd configuration file, based on the file mpd.conf.template
+# located in t/mpd-test. The string PWD will be replaced by the real path -
+# ie, where the tarball has been untarred. The string PORT will be replaced
+# by $port if specified, 6600 otherwise (MPD default).
+#
+sub customize_test_mpd_configuration {
+    my ($port) = @_;
+    $port ||= 6600;
+
+    # open template and config.
+    open my $in,  '<',  $TEMPLATE or die "can't open [$TEMPLATE]: $!\n";
+    open my $out, '>',  $CONFIG   or die "can't open [$CONFIG]: $!\n";
+
+    # replace string and fill in config file.
+    while ( defined( my $line = <$in> ) ) {
+        $line =~ s!PWD!$Bin/mpd-test!;
+        $line =~ s!PORT!$port!;
+        print $out $line;
+    }
+
+    # clean up.
+    close $in;
+    close $out;
+}
 
 
 #
@@ -75,30 +103,6 @@ sub stop_test_mpd {
 
 #--
 # private subs
-
-
-#
-# _customize_test_mpd_configuration()
-#
-# Create a fake mpd configuration file, based on the file mpd.conf.template
-# located in t/mpd-test. The string PWD will be replaced by the real path -
-# ie, where the tarball has been untarred.
-#
-sub _customize_test_mpd_configuration {
-    # open template and config.
-    open my $in,  '<',  $TEMPLATE or die "can't open [$TEMPLATE]: $!\n";
-    open my $out, '>',  $CONFIG   or die "can't open [$CONFIG]: $!\n";
-
-    # replace string and fill in config file.
-    while ( defined( my $line = <$in> ) ) {
-        $line =~ s!PWD!$Bin/mpd-test!;
-        print $out $line;
-    }
-
-    # clean up.
-    close $in;
-    close $out;
-}
 
 
 #
@@ -175,9 +179,16 @@ following public methods:
 
 Start the fake mpd, and die if there were any error.
 
-=item  stop_test_mpd()
+=item stop_test_mpd()
 
 Kill the fake mpd.
+
+=item customize_test_mpd_configuration( [$port] )
+
+Create a fake mpd configuration file, based on the file mpd.conf.template
+located in t/mpd-test. The string PWD will be replaced by the real path -
+ie, where the tarball has been untarred. The string PORT will be replaced
+by $port if specified, 6600 otherwise (MPD default).
 
 =back
 

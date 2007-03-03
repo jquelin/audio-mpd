@@ -1,4 +1,4 @@
-port                 "6600"
+port                 "PORT"
 music_directory      "PWD/music"
 playlist_directory   "PWD/playlists"
 log_file             "/dev/null"
