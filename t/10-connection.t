@@ -22,7 +22,7 @@ use Audio::MPD;
 use Test::More;
 
 # are we able to test module?
-eval { require Audio::MPD::Test; Audio::MPD::Test->import; };
+eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
 plan tests => 1;
