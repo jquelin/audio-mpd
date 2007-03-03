@@ -151,6 +151,17 @@ sub ping {
 }
 
 
+#
+# $mpd->kill;
+#
+# Send a message to the MPD server telling it to shut down.
+#
+sub kill {
+    my ($self) = @_;
+    $self->_send_command("kill\n");
+}
+
+
 sub stats {
     my ($self) = @_;
     my %kv =
@@ -169,27 +180,14 @@ sub status {
 
 
 
-
-
-
-###############################################################
-#                       BASIC METHODS                         #
-#-------------------------------------------------------------#
-#  This section contains all basic methods for the module to  #
-#     function, internal methods and methods not returning    #
-#      or altering information about playback and alike.      #
-###############################################################
-
-
-sub kill {
-    my ($self) = @_;
-    $self->_send_command("kill\n");
-}
+=for FIXME
 
 sub send_password {
     my ($self) = @_;
     $self->ping; # ping sends a command, and thus the password is sent
 }
+
+=cut
 
 sub get_urlhandlers {
     my ($self) = @_;
