@@ -1,26 +1,23 @@
-#!/usr/bin/perl
-#
+#!perl
 #
 
+use strict;
+use warnings;
 use Module::Build;
-use Module::Build::Compat;
 
-
-my $build = Module::Build->new
-(
-	module_name => 'Audio::MPD',
-	license => 'gpl',
+my $builder = Module::Build->new (
+	module_name         => 'Audio::MPD',
+	license             => 'gpl',
+    dist_version_from   => 'lib/Audio/MPD.pm',
 	build_requires => {
-		'Module::Build' => '0.20'
+        'Test::More'    => 0,
 	},
-
-	create_makefile_pl => 'passthrough',
+    add_to_cleanup      => [ 'Audio-MPD-*' ],
 
 	requires => {
-        'Class::Accessor' => '0',
-		'IO::Socket'	=> '0',
-		'Test' 			=> '0',
+        'Class::Accessor' => 0,
+		'IO::Socket'	  => 0,
 	},
 );
 
-$build->create_build_script();
+$builder->create_build_script();
