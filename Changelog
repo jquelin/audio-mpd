@@ -1,3 +1,6 @@
+0.13.3 Sun Mar  4 19:30:24 CET 2007
+ - bug fix on volume method
+
 0.13.2 Sun Mar  4 10:17:50 CET 2007
  - Makefile.PL now uses ExtUtils::MakeMaker instead of perverting Module::Builder
  - bugfix in play / playid

@@ -28,7 +28,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
 
 
-our $VERSION = '0.13.2';
+our $VERSION = '0.13.3';
 
 
 #--
@@ -250,7 +250,7 @@ sub volume {
 
     if ($volume =~ /^(-|\+)(\d+)/ )  {
         my $current = $self->status->volume;
-        $volume = $1 eq '+' ? $current + $2 : $current - $1;
+        $volume = $1 eq '+' ? $current + $2 : $current - $2;
     }
     $self->_send_command("setvol $volume\n");
 }
