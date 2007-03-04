@@ -1,3 +1,9 @@
+0.13.2 Sun Mar  4 10:17:50 CET 2007
+ - Makefile.PL now uses ExtUtils::MakeMaker instead of perverting Module::Builder
+ - bugfix in play / playid
+ - testing Audio::MPD::Status up to 100%
+ - testing Audio::MPD = 24.5%
+
 0.13.1
  - status() now returns an Audio::MPD::Status object, for better encapsulation
  - added dependancy on Class::Accessor
