@@ -28,7 +28,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
 
 
-our $VERSION = '0.13.1';
+our $VERSION = '0.13.2';
 
 
 #--
@@ -139,6 +139,7 @@ sub _send_command {
 #--
 # Public methods
 
+# -- MPD interaction: general
 
 #
 # $mpd->ping;
@@ -161,6 +162,23 @@ sub kill {
     $self->_send_command("kill\n");
 }
 
+
+# -- MPD interaction: volume & output handling
+
+
+sub output_enable {
+    my ($self, $output) = @_;
+    $self->_send_command("enableoutput $output\n");
+}
+
+sub output_disable {
+    my ($self, $output) = @_;
+    $self->_send_command("disableoutput $output\n");
+}
+
+
+
+# -- MPD interaction: info retrieving
 
 sub stats {
     my ($self) = @_;
@@ -237,15 +255,6 @@ sub volume {
     $self->_send_command("setvol $volume\n");
 }
 
-sub output_enable {
-    my ($self, $output) = @_;
-    $self->_send_command("enableoutput $output\n");
-}
-
-sub output_disable {
-    my ($self, $output) = @_;
-    $self->_send_command("disableoutput $output\n");
-}
 
 ###############################################################
 #                METHODS FOR COMMON PLAYBACK                  #
@@ -257,13 +266,13 @@ sub output_disable {
 sub play {
     my ($self, $number) = @_;
     $number ||= '';
-    $self->_send_command("play $number");
+    $self->_send_command("play $number\n");
 }
 
 sub playid {
     my ($self, $number) = @_;
     $number ||= '';
-    $self->_send_command("playid $number");
+    $self->_send_command("playid $number\n");
 }
 
 sub pause {
