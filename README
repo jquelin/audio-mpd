@@ -14,17 +14,24 @@ Reports bugs at https://rt.cpan.org/Ticket/Create.html?Queue=Audio-MPD
 INSTALLATION
 ============
 
-The module is built using Module::Build (which you must have installed on
-your system).
-To install this module type the following:
+To install this module, run the following commands:
 
-	perl Build.PL
-		./Build
-		./Build test
+    perl Makefile.PL
+    make
+    make test
+    make install
 
-And then as root:
+Or, using Module::Builder:
 
-	./Build install
+    perl Build.PL
+    ./Build
+    ./Build test
+    ./Build install
+
+
+If mpd is running, you can force the full non-regression test suite to be ran
+by using:
+    MPD_TEST_OVERRIDE=1 make test
 
 
 You can also try to install it directly as a package for your favorite Linux
