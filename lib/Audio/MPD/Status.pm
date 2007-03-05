@@ -22,7 +22,7 @@ use strict;
 
 use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors
-    ( qw[ audio bitrate playlist playlistlength random
+    ( qw[ audio bitrate error playlist playlistlength random
           repeat song songid state time volume xfade ] );
 
 
@@ -106,6 +106,11 @@ of the output and number of channels (2 for stereo) - separated by a colon.
 =item bitrate()
 
 The instantaneous bitrate in kbps.
+
+=item error()
+
+May appear in special error cases, such as when disabling output.
+
 
 =item playlist()
 

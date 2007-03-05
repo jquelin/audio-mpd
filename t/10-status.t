@@ -41,20 +41,22 @@ songid: 11
 time: 45:214
 bitrate: 127
 audio: 44100:16:2
+error: problems opening audio device
 ';
 my @output = split /\n/, $output;
 
 my $s = Audio::MPD::Status->new( @output );
 isa_ok( $s, 'Audio::MPD::Status', 'object creation' );
-is( $s->volume,         66,           'accessor: volume' );
-is( $s->repeat,         1,            'accessor: repeat' );
-is( $s->random,         0,            'accessor: random' );
-is( $s->playlist,       24,           'accessor: playlist' );
-is( $s->playlistlength, 21,           'accessor: playlistlength' );
-is( $s->xfade,          14,           'accessor: xfade' );
-is( $s->state,          'play',       'accessor: state' );
-is( $s->song,           10,           'accessor: song' );
-is( $s->songid,         11,           'accessor: songid' );
-is( $s->time,           '45:214',     'accessor: time' );
-is( $s->bitrate,        127,          'accessor: bitrate' );
-is( $s->audio,          '44100:16:2', 'accessor: audio' );
+is( $s->volume,         66,                              'accessor: volume' );
+is( $s->repeat,         1,                               'accessor: repeat' );
+is( $s->random,         0,                               'accessor: random' );
+is( $s->playlist,       24,                              'accessor: playlist' );
+is( $s->playlistlength, 21,                              'accessor: playlistlength' );
+is( $s->xfade,          14,                              'accessor: xfade' );
+is( $s->state,          'play',                          'accessor: state' );
+is( $s->song,           10,                              'accessor: song' );
+is( $s->songid,         11,                              'accessor: songid' );
+is( $s->time,           '45:214',                        'accessor: time' );
+is( $s->bitrate,        127,                             'accessor: bitrate' );
+is( $s->audio,          '44100:16:2',                    'accessor: audio' );
+is( $s->error,          'problems opening audio device', 'accessor: error' );
