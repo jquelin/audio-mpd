@@ -28,7 +28,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
 
 
-our $VERSION = '0.13.3';
+our $VERSION = '0.13.4';
 
 
 #--
@@ -153,6 +153,15 @@ sub ping {
 
 
 #
+# my $version = $mpd->version;
+#
+# Return version of MPD server's connected.
+#
+# sub version {} # implemented as an accessor.
+#
+
+
+#
 # $mpd->kill;
 #
 # Send a message to the MPD server telling it to shut down.
@@ -163,7 +172,32 @@ sub kill {
 }
 
 
+#
+# $mpd->password( [$password] )
+#
+# Change password used to communicate with MPD server to $password.
+# Empty string is assumed if $password is not supplied.
+#
+sub password {
+    my ($self, $passwd) = @_;
+    $passwd ||= '';
+    $self->_password($passwd);
+    $self->ping; # ping sends a command, and thus the password is sent
+}
+
+
 # -- MPD interaction: volume & output handling
+
+
+sub volume {
+    my ($self, $volume) = @_;
+
+    if ($volume =~ /^(-|\+)(\d+)/ )  {
+        my $current = $self->status->volume;
+        $volume = $1 eq '+' ? $current + $2 : $current - $2;
+    }
+    $self->_send_command("setvol $volume\n");
+}
 
 
 sub output_enable {
@@ -196,16 +230,6 @@ sub status {
     return $status;
 }
 
-
-
-=for FIXME
-
-sub send_password {
-    my ($self) = @_;
-    $self->ping; # ping sends a command, and thus the password is sent
-}
-
-=cut
 
 sub get_urlhandlers {
     my ($self) = @_;
@@ -243,16 +267,6 @@ sub fade {
     my ($self, $value) = @_;
     $value ||= 0;
     $self->_send_command("crossfade $value\n");
-}
-
-sub volume {
-    my ($self, $volume) = @_;
-
-    if ($volume =~ /^(-|\+)(\d+)/ )  {
-        my $current = $self->status->volume;
-        $volume = $1 eq '+' ? $current + $2 : $current - $2;
-    }
-    $self->_send_command("setvol $volume\n");
 }
 
 
@@ -734,6 +748,22 @@ hostname, seperated with an '@' character.
 Sends a ping command to the mpd server.
 
 
+=item $mpd->version()
+
+Return the version number for the server we are connected to.
+
+
+=item $mpd->kill()
+
+Send a message to the MPD server telling it to shut down.
+
+
+=item $mpd->password( [$password] )
+
+Change password used to communicate with MPD server to $password.
+Empty string is assumed if $password is not supplied.
+
+
 =item $mpd->stats()
 
 Return a hashref with the number of artists, albums, songs in the database,
@@ -746,11 +776,6 @@ last update of the database
 Return a C<Audio::MPD::Status> object with various information on current
 MPD server settings. Check the embedded pod for more information on the
 available accessors.
-
-
-=item $mpd->kill()
-
-Send a message to the MPD server telling it to shut down.
 
 
 =item $mpd->updatedb( [$path] )
@@ -770,10 +795,6 @@ which can enable optionally password protected functionality.
 
 Return an array of supported URL schemes.
 
-
-=item $mpd->version()
-
-Return the version number for the server we are connected to.
 
 =back
 
