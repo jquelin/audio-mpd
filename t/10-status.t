@@ -23,7 +23,7 @@ use strict;
 use warnings;
 
 use Audio::MPD::Status;
-use Test::More tests => 13;
+use Test::More tests => 14;
 
 
 # note that the first line does not match 'key: value' pattern

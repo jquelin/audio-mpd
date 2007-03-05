@@ -40,7 +40,7 @@ sub new {
     my (@output) = @_;
 
     my $self = {
-        map { /^([^:]+):\s+(\S+)$/ ? ($1 => $2) : () }
+        map { /^([^:]+):\s+(.+)$/ ? ($1 => $2) : () }
         @output
     };
     bless $self, $class;
