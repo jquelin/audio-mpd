@@ -29,15 +29,34 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 1;
+plan tests => 4;
 my $mpd = Audio::MPD->new;
 
+
 #
-# testing constructor defaults.
+# testing mpd version.
+SKIP: {
+    my $output = qx[mpd --version 2>/dev/null];
+    skip 'need mpd installed', 1 unless $output =~ /^mpd .* ([\d.]+)\n/;
+    is( $mpd->version, $1, 'mpd version grabbed during connection' );
+}
+
+
+#
+# testing kill.
 $mpd->ping;
 $mpd->kill;
 eval { $mpd->ping };
 like( $@, qr/^Could not create socket:/, 'kill shuts mpd down' );
+start_test_mpd();
+
+
+#
+# testing password changing.
+eval { $mpd->password('b0rken') };
+like( $@, qr/\{password\} incorrect password/, 'changing password' );
+eval { $mpd->password() }; # default to empty string.
+is( $@, '', 'no password = empty password' );
 
 
 
