@@ -1,3 +1,9 @@
+0.13.4 Tue Mar  6 20:05:21 CET 2007
+ - new method password() to change mpd password
+ - bug fix in deleteid (was issuing delete) and crop (should be done in
+   reverse order to keep mpd happy)
+ - test coverage of Audio::MPD up to 36.1%
+
 0.13.3 Sun Mar  4 19:30:24 CET 2007
  - bug fix on volume method
 

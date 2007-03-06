@@ -1,6 +1,6 @@
 ---
 name: Audio-MPD
-version: 0.13.1
+version: 0.13.4
 author:
   - 'Jerome Quelin <jquelin@cpan.org>'
   - |-
@@ -13,13 +13,12 @@ resources:
 requires:
   Class::Accessor: 0
   IO::Socket: 0
-  Test: 0
 build_requires:
-  Module::Build: 0.20
+  Test::More: 0
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.13.1
+    version: 0.13.4
   Audio::MPD::Status:
     file: lib/Audio/MPD/Status.pm
   Audio::MPD::Test:
