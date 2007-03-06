@@ -84,7 +84,7 @@ sub customize_test_mpd_configuration {
 # Start the fake mpd, and die if there were any error.
 #
 sub start_test_mpd {
-    system( "mpd $CONFIG 2>/dev/null" ) == 0
+    system( "mpd $CONFIG >/dev/null 2>&1" ) == 0
         or die "could not start fake mpd: $?\n";
     sleep 1;   # wait 1 second to let mpd start.
 }
