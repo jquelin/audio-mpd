@@ -98,6 +98,7 @@ sub start_test_mpd {
 sub stop_test_mpd {
     system "mpd --kill $CONFIG 2>/dev/null";
     sleep 1;   # wait 1 second to free output device.
+    unlink "$Bin/mpd-test/state", "$Bin/mpd-test/music.db";
 }
 
 
