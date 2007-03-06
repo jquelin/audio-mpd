@@ -18,5 +18,11 @@ t/10-status.t
 t/20-connection.t
 t/21-new.t
 t/22-general.t
+t/23-output.t
 t/mpd-test/mpd.conf.template
+t/mpd-test/music.db
+t/mpd-test/music/dir1/title-artist-album.ogg
+t/mpd-test/music/dir1/title-artist.ogg
+t/mpd-test/music/dir2/album.ogg
+t/mpd-test/music/title.ogg
 TODO

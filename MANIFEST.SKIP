@@ -37,3 +37,7 @@
 \B\._
 # Avoid archives of this distribution
 \bAudio-MPD-[\d\.\_]+
+
+# Avoid test mpd files
+t/mpd-test/mpd.conf$
+t/mpd-test/state
