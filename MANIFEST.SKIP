@@ -41,3 +41,4 @@
 # Avoid test mpd files
 t/mpd-test/mpd.conf$
 t/mpd-test/state
+t/mpd-test/music.db
