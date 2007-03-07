@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 3;
+plan tests => 5;
 my $mpd = Audio::MPD->new;
 
 
@@ -52,15 +52,20 @@ is( $mpd->status->volume, 47, 'decreasing volume' );
 
 #
 # testing disable_output.
-# $mpd->output_disable(0);
-# sleep(1);
-# like( $mpd->status->error, qr/^problems/, 'disabling output' );
+$mpd->add( 'title.ogg' );
+$mpd->add( 'dir1/title-artist-album.ogg' );
+$mpd->add( 'dir1/title-artist.ogg' );
+$mpd->play; $mpd->pause;
+$mpd->output_disable(0);
+sleep(1);
+like( $mpd->status->error, qr/^problems/, 'disabling output' );
 
 #
 # testing enable_output.
-# $mpd->output_enable(0);
-# sleep(1);
-# is( $mpd->status->error, undef, 'enabling output' );
+$mpd->output_enable(0);
+sleep(1);
+$mpd->play; $mpd->pause;
+is( $mpd->status->error, undef, 'enabling output' );
 
 
 exit;
