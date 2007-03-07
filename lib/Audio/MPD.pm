@@ -221,11 +221,22 @@ sub volume {
 }
 
 
+#
+# $mpd->output_enable( $output );
+#
+# Enable the specified audio output. $output is the ID of the audio output.
+#
 sub output_enable {
     my ($self, $output) = @_;
     $self->_send_command("enableoutput $output\n");
 }
 
+
+#
+# $mpd->output_disable( $output );
+#
+# Disable the specified audio output. $output is the ID of the audio output.
+#
 sub output_disable {
     my ($self, $output) = @_;
     $self->_send_command("disableoutput $output\n");
