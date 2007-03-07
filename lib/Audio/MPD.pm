@@ -139,7 +139,7 @@ sub _send_command {
 #--
 # Public methods
 
-# -- MPD interaction: general
+# -- MPD interaction: general commands
 
 #
 # $mpd->ping;
@@ -201,7 +201,7 @@ sub updatedb {
 
 
 
-# -- MPD interaction: volume & output handling
+# -- MPD interaction: handling volume & output
 
 #
 # $mpd->volume( [+][-]$volume );
@@ -233,8 +233,15 @@ sub output_disable {
 
 
 
-# -- MPD interaction: info retrieving
+# -- MPD interaction: retrieving info
 
+#
+# $mpd->stats;
+#
+# Return a hashref with the number of artists, albums, songs in the database,
+# as well as mpd uptime, the playtime of the playlist / the database and the
+# last update of the database.
+#
 sub stats {
     my ($self) = @_;
     my %kv =
@@ -244,6 +251,13 @@ sub stats {
 }
 
 
+#
+# my $status = $mpd->status;
+#
+# Return a Audio::MPD::Status object with various information on current
+# MPD server settings. Check the embedded pod for more information on the
+# available accessors.
+#
 sub status {
     my ($self) = @_;
     my @output = $self->_send_command( "status\n" );
@@ -261,13 +275,15 @@ sub get_urlhandlers {
 }
 
 
-###############################################################
-#               METHODS FOR ALTERING SETTINGS                 #
-#-------------------------------------------------------------#
-#  This section contains methods used for altering different  #
-#                     settings in MPD.                        #
-###############################################################
+# -- MPD interaction: altering settings
 
+
+#
+# $mpd->repeat( [$repeat] );
+#
+# Set the repeat mode to $repeat (1 or 0). If $repeat is not specified then
+# the repeat mode is toggled.
+#
 sub repeat {
     my ($self, $mode) = @_;
 
@@ -291,12 +307,7 @@ sub fade {
 }
 
 
-###############################################################
-#                METHODS FOR COMMON PLAYBACK                  #
-#-------------------------------------------------------------#
-#   This section contains the most commonly used methods for  #
-#                    altering playback.                       #
-###############################################################
+# -- MPD interaction: controlling playback
 
 sub play {
     my ($self, $number) = @_;
@@ -345,7 +356,8 @@ sub seekid {
     $self->_send_command( "seekid $song $time\n" );
 }
 
-# -- MPD interaction: info retrieving
+
+# -- MPD interaction: handling playlist
 
 
 #
@@ -423,12 +435,6 @@ sub crop {
 
 
 
-sub load {
-    my ($self, $playlist) = @_;
-    return unless defined $playlist;
-    $self->_send_command( qq[load "$playlist"\n] );
-}
-
 sub swap {
     my ($self, $from, $to) = @_;
     $self->_send_command("swap $from $to\n");
@@ -454,10 +460,10 @@ sub moveid {
     $self->_send_command("moveid $song $pos\n");
 }
 
-sub rm {
+sub load {
     my ($self, $playlist) = @_;
     return unless defined $playlist;
-    $self->_send_command( qq[rm "$playlist"\n] );
+    $self->_send_command( qq[load "$playlist"\n] );
 }
 
 sub save {
@@ -484,6 +490,17 @@ sub save {
 =cut
 
 }
+
+sub rm {
+    my ($self, $playlist) = @_;
+    return unless defined $playlist;
+    $self->_send_command( qq[rm "$playlist"\n] );
+}
+
+
+
+# -- MPD interaction: searching collection
+
 
 sub search {
     my ($self, $type, $string, $strict) = @_;
@@ -806,6 +823,35 @@ Force mpd to recan its collection. If $path (relative to MPD's music directory)
 is supplied, MPD will only scan it - otherwise, MPD will rescan its whole
 collection.
 
+=back
+
+
+=head2 Handling volume & output
+
+=over 4
+
+=item $mpd->volume( [+][-]$volume )
+
+Sets the audio output volume percentage to absolute $volume.
+If $volume is prefixed by '+' or '-' then the volume is changed relatively
+by that value.
+
+
+=item $mpd->output_enable( $output )
+
+Enable the specified audio output. $output is the ID of the audio output.
+
+
+=item $mpd->output_disable( $output )
+
+Disable the specified audio output. $output is the ID of the audio output.
+
+=back
+
+
+=head2 Retrieving info
+
+=over 4
 
 =item $mpd->stats()
 
@@ -821,12 +867,6 @@ MPD server settings. Check the embedded pod for more information on the
 available accessors.
 
 
-=item $mpd->send_password( password )
-
-Send a plaintext password to the server,
-which can enable optionally password protected functionality.
-
-
 =item $mpd->get_urlhandlers()
 
 Return an array of supported URL schemes.
@@ -835,7 +875,7 @@ Return an array of supported URL schemes.
 =back
 
 
-=head2 Changing MPD settings
+=head2 Altering MPD settings
 
 =over 4
 
@@ -855,23 +895,6 @@ the random mode is toggled.
 
 Enable crossfading and set the duration of crossfade between songs.
 If $seconds is not specified or $seconds is 0, then crossfading is disabled.
-
-
-=item $mpd->volume( [+][-]$volume )
-
-Sets the audio output volume percentage to absolute $volume.
-If $volume is prefixed by '+' or '-' then the volume is changed relatively
-by that value.
-
-
-=item $mpd->output_enable( $output )
-
-Enable the specified audio output. $output is the ID of the audio output.
-
-
-=item $mpd->output_disable( $output )
-
-Disable the specified audio output. $output is the ID of the audio output.
 
 =back
 
@@ -927,7 +950,7 @@ Seek to $time seconds in song ID $songid.
 =back
 
 
-=head2 Playlist handling
+=head2 Handling playlist
 
 =over 4
 
@@ -970,11 +993,6 @@ Swap the postions of song ID $songid1 with song ID $songid2 on the current
 playlist. No return value.
 
 
-=item $mpd->shuffle()
-
-Shuffle the current playlist. No return value.
-
-
 =item $mpd->move( $song, $newpos )
 
 Move song number $song to the position $newpos. No return value.
@@ -983,6 +1001,11 @@ Move song number $song to the position $newpos. No return value.
 =item $mpd->moveid( $songid, $newpos )
 
 Move song ID $songid to the position $newpos. No return value.
+
+
+=item $mpd->shuffle()
+
+Shuffle the current playlist. No return value.
 
 
 =item $mpd->load( $playlist )
@@ -1004,7 +1027,7 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 =back
 
 
-=head2 Retrieving information from the collection
+=head2 Searching the collection
 
 =over 4
 
