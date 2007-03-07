@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 4;
+plan tests => 6;
 my $mpd = Audio::MPD->new;
 
 
@@ -58,6 +58,14 @@ like( $@, qr/\{password\} incorrect password/, 'changing password' );
 eval { $mpd->password() }; # default to empty string.
 is( $@, '', 'no password = empty password' );
 
+
+#
+# testing database updating.
+# uh - what are we supposed to test? that there was no error?
+eval { $mpd->updatedb };
+is( $@, '', 'updating whole collection' );
+eval { $mpd->updatedb('dir1') };
+is( $@, '', 'updating part of collection' );
 
 
 exit;
