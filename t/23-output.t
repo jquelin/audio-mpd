@@ -55,7 +55,7 @@ is( $mpd->status->volume, 47, 'decreasing volume' );
 $mpd->add( 'title.ogg' );
 $mpd->add( 'dir1/title-artist-album.ogg' );
 $mpd->add( 'dir1/title-artist.ogg' );
-$mpd->play; $mpd->pause;
+$mpd->play;
 $mpd->output_disable(0);
 sleep(1);
 like( $mpd->status->error, qr/^problems/, 'disabling output' );
