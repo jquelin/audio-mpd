@@ -779,15 +779,13 @@ Commands are then sent to the server as the class's methods are called.
 
 =over 4
 
-=item new( [[$password@]$host], [$port] )
+=item new( [$host] [, $port] [, $password] )
 
-The C<new()> method is the constructor for the C<Audio::MPD> class.
-You may specify a hostname and port - if none is specified then
-the enviroment variables C<MPD_HOST> and C<MPD_PORT> are checked.
-Finally if all else fails the defaults 'localhost' and '6600' are used.
+This is the constructor for Audio::MPD. One can specify a $hostname, a
+$port, and a $password.
 
-An optional  password can be specified by prepending it to the
-hostname, seperated with an '@' character.
+If none is specified then defaults to environment vars MPD_HOST, MPD_PORT
+and MPD_PASSWORD. If those aren't set, defaults to 'localhost', 6600 and ''.
 
 =back
 
