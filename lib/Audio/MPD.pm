@@ -303,6 +303,13 @@ sub repeat {
     $self->_send_command("repeat $mode\n");
 }
 
+
+#
+# $mpd->random( [$random] );
+#
+# Set the random mode to $random (1 or 0). If $random is not specified then
+# the random mode is toggled.
+#
 sub random {
     my ($self, $mode) = @_;
 
@@ -311,6 +318,13 @@ sub random {
     $self->_send_command("random $mode\n");
 }
 
+
+#
+# $mpd->fade( [$seconds] );
+#
+# Enable crossfading and set the duration of crossfade between songs. If
+# $seconds is not specified or $seconds is 0, then crossfading is disabled.
+#
 sub fade {
     my ($self, $value) = @_;
     $value ||= 0;
