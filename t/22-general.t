@@ -64,6 +64,7 @@ is( $@, '', 'no password = empty password' );
 # uh - what are we supposed to test? that there was no error?
 eval { $mpd->updatedb };
 is( $@, '', 'updating whole collection' );
+sleep 1; # let the first update finish.
 eval { $mpd->updatedb('dir1') };
 is( $@, '', 'updating part of collection' );
 
