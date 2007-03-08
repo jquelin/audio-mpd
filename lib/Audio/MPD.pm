@@ -452,7 +452,6 @@ sub seekid {
 #
 sub add {
     my ($self, $path) = @_;
-    $path ||= '';
     $self->_send_command( qq[add "$path"\n] );
 }
 
