@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 8;
+plan tests => 10;
 my $mpd = Audio::MPD->new;
 
 
@@ -56,5 +56,11 @@ $mpd->pause;
 my $status = $mpd->status;
 isa_ok( $status, 'Audio::MPD::Status', 'status return an Audio::MPD::Status object' );
 
+
+#
+# testing urlhandlers.
+my @handlers = $mpd->urlhandlers;
+is( scalar @handlers,     1, 'only one url handler supported' );
+is( $handlers[0], 'http://', 'only http is supported by now' );
 
 exit;
