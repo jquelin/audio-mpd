@@ -277,7 +277,12 @@ sub status {
 }
 
 
-sub get_urlhandlers {
+#
+# my @handlers = $mpd->urlhandlers;
+#
+# Return an array of supported URL schemes.
+#
+sub urlhandlers {
     my ($self) = @_;
     my @handlers =
         map { /^handler: (.+)$/ ? $1 : () }
@@ -298,7 +303,8 @@ sub get_urlhandlers {
 sub repeat {
     my ($self, $mode) = @_;
 
-    $mode ||= not $self->status->repeat; # toggle if no param
+    $mode = not $self->status->repeat
+        unless defined $mode; # toggle if no param
     $mode = $mode ? 1 : 0;               # force integer
     $self->_send_command("repeat $mode\n");
 }
@@ -313,7 +319,8 @@ sub repeat {
 sub random {
     my ($self, $mode) = @_;
 
-    $mode ||= not $self->status->random; # toggle if no param
+    $mode = not $self->status->random
+        unless defined $mode; # toggle if no param
     $mode = $mode ? 1 : 0;               # force integer
     $self->_send_command("random $mode\n");
 }
@@ -890,7 +897,7 @@ MPD server settings. Check the embedded pod for more information on the
 available accessors.
 
 
-=item $mpd->get_urlhandlers()
+=item $mpd->urlhandlers()
 
 Return an array of supported URL schemes.
 
