@@ -21,6 +21,7 @@ t/22-general.t
 t/23-output.t
 t/23-playlist.t
 t/24-info.t
+t/25-settings.t
 t/mpd-test/mpd.conf.template
 t/mpd-test/music/dir1/title-artist-album.ogg
 t/mpd-test/music/dir1/title-artist.ogg
