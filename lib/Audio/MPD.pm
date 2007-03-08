@@ -28,7 +28,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
 
 
-our $VERSION = '0.13.4';
+our $VERSION = '0.13.5';
 
 
 #--
@@ -293,7 +293,6 @@ sub urlhandlers {
 
 # -- MPD interaction: altering settings
 
-
 #
 # $mpd->repeat( [$repeat] );
 #
@@ -443,7 +442,6 @@ sub seekid {
 
 # -- MPD interaction: handling playlist
 
-
 #
 # $mpd->add( $path );
 #
@@ -583,7 +581,6 @@ sub rm {
 
 
 # -- MPD interaction: searching collection
-
 
 sub search {
     my ($self, $type, $string, $strict) = @_;
