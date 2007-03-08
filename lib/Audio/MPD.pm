@@ -341,50 +341,102 @@ sub fade {
 
 # -- MPD interaction: controlling playback
 
+#
+# $mpd->play( [$song] );
+#
+# Begin playing playlist at song number $song. If no argument supplied,
+# resume playing.
+#
 sub play {
     my ($self, $number) = @_;
     $number ||= '';
     $self->_send_command("play $number\n");
 }
 
+#
+# $mpd->playid( [$songid] );
+#
+# Begin playing playlist at song ID $songid. If no argument supplied,
+# resume playing.
+#
 sub playid {
     my ($self, $number) = @_;
     $number ||= '';
     $self->_send_command("playid $number\n");
 }
 
+
+#
+# $mpd->pause( [$sate] );
+#
+# Pause playback. If $state is 0 then the current track is unpaused, if
+# $state is 1 then the current track is paused.
+#
+# Note that if $state is not given, pause state will be toggled.
+#
 sub pause {
     my ($self, $state) = @_;
     $state ||= ''; # default is to toggle
     $self->_send_command("pause $state\n");
 }
 
+
+#
+# $mpd->stop;
+#
+# Stop playback.
+#
 sub stop {
     my ($self) = @_;
     $self->_send_command("stop\n");
 }
 
+
+#
+# $mpd->next;
+#
+# Play next song in playlist.
+#
 sub next {
     my ($self) = @_;
     $self->_send_command("next\n");
 }
 
+#
+# $mpd->prev;
+#
+# Play previous song in playlist.
+#
 sub prev {
     my($self) = shift;
     $self->_send_command("previous\n");
 }
 
+
+#
+# $mpd->seek( $time, [$song]);
+#
+# Seek to $time seconds in song number $song. If $song number is not specified
+# then the perl module will try and seek to $time in the current song.
+#
 sub seek {
     my ($self, $time, $song) = @_;
     $time ||= 0; $time = int $time;
-    $song = $self->status->song || 0 if not defined $song; # seek in current song
+    $song = $self->status->song if not defined $song; # seek in current song
     $self->_send_command( "seek $song $time\n" );
 }
 
+
+#
+# $mpd->seekid( $time, $songid );
+#
+# Seek to $time seconds in song ID $songid. If $song number is not specified
+# then the perl module will try and seek to $time in the current song.
+#
 sub seekid {
     my ($self, $time, $song) = @_;
     $time ||= 0; $time = int $time;
-    $song ||= 0; $song = int $song;
+    $song = $self->status->songid if not defined $song; # seek in current song
     $self->_send_command( "seekid $song $time\n" );
 }
 
@@ -933,14 +985,16 @@ If $seconds is not specified or $seconds is 0, then crossfading is disabled.
 
 =over 4
 
-=item $mpd->play( [$number] )
+=item $mpd->play( [$song] )
 
-Begin playing playlist at song number $number.
+Begin playing playlist at song number $song. If no argument supplied,
+resume playing.
 
 
 =item $mpd->playid( [$songid] )
 
-Begin playing playlist at song ID $songid.
+Begin playing playlist at song ID $songid. If no argument supplied,
+resume playing.
 
 
 =item $mpd->pause( [$state] )
@@ -968,14 +1022,14 @@ Play previous song in playlist.
 
 =item $mpd->seek( $time, [$song])
 
-Seek to $time seconds.
-If $song number is not specified then the perl module will try and
-seek to $time in the current song.
+Seek to $time seconds in song number $song. If $song number is not specified
+then the perl module will try and seek to $time in the current song.
 
 
 =item $mpd->seekid( $time, $songid )
 
-Seek to $time seconds in song ID $songid.
+Seek to $time seconds in song ID $songid. If $song number is not specified
+then the perl module will try and seek to $time in the current song.
 
 =back
 
