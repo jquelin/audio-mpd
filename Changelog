@@ -1,3 +1,9 @@
+ 0.13.5 Thu Mar  8 20:22:32 CET 2007
+ - get_urlhandlers renamed to urlhandlers
+ - seekid defaults to current song
+ - pod enhancement
+ - test coverage of Audio::MPD up to 36.1%
+
 0.13.4 Tue Mar  6 20:05:21 CET 2007
  - new method password() to change mpd password
  - bug fix in deleteid (was issuing delete) and crop (should be done in
