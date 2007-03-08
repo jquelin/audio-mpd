@@ -19,10 +19,10 @@ t/20-connection.t
 t/21-new.t
 t/22-general.t
 t/23-output.t
-t/23-playlist.t
 t/24-info.t
 t/25-settings.t
 t/26-playback.t
+t/27-playlist.t
 t/mpd-test/mpd.conf.template
 t/mpd-test/music/dir1/title-artist-album.ogg
 t/mpd-test/music/dir1/title-artist.ogg
