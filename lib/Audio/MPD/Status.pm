@@ -173,7 +173,6 @@ to join us. (use L<http://groups.google.com/group/audio-mpd> to sign in). Our
 subversion repository is located at L<https://svn.musicpd.org>.
 
 
-
 =head1 AUTHORS
 
 Jerome Quelin <jquelin@cpan.org>
