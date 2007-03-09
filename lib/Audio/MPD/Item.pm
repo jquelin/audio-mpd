@@ -58,12 +58,25 @@ Audio::MPD::Item - a generic collection item
 
 =head1 DESCRIPTION
 
-C<Item> is a class representing a generic item of mpd's collection. It can be
-either a song or a directory. Depending on the params given to C<new>, it will
-create and return a C<Item::Song> or a C<Item::Directory> object. Currently,
-the discrimination is done on the existence of the C<file> key of C<%params>.
+C<Audio::MPD::Item> is a virtual class representing a generic item of mpd's
+collection. It can be either a song or a directory. Depending on the params
+given to C<new>, it will create and return an C<Audio::MPD::Item::Song> or an
+C<Audio::MPD::Item::Directory> object. Currently, the discrimination is done
+on the existence of the C<file> key of C<%params>.
 
-Note that the only sub worth it in this class is the constructor.
+
+=head1 PUBLIC METHODS
+
+Note that the only sub worth it in this class is the constructor:
+
+=over 4
+
+=item new( key => val [, key => val [, ...] ] )
+
+Create and return either an C<Audio::MPD::Item::Song> or an
+C<Audio::MPD::Item::Directory> object.
+
+=back
 
 
 =head1 SEE ALSO
