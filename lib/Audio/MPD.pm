@@ -292,7 +292,7 @@ sub current {
 
 
 #
-# my @songs = $mpd->playlist;
+# my $list = $mpd->playlist;
 #
 # Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
 # songs in the current playlist.
@@ -967,6 +967,12 @@ available accessors.
 Return an C<Audio::MPD::Item::Song> representing the song currently playing.
 
 
+=item $mpd->playlist( )
+
+Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
+songs in the current playlist.
+
+
 =item $mpd->urlhandlers()
 
 Return an array of supported URL schemes.
@@ -1131,12 +1137,6 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 =head2 Retrieving information from current playlist
 
 =over 4
-
-=item $mpd->playlist( )
-
-Return an arrayref containing a hashref of metadata for each of the
-songs in the current playlist.
-
 
 =item $mpd->playlist_changes( $plversion )
 
