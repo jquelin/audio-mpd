@@ -21,7 +21,7 @@ use strict;
 use warnings;
 
 use base qw[ Class::Accessor::Fast Audio::MPD::Item ];
-__PACKAGE__->mk_accessors( qw[ album artist file title track time ] );
+__PACKAGE__->mk_accessors( qw[ album artist file id pos title track time ] );
 
 1;
 
@@ -43,9 +43,9 @@ pre-defined keys, namely some audio tags.
 =head2 Accessors
 
 The following methods are the accessors to their respective named fields:
-C<album()>, C<artist()>, C<file()>, C<title()>, C<track()>, C<time()>.
-You can call them either with no arg to get the value, or with an arg to
-replace the current value.
+C<album()>, C<artist()>, C<file()>, C<id>, C<pos>, C<title()>, C<track()>,
+C<time()>. You can call them either with no arg to get the value, or with
+an arg to replace the current value.
 
 
 =head1 SEE ALSO
