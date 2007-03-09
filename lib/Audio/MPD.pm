@@ -322,14 +322,14 @@ sub playlist {
 #
 # my $list = $mpd->pl_changes( $plversion );
 #
-# Return an arrayref with all the songs (as API::Song objects) added to
+# Return a list with all the songs (as API::Song objects) added to
 # the playlist since playlist $plversion.
 #
 sub pl_changes {
     my ($self, $plid) = @_;
 
     my @lines = $self->_send_command("plchanges $plid\n");
-    my (%param, %changes);
+    my (%param, @list);
 
     # parse lines in reverse order since "file:" comes first.
     # therefore, let's first store every other parameter, and
@@ -981,6 +981,12 @@ Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
 songs in the current playlist.
 
 
+=item $mpd->pl_changes( $plversion )
+
+Return a list with all the songs (as API::Song objects) added to
+the playlist since playlist $plversion.
+
+
 =item $mpd->current( )
 
 Return an C<Audio::MPD::Item::Song> representing the song currently playing.
@@ -1156,12 +1162,6 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 =head2 Retrieving information from current playlist
 
 =over 4
-
-=item $mpd->playlist_changes( $plversion )
-
-Return an arrayref with all the songs (as API::Song objects) added to
-the playlist since playlist $plversion.
-
 
 =item $mpd->get_time_format( )
 
