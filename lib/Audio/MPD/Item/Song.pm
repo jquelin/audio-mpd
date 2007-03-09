@@ -20,8 +20,39 @@ package Audio::MPD::Item::Song;
 use strict;
 use warnings;
 
+use overload '""' => \&as_string;
+use Readonly;
+
 use base qw[ Class::Accessor::Fast Audio::MPD::Item ];
 __PACKAGE__->mk_accessors( qw[ album artist file id pos title track time ] );
+
+Readonly my $SEP => ' = ';
+
+
+#
+# my $str = $song->as_string;
+#
+# Return a string representing $song. This string will be;
+#  - either "album = track = artist = title"
+#  - or     "artist = title"
+#  - or     "title"
+#  - or     "file"
+# (in this order), depending on the existing tags of the song. The last
+# possibility always exist of course, since it's a path.
+#
+sub as_string {
+    my ($self) = @_;
+
+    return $self->file unless defined $self->title;
+    my $str = $self->title;
+    return $str unless defined $self->artist;
+    $str = $self->artist . $SEP . $str;
+    return $str unless defined $self->album && defined $self->track;
+    return join $SEP,
+        $self->album,
+        $self->track,
+        $str;
+}
 
 1;
 
@@ -46,6 +77,33 @@ The following methods are the accessors to their respective named fields:
 C<album()>, C<artist()>, C<file()>, C<id>, C<pos>, C<title()>, C<track()>,
 C<time()>. You can call them either with no arg to get the value, or with
 an arg to replace the current value.
+
+
+=head2 Methods
+
+
+=over 4
+
+=item $song->as_string()
+
+Return a string representing $song. This string will be:
+
+=over 4
+
+=item either "album = track = artist = title"
+
+=item or "artist = title"
+
+=item or "title"
+
+=item or "file"
+
+=back
+
+(in this order), depending on the existing tags of the song. The last
+possibility always exist of course, since it's a path.
+
+=back
 
 
 =head1 SEE ALSO

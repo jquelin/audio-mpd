@@ -759,15 +759,6 @@ sub searchadd {
 
 
 
-sub get_title {
-    my ($self, $song) = @_;
-
-    my %data = $self->get_song_info($song);
-    return $data{Artist}.' - '.$data{Title} if $data{Artist} && $data{Title};
-    return $data{Title} if $data{Title};
-    return $data{file};
-}
-
 sub get_time_format {
     my ($self) = shift;
 
@@ -1159,15 +1150,6 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 =head2 Retrieving information from current playlist
 
 =over 4
-
-=item $mpd->get_title( [$song] )
-
-Return the 'title string' of song number $song. The 'title' is the artist and
-title of the song. If the artist isn't available, then just the title is
-returned. If there is no title available, then the filename is returned.
-
-If $song is not specified, then the 'title' of the current song is returned.
-
 
 =item $mpd->playlist_changes( $plversion )
 

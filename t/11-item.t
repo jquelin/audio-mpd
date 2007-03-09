@@ -23,7 +23,7 @@ use strict;
 use warnings;
 
 use Audio::MPD::Item;
-use Test::More tests => 13;
+use Test::More tests => 18;
 
 my ($i, $output, @output, %params);
 
@@ -54,6 +54,19 @@ isa_ok( $i, 'Audio::MPD::Item', 'song inherits from item' );
 
 
 #
+# testing as_string from audio::mpd::item::song.
+is( $i->as_string, 'Frobnizer = 26 = Foo Bar = Blah!', 'as_string() with all tags' );
+$i->track(undef);
+is( $i->as_string, 'Foo Bar = Blah!', 'as_string() without track' );
+$i->track(26); $i->album(undef);
+is( $i->as_string, 'Foo Bar = Blah!', 'as_string() without album' );
+$i->artist(undef);
+is( $i->as_string, 'Blah!',           'as_string() without artist' );
+$i->title(undef);
+is( $i->as_string, 'some/random/path/to/a/song.ogg', 'as_string() without title' );
+
+
+#
 # testing audio::mpd::item::directory
 $output = "directory: some/random/path\n";
 @output = split /\n/, $output;
@@ -62,5 +75,6 @@ $i = Audio::MPD::Item->new( %params );
 isa_ok( $i, 'Audio::MPD::Item::Directory', 'directory creation' );
 is( $i->directory, 'some/random/path',  'accessor: directory' );
 isa_ok( $i, 'Audio::MPD::Item', 'directory inherits from item' );
+
 
 exit;
