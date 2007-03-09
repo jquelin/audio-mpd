@@ -201,6 +201,19 @@ sub updatedb {
 }
 
 
+#
+# my @handlers = $mpd->urlhandlers;
+#
+# Return an array of supported URL schemes.
+#
+sub urlhandlers {
+    my ($self) = @_;
+    my @handlers =
+        map { /^handler: (.+)$/ ? $1 : () }
+        $self->_send_command("urlhandlers\n");
+    return @handlers;
+}
+
 
 # -- MPD interaction: handling volume & output
 
@@ -266,7 +279,7 @@ sub stats {
 #
 # my $status = $mpd->status;
 #
-# Return a Audio::MPD::Status object with various information on current
+# Return an Audio::MPD::Status object with various information on current
 # MPD server settings. Check the embedded pod for more information on the
 # available accessors.
 #
@@ -275,19 +288,6 @@ sub status {
     my @output = $self->_send_command( "status\n" );
     my $status = Audio::MPD::Status->new( @output );
     return $status;
-}
-
-
-#
-# my $song = $mpd->current;
-#
-# Return a C<Audio::MPD::Item::Song> representing the song currently playing.
-#
-sub current {
-    my ($self) = @_;
-    my @output = $self->_send_command("currentsong\n");
-    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
-    return Audio::MPD::Item->new( %params );
 }
 
 
@@ -320,16 +320,15 @@ sub playlist {
 
 
 #
-# my @handlers = $mpd->urlhandlers;
+# my $song = $mpd->current;
 #
-# Return an array of supported URL schemes.
+# Return an C<Audio::MPD::Item::Song> representing the song currently playing.
 #
-sub urlhandlers {
+sub current {
     my ($self) = @_;
-    my @handlers =
-        map { /^handler: (.+)$/ ? $1 : () }
-        $self->_send_command("urlhandlers\n");
-    return @handlers;
+    my @output = $self->_send_command("currentsong\n");
+    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
+    return Audio::MPD::Item->new( %params );
 }
 
 
@@ -918,6 +917,12 @@ Force mpd to recan its collection. If $path (relative to MPD's music directory)
 is supplied, MPD will only scan it - otherwise, MPD will rescan its whole
 collection.
 
+
+=item $mpd->urlhandlers()
+
+Return an array of supported URL schemes.
+
+
 =back
 
 
@@ -957,14 +962,9 @@ last update of the database
 
 =item $mpd->status()
 
-Return a C<Audio::MPD::Status> object with various information on current
+Return an C<Audio::MPD::Status> object with various information on current
 MPD server settings. Check the embedded pod for more information on the
 available accessors.
-
-
-=item $mpd->current( )
-
-Return an C<Audio::MPD::Item::Song> representing the song currently playing.
 
 
 =item $mpd->playlist( )
@@ -973,9 +973,28 @@ Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
 songs in the current playlist.
 
 
-=item $mpd->urlhandlers()
+=item $mpd->current( )
 
-Return an array of supported URL schemes.
+Return an C<Audio::MPD::Item::Song> representing the song currently playing.
+
+
+=item $mpd->song( $song )
+
+Return an C<Audio::MPD::Item::Song> representing the song number C<$song>.
+
+
+=item $mpd->get_song_info_from_id( $songid )
+
+Returns an a hash containing information about song ID $songid.
+
+
+=item $mpd->get_title( [$song] )
+
+Return the 'title string' of song number $song. The 'title' is the artist and
+title of the song. If the artist isn't available, then just the title is
+returned. If there is no title available, then the filename is returned.
+
+If $song is not specified, then the 'title' of the current song is returned.
 
 
 =back
@@ -1142,25 +1161,6 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 
 Return a hash of hashref with all the differences in the playlist since
 playlist $plversion.
-
-
-=item $mpd->get_song_info( $song )
-
-Returns an a hash containing information about song number $song.
-
-
-=item $mpd->get_song_info_from_id( $songid )
-
-Returns an a hash containing information about song ID $songid.
-
-
-=item $mpd->get_title( [$song] )
-
-Return the 'title string' of song number $song. The 'title' is the artist and
-title of the song. If the artist isn't available, then just the title is
-returned. If there is no title available, then the filename is returned.
-
-If $song is not specified, then the 'title' of the current song is returned.
 
 
 =item $mpd->get_time_format( )
