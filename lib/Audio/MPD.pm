@@ -332,6 +332,36 @@ sub current {
 }
 
 
+#
+# my $song = $mpd->song( [$song] )
+#
+# Return an C<Audio::MPD::Item::Song> representing the song number C<$song>.
+# If C<$song> is not supplied, returns the current song.
+#
+sub song {
+    my ($self, $song) = @_;
+    return $self->current unless defined $song;
+    my @output = $self->_send_command("playlistinfo $song\n");
+    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
+    return Audio::MPD::Item->new( %params );
+}
+
+
+#
+# my $song = $mpd->songid( [$songid] )
+#
+# Return an C<Audio::MPD::Item::Song> representing the song with id C<$songid>.
+# If C<$songid> is not supplied, returns the current song.
+#
+sub songid {
+    my ($self, $songid) = @_;
+    return $self->current unless defined $songid;
+    my @output = $self->_send_command("playlistid $songid\n");
+    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
+    return Audio::MPD::Item->new( %params );
+}
+
+
 # -- MPD interaction: altering settings
 
 #
@@ -714,25 +744,6 @@ sub lsinfo {
 #   MPD, but may be useful for most people using the module.  #
 ###############################################################
 
-sub get_song_info {
-    my ($self, $song) = @_;
-    $song ||= $self->status->song;
-    return
-        map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
-        $self->_send_command("playlistinfo $song\n");
-    # FIXME: return item::songs / item::directory
-}
-
-
-sub get_song_info_from_id {
-    my ($self, $song) = @_;
-    $song ||= $self->status->song;
-    return
-        map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
-        $self->_send_command("playlistid $song\n");
-    # FIXME: return item::songs / item::directory
-}
-
 sub searchadd {
     my ($self, $type, $string) = @_;
     my @results = $self->search($type, $string);
@@ -978,24 +989,16 @@ songs in the current playlist.
 Return an C<Audio::MPD::Item::Song> representing the song currently playing.
 
 
-=item $mpd->song( $song )
+=item $mpd->song( [$song] )
 
-Return an C<Audio::MPD::Item::Song> representing the song number C<$song>.
-
-
-=item $mpd->get_song_info_from_id( $songid )
-
-Returns an a hash containing information about song ID $songid.
+Return an C<Audio::MPD::Item::Song> representing the song number C<$song>. If
+C<$song> is not supplied, returns the current song.
 
 
-=item $mpd->get_title( [$song] )
+=item $mpd->songid( [$songid] )
 
-Return the 'title string' of song number $song. The 'title' is the artist and
-title of the song. If the artist isn't available, then just the title is
-returned. If there is no title available, then the filename is returned.
-
-If $song is not specified, then the 'title' of the current song is returned.
-
+Return an C<Audio::MPD::Item::Song> representing the song with id C<$songid>.
+If C<$songid> is not supplied, returns the current song.
 
 =back
 
@@ -1156,6 +1159,15 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 =head2 Retrieving information from current playlist
 
 =over 4
+
+=item $mpd->get_title( [$song] )
+
+Return the 'title string' of song number $song. The 'title' is the artist and
+title of the song. If the artist isn't available, then just the title is
+returned. If there is no title available, then the filename is returned.
+
+If $song is not specified, then the 'title' of the current song is returned.
+
 
 =item $mpd->playlist_changes( $plversion )
 
