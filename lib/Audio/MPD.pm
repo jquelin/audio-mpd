@@ -279,6 +279,20 @@ sub status {
 
 
 #
+# my $song = $mpd->current;
+#
+# Return a C<Audio::MPD::Item::Song> representing the song currently playing.
+#
+sub current {
+    my ($self) = @_;
+    my $output = $self->_send_command("currentsong\n");
+    my @output = split /\n/, $output;
+    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
+    return Audio::MPD::Item->new( %params );
+}
+
+
+#
 # my @handlers = $mpd->urlhandlers;
 #
 # Return an array of supported URL schemes.
@@ -580,20 +594,7 @@ sub rm {
 }
 
 
-# -- MPD interaction: retrieving information from current playlist
 
-#
-# my $song = $mpd->current;
-#
-# Return a C<Audio::MPD::Item::Song> representing the song currently playing.
-#
-sub current {
-    my ($self) = @_;
-    my $output = $self->_send_command("currentsong\n");
-    my @output = split /\n/, $output;
-    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
-    return Audio::MPD::Item->new( %params );
-}
 
 
 # -- MPD interaction: searching collection
@@ -954,6 +955,11 @@ MPD server settings. Check the embedded pod for more information on the
 available accessors.
 
 
+=item $mpd->current( )
+
+Return an C<Audio::MPD::Item::Song> representing the song currently playing.
+
+
 =item $mpd->urlhandlers()
 
 Return an array of supported URL schemes.
@@ -1118,11 +1124,6 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 =head2 Retrieving information from current playlist
 
 =over 4
-
-=item $mpd->current( )
-
-Return an C<Audio::MPD::Item::Song> representing the song currently playing.
-
 
 =item $mpd->playlist( )
 
