@@ -20,6 +20,7 @@ package Audio::MPD;
 use warnings;
 use strict;
 
+use Audio::MPD::Item;
 use Audio::MPD::Status;
 use IO::Socket;
 
@@ -579,6 +580,21 @@ sub rm {
 }
 
 
+# -- MPD interaction: retrieving information from current playlist
+
+#
+# my $song = $mpd->current;
+#
+# Return a C<Audio::MPD::Item::Song> representing the song currently playing.
+#
+sub current {
+    my ($self) = @_;
+    my $output = $self->_send_command("currentsong\n");
+    my @output = split /\n/, $output;
+    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
+    return Audio::MPD::Item->new( %params );
+}
+
 
 # -- MPD interaction: searching collection
 
@@ -680,13 +696,6 @@ sub get_song_info {
     # FIXME: return item::songs / item::directory
 }
 
-sub get_current_song_info {
-    my ($self) = @_;
-    return
-        map { /^([^:]+):\s(.+)$/ ? ($1=>$2) : () }
-        $self->_send_command("currentsong\n");
-    # FIXME: return item::songs / item::directory
-}
 
 sub get_song_info_from_id {
     my ($self, $song) = @_;
@@ -1103,60 +1112,6 @@ directory. No return value.
 
 Delete playlist named $playlist from MPD's playlist directory. No return value.
 
-
-=back
-
-
-=head2 Searching the collection
-
-=over 4
-
-=item $mpd->search( $type, $string, [$strict] )
-
-Search through MPD's database of music for matching songs.
-
-$type is the field to search in: "title","artist","album", or "filename", and
-$string is the keyword(s) to seach for. If $strict is true then only exact
-matches are returned.
-
-Return an array of matching file paths.
-
-
-=item $mpd->searchadd( $type, $string )
-
-Perform the same action as $mpd->search(), but add any
-matching songs to the current playlist, instead of just returning
-information about them.
-
-
-=item $mpd->list( $type, [$artist] )
-
-Returns an array of all the "album" or "artist" in
-the music database (as chosen by $type). $artist is an
-optional parameter, which will only return albums by the
-specified $artist when $type is "album".
-
-
-=item $mpd->listall( [$path] )
-
-Return an array of all the songs in the music database.
-If $path is specified, then it only returns songs matching
-the directory/path.
-
-
-=item $mpd->listallinfo( [$path] )
-
-Returns an array of hashes containing all the paths and metadata about
-songs in the music database.  If $path is specified, then it only
-returns songs matching the directory/path.
-
-
-=item $mpd->lsinfo( [$directory] )
-
-Returns an array of hashes containing all the paths and metadata about
-songs in the specified directory. If no directory is specified, then only
-the songs/directories in the root directory are listed.
-
 =back
 
 
@@ -1164,9 +1119,9 @@ the songs/directories in the root directory are listed.
 
 =over 4
 
-=item $mpd->get_current_song_info( )
+=item $mpd->current( )
 
-Return a hash of metadata for the song currently playing.
+Return an C<Audio::MPD::Item::Song> representing the song currently playing.
 
 
 =item $mpd->playlist( )
@@ -1235,6 +1190,59 @@ contained in a hashref with the following keys:
 =item time_left
 
 =back
+
+=back
+
+
+=head2 Searching the collection
+
+=over 4
+
+=item $mpd->search( $type, $string, [$strict] )
+
+Search through MPD's database of music for matching songs.
+
+$type is the field to search in: "title","artist","album", or "filename", and
+$string is the keyword(s) to seach for. If $strict is true then only exact
+matches are returned.
+
+Return an array of matching file paths.
+
+
+=item $mpd->searchadd( $type, $string )
+
+Perform the same action as $mpd->search(), but add any
+matching songs to the current playlist, instead of just returning
+information about them.
+
+
+=item $mpd->list( $type, [$artist] )
+
+Returns an array of all the "album" or "artist" in
+the music database (as chosen by $type). $artist is an
+optional parameter, which will only return albums by the
+specified $artist when $type is "album".
+
+
+=item $mpd->listall( [$path] )
+
+Return an array of all the songs in the music database.
+If $path is specified, then it only returns songs matching
+the directory/path.
+
+
+=item $mpd->listallinfo( [$path] )
+
+Returns an array of hashes containing all the paths and metadata about
+songs in the music database.  If $path is specified, then it only
+returns songs matching the directory/path.
+
+
+=item $mpd->lsinfo( [$directory] )
+
+Returns an array of hashes containing all the paths and metadata about
+songs in the specified directory. If no directory is specified, then only
+the songs/directories in the root directory are listed.
 
 =back
 
