@@ -36,8 +36,8 @@ sub new {
     @lowcase{ map { lc } keys %params } = values %params;
 
     my $item = exists $params{file} ?
-        Item::Song->new(\%lowcase) :
-        Item::Directory->new(\%lowcase);
+        Audio::MPD::Item::Song->new(\%lowcase) :
+        Audio::MPD::Item::Directory->new(\%lowcase);
     return $item;
 }
 
