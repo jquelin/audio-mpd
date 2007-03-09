@@ -15,8 +15,8 @@ README
 scripts/example.pl
 scripts/mpc.pl
 t/00-use.t
-t/01-pod-coverage.t
 t/01-pod.t
+t/02-pod-coverage.t
 t/10-status.t
 t/11-item.t
 t/20-connection.t
