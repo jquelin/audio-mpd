@@ -20,7 +20,7 @@ package Audio::MPD::Item::Song;
 use strict;
 use warnings;
 
-use base qw[ Class::Accessor::Fast ];
+use base qw[ Class::Accessor::Fast Audio::MPD::Item ];
 __PACKAGE__->mk_accessors( qw[ album artist file title track time ] );
 
 1;
