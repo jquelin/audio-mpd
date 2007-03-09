@@ -29,7 +29,6 @@ use Audio::MPD::Item::Song;
 #
 sub new {
     my ($pkg, %params) = @_;
-    croak "new is a class method - can't call it on a ref\n" if ref $pkg;
 
     # transform keys in lowercase.
     my %lowcase;
