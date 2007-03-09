@@ -285,10 +285,37 @@ sub status {
 #
 sub current {
     my ($self) = @_;
-    my $output = $self->_send_command("currentsong\n");
-    my @output = split /\n/, $output;
+    my @output = $self->_send_command("currentsong\n");
     my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
     return Audio::MPD::Item->new( %params );
+}
+
+
+#
+# my @songs = $mpd->playlist;
+#
+# Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
+# songs in the current playlist.
+#
+sub playlist {
+    my ($self) = @_;
+
+    my @lines = $self->_send_command("playlistinfo\n");
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return \@list;
 }
 
 
@@ -720,26 +747,6 @@ sub searchadd {
     $self->_send_command( $command );
 }
 
-
-
-sub playlist {
-    my ($self) = @_;
-
-    my @lines = $self->_send_command("playlistinfo\n");
-
-    my @list;
-    my %hash;
-    foreach my $line (@lines) {
-        next unless $line =~ /^([^:]+):\s(.+)$/;
-        if ($1 eq 'file') {
-            push @list, { %hash } if %hash;
-            %hash = ();
-        }
-        $hash{$1} = $2;
-    }
-    push @list, { %hash }; # Remember the last entry
-    return \@list;
-}
 
 
 sub get_title {
