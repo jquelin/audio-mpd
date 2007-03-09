@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 10;
+plan tests => 16;
 my $mpd = Audio::MPD->new;
 
 
@@ -55,6 +55,21 @@ $mpd->play;
 $mpd->pause;
 my $status = $mpd->status;
 isa_ok( $status, 'Audio::MPD::Status', 'status return an Audio::MPD::Status object' );
+
+
+#
+# testing current song.
+my $song = $mpd->current;
+isa_ok( $song, 'Audio::MPD::Item::Song', 'current return an Audio::MPD::Item::Song object' );
+
+
+#
+# testing playlist retrieval.
+my $list = $mpd->playlist;
+isa_ok( $list, 'ARRAY', 'playlist returns an array reference' );
+isa_ok( $_, 'Audio::MPD::Item::Song', 'playlist returns Audio::MPD::Item::Song objects' )
+    for @$list;
+is( $list->[0]->title, 'ok-title', 'first song reported first' );
 
 
 #
