@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 6;
+plan tests => 8;
 my $mpd = Audio::MPD->new;
 
 
@@ -68,5 +68,11 @@ sleep 1; # let the first update finish.
 eval { $mpd->updatedb('dir1') };
 is( $@, '', 'updating part of collection' );
 
+
+#
+# testing urlhandlers.
+my @handlers = $mpd->urlhandlers;
+is( scalar @handlers,     1, 'only one url handler supported' );
+is( $handlers[0], 'http://', 'only http is supported by now' );
 
 exit;

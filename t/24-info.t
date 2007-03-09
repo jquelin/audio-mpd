@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 16;
+plan tests => 14;
 my $mpd = Audio::MPD->new;
 
 
@@ -71,11 +71,5 @@ isa_ok( $_, 'Audio::MPD::Item::Song', 'playlist returns Audio::MPD::Item::Song o
     for @$list;
 is( $list->[0]->title, 'ok-title', 'first song reported first' );
 
-
-#
-# testing urlhandlers.
-my @handlers = $mpd->urlhandlers;
-is( scalar @handlers,     1, 'only one url handler supported' );
-is( $handlers[0], 'http://', 'only http is supported by now' );
 
 exit;
