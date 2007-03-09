@@ -18,6 +18,7 @@ t/00-use.t
 t/01-pod-coverage.t
 t/01-pod.t
 t/10-status.t
+t/11-item.t
 t/20-connection.t
 t/21-new.t
 t/22-general.t
