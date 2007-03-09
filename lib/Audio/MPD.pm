@@ -320,6 +320,34 @@ sub playlist {
 
 
 #
+# my $list = $mpd->pl_changes( $plversion );
+#
+# Return an arrayref with all the songs (as API::Song objects) added to
+# the playlist since playlist $plversion.
+#
+sub pl_changes {
+    my ($self, $plid) = @_;
+
+    my @lines = $self->_send_command("plchanges $plid\n");
+    my (%param, %changes);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
+#
 # my $song = $mpd->current;
 #
 # Return an C<Audio::MPD::Item::Song> representing the song currently playing.
@@ -818,28 +846,6 @@ sub get_time_info {
 }
 
 
-sub playlist_changes {
-    my ($self, $plid) = @_;
-
-    my %changes;
-
-    my @lines = $self->_send_command("plchanges $plid\n");
-    my $entry; # hash reference
-    foreach my $line (@lines) {
-        next unless $line =~ /^([^:]+):\s(.+)$/;
-        my ($key, $value) = ($1, $2);
-        # create a new hash for the start of each entry
-        $entry = {} if $key eq 'file';
-        # save a ref to the entry as soon as we know where it goes
-        $changes{$value} = $entry if $key eq 'Pos';
-        # save all attributes of the entry
-        $entry->{$key} = $value;
-    }
-
-    return %changes;
-}
-
-
 1;
 
 
@@ -1153,8 +1159,8 @@ Delete playlist named $playlist from MPD's playlist directory. No return value.
 
 =item $mpd->playlist_changes( $plversion )
 
-Return a hash of hashref with all the differences in the playlist since
-playlist $plversion.
+Return an arrayref with all the songs (as API::Song objects) added to
+the playlist since playlist $plversion.
 
 
 =item $mpd->get_time_format( )
