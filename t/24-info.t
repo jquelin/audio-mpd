@@ -29,9 +29,9 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 14;
+plan tests => 20;
 my $mpd = Audio::MPD->new;
-
+my $song;
 
 #
 # testing stats
@@ -59,7 +59,7 @@ isa_ok( $status, 'Audio::MPD::Status', 'status return an Audio::MPD::Status obje
 
 #
 # testing current song.
-my $song = $mpd->current;
+$song = $mpd->current;
 isa_ok( $song, 'Audio::MPD::Item::Song', 'current return an Audio::MPD::Item::Song object' );
 
 
@@ -70,6 +70,24 @@ isa_ok( $list, 'ARRAY', 'playlist returns an array reference' );
 isa_ok( $_, 'Audio::MPD::Item::Song', 'playlist returns Audio::MPD::Item::Song objects' )
     for @$list;
 is( $list->[0]->title, 'ok-title', 'first song reported first' );
+
+
+#
+# testing song.
+$song = $mpd->song(1);
+isa_ok( $song, 'Audio::MPD::Item::Song', 'song() returns an Audio::MPD::Item::Song object' );
+is( $song->file, 'dir1/title-artist-album.ogg', 'song() returns the wanted song' );
+$song = $mpd->song; # default to current song
+is( $song->file, 'title.ogg', 'song() defaults to current song' );
+
+
+#
+# testing songid.
+$song = $mpd->songid(1);
+isa_ok( $song, 'Audio::MPD::Item::Song', 'songid() returns an Audio::MPD::Item::Song object' );
+is( $song->file, 'dir1/title-artist-album.ogg', 'songid() returns the wanted song' );
+$song = $mpd->songid; # default to current song
+is( $song->file, 'title.ogg', 'songid() defaults to current song' );
 
 
 exit;
