@@ -1,21 +1,21 @@
- 0.13.5 Thu Mar  8 20:22:32 CET 2007
- - get_urlhandlers renamed to urlhandlers
- - seekid defaults to current song
+0.13.5 Thu Mar  8 20:22:32 CET 2007
+ - get_urlhandlers() renamed to urlhandlers()
+ - seekid() defaults to current song
  - pod enhancement
  - test coverage of Audio::MPD up to 36.1%
 
 0.13.4 Tue Mar  6 20:05:21 CET 2007
  - new method password() to change mpd password
- - bug fix in deleteid (was issuing delete) and crop (should be done in
+ - bug fix in deleteid() (was issuing "delete") and crop() (should be done in
    reverse order to keep mpd happy)
  - test coverage of Audio::MPD up to 36.1%
 
 0.13.3 Sun Mar  4 19:30:24 CET 2007
- - bug fix on volume method
+ - bug fix on volume() method
 
 0.13.2 Sun Mar  4 10:17:50 CET 2007
  - Makefile.PL now uses ExtUtils::MakeMaker instead of perverting Module::Builder
- - bugfix in play / playid
+ - bugfix in play() / playid()
  - testing Audio::MPD::Status up to 100%
  - testing Audio::MPD = 24.5%
 
@@ -27,20 +27,20 @@
  - connection completely reworked to get rid of the most obvious problems
    note: this does not mean that we're completely clean, but at least it's
          better than what it was.
- - is_connected and close_connection are no more needed, and therefore removed
+ - is_connected() and close_connection() are no more needed, and thus removed
  - error handling is now done via die - get_error() is gone
- - play, delete, move, get_song_info, seek & swap do not accept a third
-   fromid parameter anymore
- - pause now toggle pause status if no parameter is sent
+ - play(), delete(), move(), get_song_info(), seek() & swap() do not accept a
+   third fromid parameter anymore
+ - pause() now toggle pause status if no parameter is sent
  - renamed methods:
-    . kill_mpd -> kill
-    . get_server_version -> version
-    . set_fade -> fade
-    . set_random -> random
-    . set_repeat -> repeat
-    . set_volume -> volume
- - new methods: stats, status
- - delete and deleteid can take more than one song to delete
+    . kill_mpd() -> kill()
+    . get_server_version() -> version()
+    . set_fade() -> fade()
+    . set_random() -> random()
+    . set_repeat() -> repeat()
+    . set_volume() -> volume()
+ - new methods: stats(), status()
+ - delete() and deleteid() can take more than one song to delete
 
 0.12.4 Thu Jan 25 21:52:05 CET 2007 [JQ]
  - grouped pod in sections for easier reading
