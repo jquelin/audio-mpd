@@ -258,7 +258,7 @@ sub output_disable {
 
 
 
-# -- MPD interaction: retrieving info
+# -- MPD interaction: retrieving info from current state
 
 #
 # $mpd->stats;
@@ -960,7 +960,7 @@ Disable the specified audio output. $output is the ID of the audio output.
 =back
 
 
-=head2 Retrieving info
+=head2 Retrieving info from current state
 
 =over 4
 
