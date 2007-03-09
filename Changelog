@@ -33,12 +33,12 @@
    third fromid parameter anymore
  - pause() now toggle pause status if no parameter is sent
  - renamed methods:
-    . kill_mpd() -> kill()
+    . kill_mpd()           -> kill()
     . get_server_version() -> version()
-    . set_fade() -> fade()
-    . set_random() -> random()
-    . set_repeat() -> repeat()
-    . set_volume() -> volume()
+    . set_fade()           -> fade()
+    . set_random()         -> random()
+    . set_repeat()         -> repeat()
+    . set_volume()         -> volume()
  - new methods: stats(), status()
  - delete() and deleteid() can take more than one song to delete
 
