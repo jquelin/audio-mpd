@@ -683,26 +683,40 @@ sub rm {
 
 # -- MPD interaction: searching collection
 
+#
+# my @songs = $mpd->search( $type, $string, [$strict] );
+#
+# Search through MPD's database of music for matching songs, and return a
+# list of associated Audio::MPD::Item::Song.
+#
+# $type is the field to search in: "title","artist","album", or "filename",
+# and $string is the keyword(s) to seach for. If $strict is true then only
+# exact matches are returned.
+#
 sub search {
     my ($self, $type, $string, $strict) = @_;
 
     my $command = (!defined($strict) || $strict == 0 ? 'search' : 'find');
     my @lines = $self->_send_command( qq[$command $type "$string"\n] );
+    my (@list, %param);
 
-    my @list;
-    my %hash;
-    foreach my $line (@lines) {
-        next unless $line =~ /^([^:]+):\s(.+)$/;
-        if ($1 eq 'file') {
-            push @list, { %hash } if %hash;
-            %hash = ();
-        }
-        $hash{$1} = $2;
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
     }
-    push @list, { %hash }; # Remember the last entry
     return @list;
 }
 
+
+#
 sub list {
     my ($self, $type, $artist) = @_;
     my $command = "list $type " . $type eq 'album' ? qq["$artist"] : '';
@@ -716,7 +730,7 @@ sub listall {
     my ($self, $path) = @_;
     $path ||= '';
     return $self->_send_command( qq[listall "$path"\n] );
-    # FIXME: return item::songs / item::directory
+# FIXME: return item::songs / item::directory
 }
 
 # recursive, with all tags
@@ -1208,13 +1222,12 @@ contained in a hashref with the following keys:
 
 =item $mpd->search( $type, $string, [$strict] )
 
-Search through MPD's database of music for matching songs.
+Search through MPD's database of music for matching songs, and return a
+list of associated Audio::MPD::Item::Song.
 
 $type is the field to search in: "title","artist","album", or "filename", and
 $string is the keyword(s) to seach for. If $strict is true then only exact
 matches are returned.
-
-Return an array of matching file paths.
 
 
 =item $mpd->searchadd( $type, $string )
