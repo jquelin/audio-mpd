@@ -22,7 +22,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 BEGIN { use_ok( 'Audio::MPD' ); }
 diag( "Testing Audio::MPD $Audio::MPD::VERSION, Perl $], $^X" );
@@ -31,3 +31,4 @@ use_ok( 'Audio::MPD::Status' );
 use_ok( 'Audio::MPD::Item::Directory' );
 use_ok( 'Audio::MPD::Item::Song' );
 use_ok( 'Audio::MPD::Item' );
+use_ok( 'Audio::MPD::Collection' );

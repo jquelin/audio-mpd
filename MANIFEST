@@ -3,6 +3,7 @@ Build.PL
 Changelog
 COPYING
 lib/Audio/MPD.pm
+lib/Audio/MPD/Collection.pm
 lib/Audio/MPD/Item.pm
 lib/Audio/MPD/Item/Directory.pm
 lib/Audio/MPD/Item/Song.pm
