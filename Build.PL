@@ -9,13 +9,13 @@ my $builder = Module::Build->new (
 	module_name         => 'Audio::MPD',
 	license             => 'gpl',
     dist_version_from   => 'lib/Audio/MPD.pm',
-	build_requires => {
-        'Test::More'    => 0,
-	},
     add_to_cleanup => [ 'Audio-MPD-*', '*~', '*/*~', '*/*/*~',
                         '*/*/*/*~', '*/*/*/*/*~' ],
-
-	requires => {
+    script_files => [],
+    build_requires => {
+        'Test::More'    => 0,
+    },
+    requires => {
         'Class::Accessor' => 0,
 		'IO::Socket'	  => 0,
         'Scalar::Util'    => 0,

@@ -9,7 +9,7 @@ WriteMakefile(
     NAME                => 'Audio::MPD',
     VERSION_FROM        => 'lib/Audio/MPD.pm',
     ABSTRACT_FROM       => 'lib/Audio/MPD.pm',
-    PL_FILES            => {},
+    EXE_FILES           => [],
     PREREQ_PM => {
 		'Class::Accessor' => 0,
 		'IO::Socket'	  => 0,
