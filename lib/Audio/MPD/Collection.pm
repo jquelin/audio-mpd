@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-our ($VERSION) = '$Rev: 5641 $' =~ /(\d+)/;
+our ($VERSION) = '$Rev: 5642 $' =~ /(\d+)/;
 
 
 #--
@@ -208,7 +208,7 @@ sub all_titles {
 sub all_pathes {
     my ($self) = @_;
     return
-        map { /^File: (.+)$/ ? $1 : () }
+        map { /^file: (.+)$/ ? $1 : () }
         $self->_mpd->_send_command( "list filename\n" );
 }
 
