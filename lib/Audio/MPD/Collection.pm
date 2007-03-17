@@ -89,6 +89,42 @@ sub all_items {
 }
 
 
+#
+# my @items = $collection->all_items_simple( [$path] );
+#
+# Return *all* Audio::MPD::Items (both songs & directories) currently known
+# by mpd.
+#
+# If $path is supplied (relative to mpd root), restrict the retrieval to
+# songs and dirs in this directory.
+#
+# /!\ Warning: the Audio::MPD::Item::Song objects will only have their tag
+# file filled. Any other tag will be empty, so don't use this sub for any
+# other thing than a quick scan!
+#
+sub all_items_simple {
+    my ($self, $path) = @_;
+    $path ||= '';
+
+    my @lines = $self->_send_command( qq[listall "$path"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file' || $1 eq 'directory'; # last param of item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
 # -- Collection: retrieving the whole collection
 
 #
@@ -211,6 +247,19 @@ by mpd.
 
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
+
+
+=item all_items_simple( [$path] )
+
+Return B<all> C<Audio::MPD::Item>s (both songs & directories) currently known
+by mpd.
+
+If C<$path> is supplied (relative to mpd root), restrict the retrieval to
+songs and dirs in this directory.
+
+B</!\ Warning>: the C<Audio::MPD::Item::Song> objects will only have their
+tag file filled. Any other tag will be empty, so don't use this sub for any
+other thing than a quick scan!
 
 
 =back

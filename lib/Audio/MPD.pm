@@ -720,15 +720,6 @@ sub search {
 }
 
 
-# recursively, but only dirs & files
-sub listall {
-    my ($self, $path) = @_;
-    $path ||= '';
-    return $self->_send_command( qq[listall "$path"\n] );
-# FIXME: return item::songs / item::directory
-}
-
-
 # only in the current path, all tags
 sub lsinfo {
     my ($self, $path) = @_;
@@ -1217,13 +1208,6 @@ matches are returned.
 Perform the same action as $mpd->search(), but add any
 matching songs to the current playlist, instead of just returning
 information about them.
-
-
-=item $mpd->listall( [$path] )
-
-Return an array of all the songs in the music database.
-If $path is specified, then it only returns songs matching
-the directory/path.
 
 
 
