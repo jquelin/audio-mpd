@@ -20,13 +20,14 @@ package Audio::MPD;
 use warnings;
 use strict;
 
+use Audio::MPD::Collection;
 use Audio::MPD::Item;
 use Audio::MPD::Status;
 use IO::Socket;
 
 
 use base qw[ Class::Accessor::Fast ];
-__PACKAGE__->mk_accessors( qw[ _host _password _port version ] );
+__PACKAGE__->mk_accessors( qw[ _host _password _port collection version ] );
 
 
 our $VERSION = '0.14.0';
@@ -59,6 +60,9 @@ sub new {
         _password => $password,
     };
     bless $self, $class;
+
+    # create the collection object and store it.
+    $self->collection( Audio::MPD::Collection->new($self) );
 
     # try to issue a ping to test connection - this can die.
     $self->ping;
@@ -1217,6 +1221,14 @@ contained in a hashref with the following keys:
 
 
 =head2 Searching the collection
+
+To search the collection, use the C<collection()> accessor, returning the
+associated C<Audio::MPD::Collection> object. You will then be able to call:
+
+    $mpd->collection->random_song();
+
+See C<Audio::MPD::Collection> documentation for more details on available
+methods.
 
 =over 4
 
