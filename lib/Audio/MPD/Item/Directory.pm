@@ -23,6 +23,8 @@ use warnings;
 use base qw[ Class::Accessor::Fast Audio::MPD::Item ];
 __PACKAGE__->mk_accessors( qw[ directory ] );
 
+our ($VERSION) = '$Rev: 5639 $' =~ /(\d+)/;
+
 1;
 
 =head1 NAME

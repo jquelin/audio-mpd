@@ -25,6 +25,8 @@ __PACKAGE__->mk_accessors
     ( qw[ audio bitrate error playlist playlistlength random
           repeat song songid state time volume xfade ] );
 
+our ($VERSION) = '$Rev: 5639 $' =~ /(\d+)/;
+
 
 #--
 # Constructor

@@ -23,6 +23,7 @@ use Carp;
 use Audio::MPD::Item::Directory;
 use Audio::MPD::Item::Song;
 
+our ($VERSION) = '$Rev: 5639 $' =~ /(\d+)/;
 
 #
 # constructor.
