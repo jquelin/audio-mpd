@@ -690,20 +690,6 @@ sub rm {
 #   MPD, but may be useful for most people using the module.  #
 ###############################################################
 
-sub searchadd {
-    my ($self, $type, $string) = @_;
-    my @results = $self->search($type, $string);
-
-    return unless @results;
-
-    my $command =
-          "command_list_begin\n"
-        . join( '', map { qq[add "$_->{file}"\n] } @results )
-        . "command_list_end\n";
-    $self->_send_command( $command );
-}
-
-
 
 sub get_time_format {
     my ($self) = shift;
