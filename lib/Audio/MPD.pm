@@ -720,29 +720,6 @@ sub search {
 }
 
 
-# only in the current path, all tags
-sub lsinfo {
-    my ($self, $path) = @_;
-    $path ||= '';
-
-    my @lines = $self->_send_command( qq[lsinfo "$path"\n] );
-
-    my @results;
-    my %element;
-    foreach my $line (@lines) {
-        chomp $line;
-        next unless $line =~ /^([^:]+):\s(.+)$/;
-        if ($1 eq 'file' || $1 eq 'playlist' || $1 eq 'directory') {
-            push @results, { %element } if %element;
-            %element = ();
-        }
-        $element{$1} = $2;
-    }
-    push @results, { %element };
-    return @results;
-    # FIXME: return item::songs / item::directory
-}
-
 
 ###############################################################
 #                     CUSTOM METHODS                          #
@@ -1209,13 +1186,6 @@ Perform the same action as $mpd->search(), but add any
 matching songs to the current playlist, instead of just returning
 information about them.
 
-
-
-=item $mpd->lsinfo( [$directory] )
-
-Returns an array of hashes containing all the paths and metadata about
-songs in the specified directory. If no directory is specified, then only
-the songs/directories in the root directory are listed.
 
 =back
 

@@ -125,6 +125,38 @@ sub all_items_simple {
 }
 
 
+#
+# my @items = $collection->items_in_dir( [$path] );
+#
+# Return the items in the given $path. If no $path supplied, do it on mpd's
+# root directory.
+#
+# Note that this sub does not work recusrively on all directories.
+#
+sub items_in_dir {
+    my ($self, $path) = @_;
+    $path ||= '';
+
+    my @lines = $self->_send_command( qq[lsinfo "$path"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file' || $1 eq 'directory'; # last param of item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
+
 # -- Collection: retrieving the whole collection
 
 #
@@ -260,6 +292,14 @@ songs and dirs in this directory.
 B</!\ Warning>: the C<Audio::MPD::Item::Song> objects will only have their
 tag file filled. Any other tag will be empty, so don't use this sub for any
 other thing than a quick scan!
+
+
+=item items_in_dir( [$path] )
+
+Return the items in the given C<$path>. If no C<$path> supplied, do it on
+mpd's root directory.
+
+Note that this sub does not work recusrively on all directories.
 
 
 =back
