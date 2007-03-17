@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-our ($VERSION) = '$Rev$' =~ /(\d+)/;
+our ($VERSION) = '$Rev: 5636 $' =~ /(\d+)/;
 
 #--
 # Constructor

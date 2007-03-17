@@ -1,11 +1,11 @@
 0.14.0 Sat Mar 17 13:29:57 CET 2007
  - implementation of Audio::MPD::Item: instead of returning some random hash
-   reference, Audio::MPD now returns API objects.
+   reference, Audio::MPD now returns AMI objects.
  - renamed methods:
    . get_current_song()      -> current()
    . get_song_info()         -> song()
    . get_song_info_from_id() -> songid()
-   . get_title()             -> API::Song::as_string()
+   . get_title()             -> AMI::Song::as_string()
    . pl_changes()            -> pl_changes()
  - pl_changes() now return an array ref instead of a hash with positions as key
  - test coverage of Audio::MPD up to 66.5%
