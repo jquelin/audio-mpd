@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-our ($VERSION) = '$Rev: 5636 $' =~ /(\d+)/;
+our ($VERSION) = '$Rev: 5637 $' =~ /(\d+)/;
 
 #--
 # Constructor
@@ -460,6 +460,11 @@ Return the C<Audio::MPD::Item::Song> which correspond to C<$path>.
 
 Return all albums (strings) performed by C<$artist> or where C<$artist>
 participated.
+
+
+=item songs_by_artist( $artist )
+
+Return all C<Audio::MPD::Item::Song>s performed by C<$artist>.
 
 
 =item songs_from_album( $album )
