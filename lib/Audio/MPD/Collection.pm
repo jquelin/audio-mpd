@@ -55,6 +55,40 @@ sub new {
 #--
 # Public methods
 
+# -- Collection: retrieving songs & directories
+
+#
+# my @items = $collection->all_items( [$path] );
+#
+# Return *all* Audio::MPD::Items (both songs & directories) currently known
+# by mpd.
+#
+# If $path is supplied (relative to mpd root), restrict the retrieval to
+# songs and dirs in this directory.
+#
+sub all_items {
+    my ($self, $path) = @_;
+    $path ||= '';
+
+    my @lines = $self->_send_command( qq[listallinfo "$path"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file' || $1 eq 'directory'; # last param of item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
 # -- Collection: retrieving the whole collection
 
 #
@@ -162,6 +196,22 @@ to free the memory in time, this reference is weakened.
 Note that you're not supposed to call this constructor yourself, an
 C<Audio::MPD::Collection> is automatically created for you during the creation
 of an C<Audio::MPD> object.
+
+=back
+
+
+=head2 Retrieving songs & directories
+
+=over 4
+
+=item all_items( [$path] )
+
+Return B<all> C<Audio::MPD::Item>s (both songs & directories) currently known
+by mpd.
+
+If C<$path> is supplied (relative to mpd root), restrict the retrieval to
+songs and dirs in this directory.
+
 
 =back
 

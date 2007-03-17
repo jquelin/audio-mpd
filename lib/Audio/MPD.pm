@@ -728,27 +728,6 @@ sub listall {
 # FIXME: return item::songs / item::directory
 }
 
-# recursive, with all tags
-sub listallinfo {
-    my ($self, $path) = @_;
-    $path ||= '';
-    my @lines = $self->_send_command( qq[listallinfo "$path"\n] );
-
-    my @results;
-    my %element;
-    foreach my $line (@lines) {
-        chomp $line;
-        next unless $line =~ /^([^:]+):\s(.+)$/;
-        if ($1 eq 'file') {
-            push @results, { %element } if %element;
-            %element = ();
-        }
-        $element{$1} = $2;
-    }
-    push @results, { %element };
-    return @results;
-    # FIXME: return item::songs / item::directory
-}
 
 # only in the current path, all tags
 sub lsinfo {
@@ -1246,12 +1225,6 @@ Return an array of all the songs in the music database.
 If $path is specified, then it only returns songs matching
 the directory/path.
 
-
-=item $mpd->listallinfo( [$path] )
-
-Returns an array of hashes containing all the paths and metadata about
-songs in the music database.  If $path is specified, then it only
-returns songs matching the directory/path.
 
 
 =item $mpd->lsinfo( [$directory] )
