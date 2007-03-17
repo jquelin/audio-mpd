@@ -683,44 +683,6 @@ sub rm {
 
 
 
-
-
-# -- MPD interaction: searching collection
-
-#
-# my @songs = $mpd->search( $type, $string, [$strict] );
-#
-# Search through MPD's database of music for matching songs, and return a
-# list of associated Audio::MPD::Item::Song.
-#
-# $type is the field to search in: "title","artist","album", or "filename",
-# and $string is the keyword(s) to seach for. If $strict is true then only
-# exact matches are returned.
-#
-sub search {
-    my ($self, $type, $string, $strict) = @_;
-
-    my $command = (!defined($strict) || $strict == 0 ? 'search' : 'find');
-    my @lines = $self->_send_command( qq[$command $type "$string"\n] );
-    my (@list, %param);
-
-    # parse lines in reverse order since "file:" comes first.
-    # therefore, let's first store every other parameter, and
-    # the "file:" line will trigger the object creation.
-    # of course, since we want to preserve the playlist order,
-    # this means that we're going to unshift the objects.
-    foreach my $line (reverse @lines) {
-        next unless $line =~ /^([^:]+):\s+(.+)$/;
-        $param{$1} = $2;
-        next unless $1 eq 'file'; # last param of this item
-        unshift @list, Audio::MPD::Item->new(%param);
-        %param = ();
-    }
-    return @list;
-}
-
-
-
 ###############################################################
 #                     CUSTOM METHODS                          #
 #-------------------------------------------------------------#
@@ -1167,27 +1129,6 @@ associated C<Audio::MPD::Collection> object. You will then be able to call:
 
 See C<Audio::MPD::Collection> documentation for more details on available
 methods.
-
-=over 4
-
-=item $mpd->search( $type, $string, [$strict] )
-
-Search through MPD's database of music for matching songs, and return a
-list of associated Audio::MPD::Item::Song.
-
-$type is the field to search in: "title","artist","album", or "filename", and
-$string is the keyword(s) to seach for. If $strict is true then only exact
-matches are returned.
-
-
-=item $mpd->searchadd( $type, $string )
-
-Perform the same action as $mpd->search(), but add any
-matching songs to the current playlist, instead of just returning
-information about them.
-
-
-=back
 
 
 =head1 SEE ALSO

@@ -211,20 +211,128 @@ sub all_pathes {
 }
 
 
+# -- Collection: picking a song
+
+#
+# my $song = $collection->song( $path );
+#
+# Return the Audio::MPD::Item::Song which correspond to $path.
+#
+sub song {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_send_command( qq[find filename "$what"\n] );
+    my %param;
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        return Audio::MPD::Item->new(%param);
+    }
+}
+
+
 # -- Collection: songs, albums & artists relations
 
 #
-# my @albums = albums_from_artist($artist);
+# my @albums = $collection->albums_by_artist($artist);
 #
-# Return all albums performed by $artist or where $artist participated.
+# Return all albums (strings) performed by $artist or where $artist
+# participated.
 #
-sub albums_from_artist {
+sub albums_by_artist {
     my ($self, $artist) = @_;
     return
         map { /^Album: (.+)$/ ? $1 : () }
         $self->_mpd->_send_command( qq[list album "$artist"\n] );
 }
 
+
+#
+# my @songs = $collection->songs_by_artist( $artist );
+#
+# Return all Audio::MPD::Item::Songs performed by $artist.
+#
+sub songs_by_artist {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_send_command( qq[find artist "$what"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
+#
+# my @songs = $collection->songs_from_album( $album );
+#
+# Return all Audio::MPD::Item::Songs appearing in $album.
+#
+sub songs_from_album {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_send_command( qq[find album "$what"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
+#
+# my @songs = $collection->songs_with_title( $title );
+#
+# Return all Audio::MPD::Item::Songs which title is exactly $title.
+#
+sub songs_with_title {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_send_command( qq[find title "$what"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
 
 
 1;
@@ -332,13 +440,36 @@ Return the list of all pathes (strings) currently known by mpd.
 =back
 
 
+=head2 Picking a song
+
+=over 4
+
+=item song( $path )
+
+Return the C<Audio::MPD::Item::Song> which correspond to C<$path>.
+
+
+=back
+
+
 =head2 Songs, albums & artists relations
 
 =over 4
 
-=item albums_from_artist( $artist )
+=item albums_by_artist( $artist )
 
-Return all albums performed by $artist or where $artist participated.
+Return all albums (strings) performed by C<$artist> or where C<$artist>
+participated.
+
+
+=item songs_from_album( $album )
+
+Return all C<Audio::MPD::Item::Song>s appearing in C<$album>.
+
+
+=item songs_with_title( $title )
+
+Return all C<Audio::MPD::Item::Song>s which title is exactly C<$title>.
 
 
 =back
