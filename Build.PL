@@ -17,6 +17,7 @@ my $builder = Module::Build->new (
 	requires => {
         'Class::Accessor' => 0,
 		'IO::Socket'	  => 0,
+        'Scalar::Util'    => 0,
 	},
 );
 
