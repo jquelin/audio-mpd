@@ -29,8 +29,19 @@ __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 our ($VERSION) = '$Rev$' =~ /(\d+)/;
 
+#--
+# Constructor
+
 #
-# constructor.
+# my $collection = Audio::MPD::Collection->new( $mpd );
+#
+# This will create the object, holding a back-reference to the Audio::MPD
+# object itself (for communication purposes). But in order to play safe and
+# to free the memory in time, this reference is weakened.
+#
+# Note that you're not supposed to call this constructor yourself, an
+# Audio::MPD::Collection is automatically created for you during the creation
+# of an Audio::MPD object.
 #
 sub new {
     my ($pkg, $mpd) = @_;
@@ -39,6 +50,80 @@ sub new {
     weaken( $self->{_mpd} );
     return $self;
 }
+
+
+#--
+# Public methods
+
+# -- Collection: retrieving the whole collection
+
+#
+# my @albums = $collection->all_albums;
+#
+# Return the list of all albums (strings) currently known by mpd.
+#
+sub all_albums {
+    my ($self) = @_;
+    return
+        map { /^Album: (.+)$/ ? $1 : () }
+        $self->_mpd->_send_command( "list album\n" );
+}
+
+
+#
+# my @artists = $collection->all_artists;
+#
+# Return the list of all artists (strings) currently known by mpd.
+#
+sub all_artists {
+    my ($self) = @_;
+    return
+        map { /^Artist: (.+)$/ ? $1 : () }
+        $self->_mpd->_send_command( "list artist\n" );
+}
+
+
+#
+# my @titles = $collection->all_titles;
+#
+# Return the list of all titles (strings) currently known by mpd.
+#
+sub all_titles {
+    my ($self) = @_;
+    return
+        map { /^Title: (.+)$/ ? $1 : () }
+        $self->_mpd->_send_command( "list title\n" );
+}
+
+
+#
+# my @pathes = $collection->all_pathes;
+#
+# Return the list of all pathes (strings) currently known by mpd.
+#
+sub all_pathes {
+    my ($self) = @_;
+    return
+        map { /^File: (.+)$/ ? $1 : () }
+        $self->_mpd->_send_command( "list filename\n" );
+}
+
+
+# -- Collection: songs, albums & artists relations
+
+#
+# my @albums = albums_from_artist($artist);
+#
+# Return all albums performed by $artist or where $artist participated.
+#
+sub albums_from_artist {
+    my ($self, $artist) = @_;
+    return
+        map { /^Album: (.+)$/ ? $1 : () }
+        $self->_mpd->_send_command( qq[list album "$artist"\n] );
+}
+
+
 
 1;
 
@@ -81,9 +166,41 @@ of an C<Audio::MPD> object.
 =back
 
 
-=head2
+=head2 Retrieving the whole collection
 
 =over 4
+
+=item all_albums()
+
+Return the list of all albums (strings) currently known by mpd.
+
+
+=item all_artists()
+
+Return the list of all artists (strings) currently known by mpd.
+
+
+=item all_titles()
+
+Return the list of all song titles (strings) currently known by mpd.
+
+
+=item all_pathes()
+
+Return the list of all pathes (strings) currently known by mpd.
+
+
+=back
+
+
+=head2 Songs, albums & artists relations
+
+=over 4
+
+=item albums_from_artist( $artist )
+
+Return all albums performed by $artist or where $artist participated.
+
 
 =back
 

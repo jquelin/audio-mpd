@@ -720,15 +720,6 @@ sub search {
 }
 
 
-#
-sub list {
-    my ($self, $type, $artist) = @_;
-    my $command = "list $type " . $type eq 'album' ? qq["$artist"] : '';
-    return
-        map { /^[^:]+:\s+(.*)$/ ? $1 : () }
-        $self->_send_command( "$command\n" );
-}
-
 # recursively, but only dirs & files
 sub listall {
     my ($self, $path) = @_;
@@ -1247,14 +1238,6 @@ matches are returned.
 Perform the same action as $mpd->search(), but add any
 matching songs to the current playlist, instead of just returning
 information about them.
-
-
-=item $mpd->list( $type, [$artist] )
-
-Returns an array of all the "album" or "artist" in
-the music database (as chosen by $type). $artist is an
-optional parameter, which will only return albums by the
-specified $artist when $type is "album".
 
 
 =item $mpd->listall( [$path] )
