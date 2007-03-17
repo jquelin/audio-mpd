@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-our ($VERSION) = '$Rev: 5639 $' =~ /(\d+)/;
+our ($VERSION) = '$Rev: 5641 $' =~ /(\d+)/;
 
 
 #--
@@ -49,6 +49,7 @@ sub new {
 
     my $self = { _mpd => $mpd };
     weaken( $self->{_mpd} );
+    bless $self, $pkg;
     return $self;
 }
 
@@ -71,7 +72,7 @@ sub all_items {
     my ($self, $path) = @_;
     $path ||= '';
 
-    my @lines = $self->_send_command( qq[listallinfo "$path"\n] );
+    my @lines = $self->_mpd->_send_command( qq[listallinfo "$path"\n] );
     my (@list, %param);
 
     # parse lines in reverse order since "file:" comes first.
@@ -107,7 +108,7 @@ sub all_items_simple {
     my ($self, $path) = @_;
     $path ||= '';
 
-    my @lines = $self->_send_command( qq[listall "$path"\n] );
+    my @lines = $self->_mpd->_send_command( qq[listall "$path"\n] );
     my (@list, %param);
 
     # parse lines in reverse order since "file:" comes first.
@@ -138,7 +139,7 @@ sub items_in_dir {
     my ($self, $path) = @_;
     $path ||= '';
 
-    my @lines = $self->_send_command( qq[lsinfo "$path"\n] );
+    my @lines = $self->_mpd->_send_command( qq[lsinfo "$path"\n] );
     my (@list, %param);
 
     # parse lines in reverse order since "file:" comes first.
@@ -222,7 +223,7 @@ sub all_pathes {
 sub song {
     my ($self, $what) = @_;
 
-    my @lines = $self->_send_command( qq[find filename "$what"\n] );
+    my @lines = $self->_mpd->_send_command( qq[find filename "$what"\n] );
     my %param;
 
     # parse lines in reverse order since "file:" comes first.
@@ -263,7 +264,7 @@ sub albums_by_artist {
 sub songs_by_artist {
     my ($self, $what) = @_;
 
-    my @lines = $self->_send_command( qq[find artist "$what"\n] );
+    my @lines = $self->_mpd->_send_command( qq[find artist "$what"\n] );
     my (@list, %param);
 
     # parse lines in reverse order since "file:" comes first.
@@ -290,7 +291,7 @@ sub songs_by_artist {
 sub songs_from_album {
     my ($self, $what) = @_;
 
-    my @lines = $self->_send_command( qq[find album "$what"\n] );
+    my @lines = $self->_mpd->_send_command( qq[find album "$what"\n] );
     my (@list, %param);
 
     # parse lines in reverse order since "file:" comes first.
@@ -317,7 +318,7 @@ sub songs_from_album {
 sub songs_with_title {
     my ($self, $what) = @_;
 
-    my @lines = $self->_send_command( qq[find title "$what"\n] );
+    my @lines = $self->_mpd->_send_command( qq[find title "$what"\n] );
     my (@list, %param);
 
     # parse lines in reverse order since "file:" comes first.
