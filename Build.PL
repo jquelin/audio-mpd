@@ -12,7 +12,8 @@ my $builder = Module::Build->new (
 	build_requires => {
         'Test::More'    => 0,
 	},
-    add_to_cleanup => [ 'Audio-MPD-*', '*~', '*/*~', '*/*/*~', '*/*/*/*~' ],
+    add_to_cleanup => [ 'Audio-MPD-*', '*~', '*/*~', '*/*/*~',
+                        '*/*/*/*~', '*/*/*/*/*~' ],
 
 	requires => {
         'Class::Accessor' => 0,

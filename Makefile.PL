@@ -17,5 +17,6 @@ WriteMakefile(
         'Test::More'      => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => [ 'Audio-MPD-*', '*~', '*/*~', '*/*/*~', '*/*/*/*~'  ] },
+    clean => { FILES => [ 'Audio-MPD-*', '*~', '*/*~', '*/*/*~',
+						  '*/*/*/*~', '*/*/*/*/*~' ] },
 );
