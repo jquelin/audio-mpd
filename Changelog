@@ -1,3 +1,6 @@
+0.15.1 Sun Mar 18 19:06:57 CET 2007
+ - added Readonly as prereq
+
 0.15.0 Sat Mar 17 17:49:50 CET 2007
  - implementation of Audio::MPD::Collection: this class will act as the entry
    point to look up in mpd's collection
