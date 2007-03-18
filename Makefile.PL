@@ -11,9 +11,10 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/Audio/MPD.pm',
     EXE_FILES           => [],
     PREREQ_PM => {
-		'Class::Accessor' => 0,
-		'IO::Socket'	  => 0,
-		'Scalar::Util'    => 0,
+        'Class::Accessor' => 0,
+        'IO::Socket'	  => 0,
+        'Readonly'  	  => 0,
+        'Scalar::Util'    => 0,
         'Test::More'      => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
