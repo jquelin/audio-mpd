@@ -30,7 +30,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port collection version ] );
 
 
-our $VERSION = '0.15.1';
+our $VERSION = '0.15.2';
 
 
 #--
@@ -451,7 +451,7 @@ sub fade {
 #
 sub play {
     my ($self, $number) = @_;
-    $number ||= '';
+    $number = '' unless defined $number;
     $self->_send_command("play $number\n");
 }
 
