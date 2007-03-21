@@ -14,13 +14,15 @@ my $builder = Module::Build->new (
     script_files => [],
     build_requires => {
         'Test::More'    => 0,
+        'perl'          => '5.8.0',
     },
     requires => {
         'Class::Accessor' => 0,
         'IO::Socket'	  => 0,
         'Readonly'  	  => 0,
         'Scalar::Util'    => 0,
-	},
+        'perl'            => '5.8.0',
+    },
 );
 
 $builder->create_build_script();
