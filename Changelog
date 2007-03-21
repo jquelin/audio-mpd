@@ -1,3 +1,6 @@
+0.15.3 Wed Mar 21 18:08:06 CET 2007
+ - requiring perl 5.8.x minimum
+
 0.15.2 Tue Mar 20 17:24:59 CET 2007
  - fixed bug #25553 (on rt.cpan.org)
 
