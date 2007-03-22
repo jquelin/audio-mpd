@@ -27,7 +27,7 @@ use Readonly;
 
 use base qw[ Exporter ];
 our @EXPORT = qw[ customize_test_mpd_configuration start_test_mpd stop_test_mpd ];
-#our ($VERSION) = '$Rev: 5645 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5726 $' =~ /(\d+)/;
 
 
 Readonly my $TEMPLATE => "$Bin/mpd-test/mpd.conf.template";
@@ -76,6 +76,10 @@ sub customize_test_mpd_configuration {
     # clean up.
     close $in;
     close $out;
+
+    # create a fake mpd db.
+    system( "mpd --create-db $CONFIG >/dev/null 2>&1" ) == 0
+        or die "could not create fake mpd database: $?\n";
 }
 
 
@@ -85,8 +89,8 @@ sub customize_test_mpd_configuration {
 # Start the fake mpd, and die if there were any error.
 #
 sub start_test_mpd {
-    system( "mpd $CONFIG >/dev/null 2>&1" ) == 0
-        or die "could not start fake mpd: $?\n";
+    my $output = qx[mpd $CONFIG 2>&1];
+    die "could not start fake mpd: $output\n" if $output;
     sleep 1;   # wait 1 second to let mpd start.
 }
 

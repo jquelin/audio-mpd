@@ -46,7 +46,7 @@ is( $stats->{songs},        4, '4 songs in the database' );
 is( $stats->{playtime},     0, 'already played 0 seconds' );
 is( $stats->{db_playtime},  8, '8 seconds worth of music in the db' );
 isnt( $stats->{uptime}, undef, 'uptime is defined' );
-is( $stats->{db_update},    0, 'no database update' );
+isnt( $stats->{db_update},  0, 'database has been updated' );
 
 
 #
