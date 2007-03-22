@@ -27,22 +27,25 @@ use Readonly;
 
 use base qw[ Exporter ];
 our @EXPORT = qw[ customize_test_mpd_configuration start_test_mpd stop_test_mpd ];
-#our ($VERSION) = '$Rev: 5726 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5727 $' =~ /(\d+)/;
 
 
 Readonly my $TEMPLATE => "$Bin/mpd-test/mpd.conf.template";
 Readonly my $CONFIG   => "$Bin/mpd-test/mpd.conf";
 
 { # this will be run when Audio::MPD::Test will be use-d.
+    my $restart = 0;
+    my $stopit  = 0;
+
     customize_test_mpd_configuration();
-    my $restart = _stop_user_mpd_if_needed();
-    start_test_mpd();
+    $restart = _stop_user_mpd_if_needed();
+    $stopit  = start_test_mpd();
 
     END {
-        stop_test_mpd();
-        return unless $restart;            # no need to restart
-        system 'mpd 2>/dev/null' if $restart;     # restart user mpd
-        sleep 1;                           # wait 1 second to let mpd start.
+        stop_test_mpd() if $stopit;
+        return unless $restart;       # no need to restart
+        system 'mpd 2>/dev/null';     # restart user mpd
+        sleep 1;                      # wait 1 second to let mpd start.
     }
 }
 
@@ -92,6 +95,7 @@ sub start_test_mpd {
     my $output = qx[mpd $CONFIG 2>&1];
     die "could not start fake mpd: $output\n" if $output;
     sleep 1;   # wait 1 second to let mpd start.
+    return 1;
 }
 
 
