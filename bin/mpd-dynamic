@@ -1,0 +1,126 @@
+#!/usr/bin/perl
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#
+
+use strict;
+use warnings;
+
+use Audio::MPD;
+use Proc::Daemon;
+use Readonly;
+
+
+# program constants.
+Readonly my $OLD     => 10;     # number of old songs to keep
+Readonly my $NEW     => 10;     # number of new songs to have at every moment
+Readonly my $SLEEP   => 5;      # time to sleep before checking for changes
+
+
+Proc::Daemon::Init;
+
+#
+my $song     = 0;
+my $playlist = 0;
+my $mpd = Audio::MPD->new;
+
+# fetch list of songs known by mpd.
+my @files = $mpd->collection->all_pathes;
+
+
+while (1) { # endless loop
+    my $status;
+    eval { $status = $mpd->status };
+    next if $@;
+
+    if ( $status->playlist > $playlist
+        || defined $status->song && $status->song != $song ) {
+        # playlist and/or current song has changed
+        $playlist = $status->playlist;
+        $song     = $status->song;
+        update_playlist();
+    }
+
+} continue {
+    sleep $SLEEP;
+}
+
+exit; # should not be there...
+
+
+
+sub update_playlist {
+    # keep at most $OLD songs.
+    if ( $song > $OLD ) {
+        my $old = $song - $OLD;
+        $mpd->delete(0) for 1..$old;
+    }
+
+    # add at most $NEW songs.
+    my $pl = $mpd->playlist;
+    if ( $#$pl - $song < $NEW ) {
+        my $new = $NEW - ( $#$pl - $song );
+        $mpd->add( $files[ rand @files ] ) for 1..$new;
+    }
+}
+
+
+__END__
+
+
+=head1 NAME
+
+mpd-dynamic - a dynamic playlist for mpd
+
+
+=head1 USAGE
+
+    mpd-dynamic
+
+
+=head1 DESCRIPTION
+
+this program implements a dynamic playlist for mpd.
+
+MPD (music player daemon) is a cool music player, but it lacks a dynamic
+playlist. A dynamic playlist is a playlist that will change automatically
+over time.
+
+In particular, it will remove already played songs (keeping at most a given
+number) and add new songs to the playlist so it never fall short of songs.
+
+C<mpd-dynamic> is a low-resource program.
+
+Note that since mpd is a daemon needing no gui to work, C<mpd-dynamic> is
+also a daemon. That is, it will fork and do all its work from the background.
+This way, you can fire C<mpd> and C<mpd-dynamic> and forget completely
+about your music: it will just be there! :-)
+
+
+=head1 AUTHOR
+
+Jerome Quelin <jquelin@cpan.org>
+
+
+=head1 COPYRIGHT
+
+Copyright (c) 2007 Jerome Quelin <jquelin@cpan.org>
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+
+=cut
