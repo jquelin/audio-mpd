@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-#our ($VERSION) = '$Rev: 5645 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5745 $' =~ /(\d+)/;
 
 
 #--
@@ -213,7 +213,7 @@ sub all_pathes {
 }
 
 
-# -- Collection: picking a song
+# -- Collection: picking songs
 
 #
 # my $song = $collection->song( $path );
@@ -237,6 +237,32 @@ sub song {
         next unless $1 eq 'file'; # last param of this item
         return Audio::MPD::Item->new(%param);
     }
+}
+
+
+#
+# my $song = $collection->songs_with_filename_partial( $path );
+#
+# Return the Audio::MPD::Item::Songs containing $string in their path.
+#
+sub songs_with_filename_partial {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_mpd->_send_command( qq[search filename "$what"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        push @list, Audio::MPD::Item->new(%param);
+    }
+    return @list;
 }
 
 
@@ -284,6 +310,34 @@ sub songs_by_artist {
 
 
 #
+# my @songs = $collection->songs_by_artist_partial( $string );
+#
+# Return all Audio::MPD::Item::Songs performed by an artist with $string
+# in her name.
+#
+sub songs_by_artist_partial {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_mpd->_send_command( qq[search artist "$what"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
+#
 # my @songs = $collection->songs_from_album( $album );
 #
 # Return all Audio::MPD::Item::Songs appearing in $album.
@@ -311,6 +365,33 @@ sub songs_from_album {
 
 
 #
+# my @songs = $collection->songs_from_album_partial( $string );
+#
+# Return all Audio::MPD::Item::Songs appearing in album containing $string.
+#
+sub songs_from_album_partial {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_mpd->_send_command( qq[search album "$what"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
+#
 # my @songs = $collection->songs_with_title( $title );
 #
 # Return all Audio::MPD::Item::Songs which title is exactly $title.
@@ -319,6 +400,33 @@ sub songs_with_title {
     my ($self, $what) = @_;
 
     my @lines = $self->_mpd->_send_command( qq[find title "$what"\n] );
+    my (@list, %param);
+
+    # parse lines in reverse order since "file:" comes first.
+    # therefore, let's first store every other parameter, and
+    # the "file:" line will trigger the object creation.
+    # of course, since we want to preserve the playlist order,
+    # this means that we're going to unshift the objects.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file'; # last param of this item
+        unshift @list, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+    return @list;
+}
+
+
+#
+# my @songs = $collection->songs_with_title_partial( $string );
+#
+# Return all Audio::MPD::Item::Songs where $string is part of the title.
+#
+sub songs_with_title_partial {
+    my ($self, $what) = @_;
+
+    my @lines = $self->_mpd->_send_command( qq[search title "$what"\n] );
     my (@list, %param);
 
     # parse lines in reverse order since "file:" comes first.
@@ -451,6 +559,11 @@ Return the list of all pathes (strings) currently known by mpd.
 Return the C<Audio::MPD::Item::Song> which correspond to C<$path>.
 
 
+=item songs_with_filename_partial( $path )
+
+Return the C<Audio::MPD::Item::Song>s containing $string in their path.
+
+
 =back
 
 
@@ -469,14 +582,30 @@ participated.
 Return all C<Audio::MPD::Item::Song>s performed by C<$artist>.
 
 
+=item songs_by_artist_partial( $string )
+
+Return all C<Audio::MPD::Item::Song>s performed by an artist with C<$string>
+in her name.
+
+
 =item songs_from_album( $album )
 
 Return all C<Audio::MPD::Item::Song>s appearing in C<$album>.
 
 
+=item songs_from_album_partial( $string )
+
+Return all C<Audio::MPD::Item::Song>s appearing in album containing C<$string>.
+
+
 =item songs_with_title( $title )
 
 Return all C<Audio::MPD::Item::Song>s which title is exactly C<$title>.
+
+
+=item songs_with_title_partial( $string )
+
+Return all C<Audio::MPD::Item::Song>s where C<$string> is part of the title.
 
 
 =back

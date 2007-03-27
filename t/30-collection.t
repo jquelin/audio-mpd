@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 50;
+plan tests => 66;
 my $mpd = Audio::MPD->new;
 my @list;
 
@@ -112,6 +112,14 @@ is( $song->title, 'foo-title', 'song return a full AMI::Song' );
 
 
 #
+# testing songs_with_filename_partial.
+@list = $coll->songs_with_filename_partial('album');
+isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_with_filename_partial return AMI::Song objects' )
+    for @list;
+like( $list[0]->file, qr/album/, 'songs_with_filename_partial return the correct song' );
+
+
+#
 # testing albums_by_artist.
 @list = $coll->albums_by_artist( 'dir1-artist' );
 is( scalar @list, 1, 'albums_by_artist return the album' );
@@ -127,11 +135,28 @@ is( $list[0]->artist, 'dir1-artist', 'songs_by_artist return correct objects' );
 
 
 #
+# testing songs_by_artist_partial.
+@list = $coll->songs_by_artist_partial( 'artist' );
+is( scalar @list, 2, 'songs_by_artist_partial return all the songs found' );
+isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_by_artist_partial return AMI::Songs' ) for @list;
+like( $list[0]->artist, qr/artist/, 'songs_by_artist_partial return correct objects' );
+
+
+#
 # testing songs_from_album.
 @list = $coll->songs_from_album( 'our album' );
 is( scalar @list, 2, 'songs_from_album return all the songs found' );
 isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_from_album return AMI::Songs' ) for @list;
-is( $list[0]->album, 'our album', 'songs_by_artist return correct objects' );
+is( $list[0]->album, 'our album', 'songs_from_album_partial return correct objects' );
+
+
+#
+# testing songs_from_album_partial.
+@list = $coll->songs_from_album_partial( 'album' );
+is( scalar @list, 2, 'songs_from_album_partial return all the songs found' );
+isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_from_album_partial return AMI::Songs' ) for @list;
+like( $list[0]->album, qr/album/, 'songs_from_album_partial return correct objects' );
+
 
 #
 # testing songs_with_title.
@@ -139,6 +164,14 @@ is( $list[0]->album, 'our album', 'songs_by_artist return correct objects' );
 is( scalar @list, 1, 'songs_with_title return all the songs found' );
 isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_with_title return AMI::Songs' ) for @list;
 is( $list[0]->title, 'ok-title', 'songs_with_title return correct objects' );
+
+
+#
+# testing songs_with_title_partial.
+@list = $coll->songs_with_title_partial( 'title' );
+is( scalar @list, 3, 'songs_with_title_partial return all the songs found' );
+isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_with_title_partial return AMI::Songs' ) for @list;
+like( $list[0]->title, qr/title/, 'songs_with_title_partial return correct objects' );
 
 
 exit;
