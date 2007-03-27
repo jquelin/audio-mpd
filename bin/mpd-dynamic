@@ -66,14 +66,14 @@ sub update_playlist {
     # keep at most $OLD songs.
     if ( $song > $OLD ) {
         my $old = $song - $OLD;
-        $mpd->delete(0) for 1..$old;
+        eval { $mpd->delete(0) for 1..$old };
     }
 
     # add at most $NEW songs.
     my $pl = $mpd->playlist;
     if ( $#$pl - $song < $NEW ) {
         my $new = $NEW - ( $#$pl - $song );
-        $mpd->add( $files[ rand @files ] ) for 1..$new;
+        eval { $mpd->add( $files[ rand @files ] ) for 1..$new };
     }
 }
 
