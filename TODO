@@ -23,13 +23,6 @@ can be either minor, medium or major.
 - auto-reconnect. (medium)
 
 
-** internals:
-
-- new Audio::MPD::Item module, with AMI::Song & AMI::Directory subclasses to
-  better encapsulate data returned. (major)
-- new Audio::MPD::Collection module, using AM::Item. (major)
-
-
 ** mpd enhancements:
 
 - song ratings. (major)
