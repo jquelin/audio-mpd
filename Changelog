@@ -15,6 +15,15 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.15.4 Tue Mar 27 18:42:58 CEST 2007
+ - AM::Test more robust regarding fake mpd startup
+ - AM::Test quicker if no tests performed
+ - new methods in AM::Collection:
+    . songs_with_filename_partial()
+    . songs_by_artist_partial()
+    . songs_from_album_partial()
+    . songs_with_title_partial()
+
 0.15.3 Wed Mar 21 18:08:06 CET 2007
  - requiring perl 5.8.x minimum
 
