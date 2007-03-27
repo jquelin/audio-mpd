@@ -1,3 +1,20 @@
+High-level changelog
+====================
+
+0.15.x  introducing AM::Collection
+0.14.x  introducing AM::Items
+0.13.x  rewrote connection mechanism
+0.12.4  adoption by jerome quelin & quick fixes
+0.12.0  adoption by nicholas j humphrey & first release on cpan
+0.10.0  adapting to evolving mpd
+[...]   ? (no information)
+0.1.0   initial release by tue abrahamsen
+
+
+
+Low-level changelog
+===================
+
 0.15.3 Wed Mar 21 18:08:06 CET 2007
  - requiring perl 5.8.x minimum
 
@@ -19,6 +36,8 @@
    . searchadd()
  - now that AM::Collection is here, AM's test coverage is up to 82.5% \o/
 
+**
+
 0.14.0 Sat Mar 17 13:29:57 CET 2007
  - implementation of Audio::MPD::Item: instead of returning some random hash
    reference, Audio::MPD now returns AMI objects.
@@ -30,6 +49,8 @@
    . pl_changes()            -> pl_changes()
  - pl_changes() now return an array ref instead of a hash with positions as key
  - test coverage of Audio::MPD up to 66.5%
+
+**
 
 0.13.5 Thu Mar  8 20:22:32 CET 2007
  - get_urlhandlers() renamed to urlhandlers()
@@ -74,6 +95,8 @@
     . set_volume()         -> volume()
  - new methods: stats(), status()
  - delete() and deleteid() can take more than one song to delete
+
+**
 
 0.12.4 Thu Jan 25 21:52:05 CET 2007 [JQ]
  - grouped pod in sections for easier reading
@@ -149,6 +172,8 @@
  - Added deleteid() / moveid() / playid() / seekid() / swapid()
  - Removed deprecated 'unpause-on-play'-code
 
+**
+
 0.10.0-rc1
  - No changes
 
@@ -203,6 +228,8 @@
 0.10.0-alpha2
  - Added nextinfo() and changed lsinfo() and listallinfo()
  - Changed version-numbering to fit MPD standards
+
+**
 
 0.1
  - Initial release
