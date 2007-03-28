@@ -22,14 +22,15 @@ use warnings;
 use Audio::MPD;
 use Getopt::Euclid qw[ :minimal_keys ];
 use Proc::Daemon;
+use Time::HiRes    qw[ usleep ];
 
 #use YAML; die Dump(\%ARGV);
 
 Proc::Daemon::Init unless $ARGV{debug};
 
 #
-my $song     = 0;
-my $playlist = 0;
+my $song     = 0; # song currently playing
+my $playlist = 0; # playlist version
 my $mpd = Audio::MPD->new;
 
 # fetch list of songs known by mpd.
@@ -39,18 +40,18 @@ my @files = $mpd->collection->all_pathes;
 while (1) { # endless loop
     my $status;
     eval { $status = $mpd->status };
-    next if $@;
+    next if $@; # error while peaking status
 
-    if ( $status->playlist > $playlist
-        || defined $status->song && $status->song != $song ) {
-        # playlist and/or current song has changed
-        $playlist = $status->playlist;
-        $song     = $status->song;
-        update_playlist();
-    }
+    next unless $status->playlist > $playlist
+        || defined $status->song && $status->song != $song;
+    # playlist and/or current song has changed
+
+    $playlist = $status->playlist;
+    $song     = $status->song;
+    update_playlist();
 
 } continue {
-    sleep $ARGV{sleep};
+    usleep $ARGV{sleep} * 1000 * 1000;
 }
 
 exit; # should not be there...
@@ -88,7 +89,7 @@ mpd-dynamic - a dynamic playlist for mpd
 
 =head1 VERSION
 
-This is mpd-dynamic version 0.1
+This is mpd-dynamic version 0.2
 
 
 =head1 DESCRIPTION
@@ -136,6 +137,15 @@ Number of new tracks to keep in the to-be-played playlist. Defaults to 10.
 =for Euclid:
     new.type:     integer > 0
     new.default:  10
+
+
+=item -s[leep] <sleep>
+
+Time spent sleeping (in seconds) before checking if playlist should be updated.
+
+=for Euclid:
+    sleep.type:     number > 0
+    sleep.default:  5
 
 
 =item -d[ebug]
