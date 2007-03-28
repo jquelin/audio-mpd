@@ -86,7 +86,7 @@ mpd-dynamic - a dynamic playlist for mpd
 
 =head1 USAGE
 
-    mpd-dynamic
+    mpd-dynamic [options]
 
 
 =head1 VERSION
@@ -96,7 +96,8 @@ This is mpd-dynamic version 0.2
 
 =head1 DESCRIPTION
 
-This program implements a dynamic playlist for mpd.
+This program implements a dynamic playlist for MPD, build on top of the
+C<Audio::MPD> perl module.
 
 MPD (music player daemon) is a cool music player, but it lacks a dynamic
 playlist. A dynamic playlist is a playlist that will change automatically
@@ -113,6 +114,10 @@ it will just be there! :-)
 
 
 =head1 OPTIONS
+
+You can customize the usage of mpd-dynamic with the following options:
+
+=over 4
 
 =item -o[ld] <old>
 
@@ -134,7 +139,8 @@ Number of new tracks to keep in the to-be-played playlist. Defaults to 10.
 
 =item -s[leep] <sleep>
 
-Time spent sleeping (in seconds) before checking if playlist should be updated.
+Time spent sleeping (in seconds) before checking if playlist should be
+updated. Default to 5 seconds.
 
 =for Euclid:
     sleep.type:     number > 0
@@ -144,7 +150,24 @@ Time spent sleeping (in seconds) before checking if playlist should be updated.
 =item -d[ebug]
 
 Run mpd-dynamic in debug mode. In particular, the program will not daemonize
-itself.
+itself. Default to false.
+
+
+=item --version
+
+=item --usage
+
+=item --help
+
+=item --man
+
+Print the usual program information
+
+
+=back
+
+Note however that those flags are optional: since C<mpd-dynamic> comes with
+some sane defaults, you can fire C<mpd-dynamic> as is.
 
 
 =head1 AUTHOR
@@ -156,6 +179,12 @@ Jerome Quelin <jquelin@cpan.org>
 
 Copyright (c) 2007 Jerome Quelin <jquelin@cpan.org>
 
-This program is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
