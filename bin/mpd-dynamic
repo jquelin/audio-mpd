@@ -24,8 +24,6 @@ use Getopt::Euclid qw[ :minimal_keys ];
 use Proc::Daemon;
 use Time::HiRes    qw[ usleep ];
 
-#use YAML; die Dump(\%ARGV);
-
 Proc::Daemon::Init unless $ARGV{debug};
 
 #
@@ -42,23 +40,15 @@ while (1) { # endless loop
     eval { $status = $mpd->status };
     next if $@; # error while peaking status
 
+    # do playlist and/or current song have changed?
     next unless $status->playlist > $playlist
         || defined $status->song && $status->song != $song;
-    # playlist and/or current song has changed
 
+
+    # yup - update playlist & song.
     $playlist = $status->playlist;
     $song     = $status->song;
-    update_playlist();
 
-} continue {
-    usleep $ARGV{sleep} * 1000 * 1000;
-}
-
-exit; # should not be there...
-
-
-
-sub update_playlist {
     # keep at most $ARGV{old} songs.
     if ( $song > $ARGV{old} ) {
         my $old = $song - $ARGV{old};
@@ -71,7 +61,12 @@ sub update_playlist {
         my $new = $ARGV{new} - ( $#$pl - $song );
         eval { $mpd->add( $files[ rand @files ] ) for 1..$new };
     }
+
+} continue {
+    usleep $ARGV{sleep} * 1000 * 1000;
 }
+
+exit; # should not be there...
 
 
 __END__
