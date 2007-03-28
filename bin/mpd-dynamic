@@ -63,7 +63,7 @@ while (1) { # endless loop
     }
 
 } continue {
-    usleep $ARGV{sleep} * 1000 * 1000;
+    usleep $ARGV{sleep} * 1000 * 1000; # microseconds
 }
 
 exit; # should not be there...
@@ -113,15 +113,6 @@ it will just be there! :-)
 
 
 =head1 OPTIONS
-
-=item -c[onf] <file>
-
-Path of configuration file. Defaults to C<~/.mpd/mpd-dynamic.conf>.
-
-=for Euclid:
-    file.type:     readable
-    file.default:  "$ENV{HOME}/.mpd/mpd-dynamic.conf"
-
 
 =item -o[ld] <old>
 
