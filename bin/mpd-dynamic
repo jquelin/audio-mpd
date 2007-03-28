@@ -43,7 +43,7 @@ while (1) { # endless loop
     # do playlist and/or current song have changed?
     next unless $status->playlist > $playlist
         || defined $status->song && $status->song != $song;
-
+    debug("need to check playlist...\n");
 
     # yup - update playlist & song.
     $playlist = $status->playlist;
@@ -68,6 +68,13 @@ while (1) { # endless loop
 
 exit; # should not be there...
 
+sub debug {
+    return unless $ARGV{debug};
+    my ($msg) = @_;
+    my ($s,$m,$h) = ( localtime(time) )[0,1,2,3,6];
+    my $date = sprintf "%02d:%02d:%02d", $h, $m, $s;
+    warn "$date $msg";
+}
 
 __END__
 
