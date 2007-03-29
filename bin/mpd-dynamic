@@ -20,6 +20,7 @@ use strict;
 use warnings;
 
 use Audio::MPD;
+use DB_File;
 use Getopt::Euclid qw[ :minimal_keys ];
 use Proc::Daemon;
 use Time::HiRes    qw[ usleep ];
@@ -43,7 +44,7 @@ while (1) { # endless loop
     # do playlist and/or current song have changed?
     next unless $status->playlist > $playlist
         || defined $status->song && $status->song != $song;
-    debug("need to check playlist...\n");
+    debug("checking playlist...\n");
 
     # yup - update playlist & song.
     $playlist = $status->playlist;
@@ -59,7 +60,27 @@ while (1) { # endless loop
     my $pl = $mpd->playlist;
     if ( $#$pl - $song < $ARGV{new} ) {
         my $new = $ARGV{new} - ( $#$pl - $song );
-        eval { $mpd->add( $files[ rand @files ] ) for 1..$new };
+        debug("need to add $new songs\n");
+
+        my %ratings;
+        my $istied =
+            tie( %ratings, 'DB_File', $ARGV{ratings}, O_RDONLY )
+            ? 1 : 0;
+
+        PICK_ONE:
+        for (1..$new) {
+            my $random = $files[ rand @files ];
+            if ( $istied && exists $ratings{$random}
+                 && $ratings{$random} != 0
+                 && $ratings{$random} < $ARGV{min} ) {
+                debug("rating too low: $ratings{$random} [$random]\n");
+                redo PICK_ONE;
+            }
+            debug("will add [$random]\n");
+            eval { $mpd->add( $random ) };
+            debug("error: $@\n") if $@;
+        }
+        untie %ratings if $istied;
     }
 
 } continue {
@@ -145,6 +166,25 @@ updated. Default to 5 seconds.
 =for Euclid:
     sleep.type:     number > 0
     sleep.default:  5
+
+
+=item -r[atings] <ratings>
+
+The path of a db file with the ratings per song. The keys are the song path,
+and the value is an integer (the rating). Default to C<~/.mpd/ratings.db>.
+
+=for Euclid:
+    ratings.type:     readable
+    ratings.default:  "$ENV{HOME}/.mpd/ratings.db"
+
+
+=item -m[in[imum]] <min>
+
+The minimum rating for a song to be inserted in the playlist. Default to 4.
+
+=for Euclid:
+    min.type:     integer > 0
+    min.default:  4
 
 
 =item -d[ebug]
