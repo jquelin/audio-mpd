@@ -30,7 +30,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _host _password _port collection version ] );
 
 
-our $VERSION = '0.15.4';
+our $VERSION = '0.16.0';
 
 
 #--

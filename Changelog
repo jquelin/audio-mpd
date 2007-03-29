@@ -1,6 +1,7 @@
 High-level changelog
 ====================
 
+0.16.0  introducing scripts
 0.15.x  introducing AM::Collection
 0.14.x  introducing AM::Items
 0.13.x  rewrote connection mechanism
@@ -14,6 +15,11 @@ High-level changelog
 
 Low-level changelog
 ===================
+
+0.16.0 Thu Mar 29 19:04:34 CEST 2007
+ - script to listen your music endlessly: mpd-dynamic
+
+ **
 
 0.15.4 Tue Mar 27 18:42:58 CEST 2007
  - AM::Test more robust regarding fake mpd startup
