@@ -136,7 +136,10 @@ it will just be there! :-)
 
 =head1 OPTIONS
 
+=head2 General behaviour
+
 You can customize the usage of mpd-dynamic with the following options:
+
 
 =over 4
 
@@ -168,25 +171,6 @@ updated. Default to 5 seconds.
     sleep.default:  5
 
 
-=item -r[atings] <ratings>
-
-The path of a db file with the ratings per song. The keys are the song path,
-and the value is an integer (the rating). Default to C<~/.mpd/ratings.db>.
-
-=for Euclid:
-    ratings.type:     readable
-    ratings.default:  "$ENV{HOME}/.mpd/ratings.db"
-
-
-=item -m[in[imum]] <min>
-
-The minimum rating for a song to be inserted in the playlist. Default to 4.
-
-=for Euclid:
-    min.type:     integer > 0
-    min.default:  4
-
-
 =item -d[ebug]
 
 Run mpd-dynamic in debug mode. In particular, the program will not daemonize
@@ -208,6 +192,41 @@ Print the usual program information
 
 Note however that those flags are optional: since C<mpd-dynamic> comes with
 some sane defaults, you can fire C<mpd-dynamic> as is.
+
+
+=head2 Ratings
+
+You can also take advantage of ratings if you want. With those options, songs
+need to have at least a given rating (or no rating yet) to be inserted: this
+way, you will only listen to your favorite songs!
+
+Note that if you supply a non-existant rating db-file, the rating mechanism
+will be ignored. The following options control the rating mechanism:
+
+
+=over 4
+
+=item -r[atings] <ratings>
+
+The path of a db file with the ratings per song. The keys are the song path
+(relative to MPD root), and the value is an integer (the rating). Default to
+C<~/.mpd/ratings.db>.
+
+=for Euclid:
+    ratings.type:     readable
+    ratings.default:  "$ENV{HOME}/.mpd/ratings.db"
+
+
+=item -m[in[imum]] <min>
+
+The minimum rating for a song to be inserted in the playlist. Default to 4.
+
+=for Euclid:
+    min.type:     integer > 0
+    min.default:  4
+
+
+=back
 
 
 =head1 AUTHOR
