@@ -11,7 +11,7 @@ my $builder = Module::Build->new (
     dist_version_from   => 'lib/Audio/MPD.pm',
     add_to_cleanup => [ 'Audio-MPD-*', '*~', '*/*~', '*/*/*~',
                         '*/*/*/*~', '*/*/*/*/*~' ],
-    script_files => [],
+    script_files => [ 'bin/mpd-dynamic' ],
     build_requires => {
         'Test::More'    => 0,
         'perl'          => '5.8.0',

@@ -10,7 +10,7 @@ WriteMakefile(
     NAME                => 'Audio::MPD',
     VERSION_FROM        => 'lib/Audio/MPD.pm',
     ABSTRACT_FROM       => 'lib/Audio/MPD.pm',
-    EXE_FILES           => [],
+    EXE_FILES           => [ 'bin/mpd-dynamic' ],
     PREREQ_PM => {
         'Class::Accessor' => 0,
         'IO::Socket'	  => 0,
