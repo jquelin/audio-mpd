@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 10;
+plan tests => 17;
 
 my $mpd = Audio::MPD->new;
 isa_ok($mpd, 'Audio::MPD');
@@ -80,5 +80,12 @@ isnt(scalar @output, 0, 'commands return stuff');
 # testing _cooked_command_as_items
 my @items = $mpd->_cooked_command_as_items( "lsinfo\n" );
 isa_ok( $_, "Audio::MPD::Item", '_cooked_command_as_items return items' ) for @items;
+
+
+#
+# testing _cooked_command_strip_first_field
+my @list = $mpd->_cooked_command_strip_first_field( "stats\n" );
+unlike( $_, qr/\D/, '_cooked_command_strip_first_field return only 2nd field' ) for @list;
+# stats return numerical data as second field.
 
 exit;
