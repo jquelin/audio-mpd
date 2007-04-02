@@ -46,6 +46,7 @@ is( $mpd->status->state, 'play', 'play starts playback' );
 $mpd->play(2);
 is( $mpd->status->song,       2, 'play can start playback at a given song' );
 
+$mpd->play(0);
 $mpd->pause;
 $mpd->playid;
 is( $mpd->status->state, 'play', 'playid starts playback' );
