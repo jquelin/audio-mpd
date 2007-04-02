@@ -374,9 +374,8 @@ sub pl_changes {
 #
 sub current {
     my ($self) = @_;
-    my @output = $self->_send_command("currentsong\n");
-    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
-    return Audio::MPD::Item->new( %params );
+    my ($item) = $self->_cooked_command_as_items("currentsong\n");
+    return $item;
 }
 
 
@@ -389,9 +388,8 @@ sub current {
 sub song {
     my ($self, $song) = @_;
     return $self->current unless defined $song;
-    my @output = $self->_send_command("playlistinfo $song\n");
-    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
-    return Audio::MPD::Item->new( %params );
+    my ($item) = $self->_cooked_command_as_items("playlistinfo $song\n");
+    return $item;
 }
 
 
@@ -404,9 +402,8 @@ sub song {
 sub songid {
     my ($self, $songid) = @_;
     return $self->current unless defined $songid;
-    my @output = $self->_send_command("playlistid $songid\n");
-    my %params = map { /^([^:]+):\s+(.+)$/ ? ($1=>$2) : () } @output;
-    return Audio::MPD::Item->new( %params );
+    my ($item) = $self->_cooked_command_as_items("playlistid $songid\n");
+    return $item;
 }
 
 
