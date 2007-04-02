@@ -16,6 +16,11 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.16.1
+ - new internal _cooked_command_*() methods, allowing for better code
+   factorization - and thus, better code coverage (100% achieved for
+   am::collection)
+
 0.16.0 Thu Mar 29 19:04:34 CEST 2007
  - script to listen your music endlessly: mpd-dynamic
 
