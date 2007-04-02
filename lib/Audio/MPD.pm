@@ -171,6 +171,24 @@ sub _cooked_command_as_items {
 }
 
 
+#
+# my @list = $mpd->_cooked_command_strip_first_field( $command );
+#
+# Lots of Audio::MPD methods are using _send_command() and then parse the
+# output to remove the first field (with the colon ":" acting as separator).
+# This method is meant to factorize this code, and will parse the raw output
+# of _send_command() in a cooked list of strings.
+#
+sub _cooked_command_strip_first_field {
+    my ($self, $command) = @_;
+
+    my @list =
+        map { ( split(/:\s+/, $_, 2) )[1] }
+        $self->_send_command($command);
+    return @list;
+}
+
+
 #--
 # Public methods
 
