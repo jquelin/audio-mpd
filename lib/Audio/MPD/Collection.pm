@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-#our ($VERSION) = '$Rev: 5802 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5805 $' =~ /(\d+)/;
 
 
 #--
@@ -123,9 +123,7 @@ sub items_in_dir {
 #
 sub all_albums {
     my ($self) = @_;
-    return
-        map { /^Album: (.+)$/ ? $1 : () }
-        $self->_mpd->_send_command( "list album\n" );
+    return $self->_mpd->_cooked_command_strip_first_field( "list album\n" );
 }
 
 
@@ -136,9 +134,7 @@ sub all_albums {
 #
 sub all_artists {
     my ($self) = @_;
-    return
-        map { /^Artist: (.+)$/ ? $1 : () }
-        $self->_mpd->_send_command( "list artist\n" );
+    return $self->_mpd->_cooked_command_strip_first_field( "list artist\n" );
 }
 
 
@@ -149,9 +145,7 @@ sub all_artists {
 #
 sub all_titles {
     my ($self) = @_;
-    return
-        map { /^Title: (.+)$/ ? $1 : () }
-        $self->_mpd->_send_command( "list title\n" );
+    return $self->_mpd->_cooked_command_strip_first_field( "list title\n" );
 }
 
 
@@ -162,9 +156,7 @@ sub all_titles {
 #
 sub all_pathes {
     my ($self) = @_;
-    return
-        map { /^file: (.+)$/ ? $1 : () }
-        $self->_mpd->_send_command( "list filename\n" );
+    return $self->_mpd->_cooked_command_strip_first_field( "list filename\n" );
 }
 
 
@@ -205,9 +197,7 @@ sub songs_with_filename_partial {
 #
 sub albums_by_artist {
     my ($self, $artist) = @_;
-    return
-        map { /^Album: (.+)$/ ? $1 : () }
-        $self->_mpd->_send_command( qq[list album "$artist"\n] );
+    return $self->_mpd->_cooked_command_strip_first_field( qq[list album "$artist"\n] );
 }
 
 

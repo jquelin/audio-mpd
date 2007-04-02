@@ -260,10 +260,7 @@ sub updatedb {
 #
 sub urlhandlers {
     my ($self) = @_;
-    my @handlers =
-        map { /^handler: (.+)$/ ? $1 : () }
-        $self->_send_command("urlhandlers\n");
-    return @handlers;
+    return $self->_cooked_command_strip_first_field("urlhandlers\n");
 }
 
 
