@@ -140,6 +140,36 @@ sub _send_command {
 }
 
 
+#
+# my @items = $mpd->_cooked_command_as_items( $command );
+#
+# Lots of Audio::MPD methods are using _send_command() and then parse the
+# output as a collection of Audio::MPD::Item. This method is meant to
+# factorize this code, and will parse the raw output of _send_command() in
+# a cooked list of items.
+#
+sub _cooked_command_as_items {
+    my ($self, $command) = @_;
+
+    my @lines = $self->_send_command($command);
+    my (@items, %param);
+
+    # parse lines in reverse order since "file:" or "directory:" lines
+    # come first. therefore, let's first store every other parameter,
+    # and the last line will trigger the object creation.
+    # of course, since we want to preserve the playlist order, this means
+    # that we're going to unshift the objects instead of push.
+    foreach my $line (reverse @lines) {
+        next unless $line =~ /^([^:]+):\s+(.+)$/;
+        $param{$1} = $2;
+        next unless $1 eq 'file' || $1 eq 'directory'; # last param of item
+        unshift @items, Audio::MPD::Item->new(%param);
+        %param = ();
+    }
+
+    return @items;
+}
+
 
 #--
 # Public methods
