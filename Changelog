@@ -1,7 +1,7 @@
 High-level changelog
 ====================
 
-0.16.0  introducing scripts
+0.16.0  introducing mpd-dynamic script
 0.15.x  introducing AM::Collection
 0.14.x  introducing AM::Items
 0.13.x  rewrote connection mechanism
@@ -16,10 +16,10 @@ High-level changelog
 Low-level changelog
 ===================
 
-0.16.1
+0.16.1 Mon Apr  2 18:26:17 CEST 2007
  - new internal _cooked_command_*() methods, allowing for better code
    factorization - and thus, better code coverage (100% achieved for
-   am::collection)
+   am::collection, 89.3% overall)
 
 0.16.0 Thu Mar 29 19:04:34 CEST 2007
  - script to listen your music endlessly: mpd-dynamic
