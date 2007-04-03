@@ -23,6 +23,7 @@ use strict;
 use Audio::MPD::Collection;
 use Audio::MPD::Item;
 use Audio::MPD::Status;
+use Encode;
 use IO::Socket;
 
 
@@ -130,7 +131,7 @@ sub _send_command {
         chomp $line;
         die $line if $line =~ s/^ACK //; # oops - error.
         last if $line =~ /^OK/;          # end of output.
-        push @output, $line;
+        push @output, decode('utf-8', $line);
     }
 
     # close the socket.
