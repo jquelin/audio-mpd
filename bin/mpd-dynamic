@@ -180,7 +180,7 @@ itself. Default to false.
 
 =item -e[ncoding] <encoding>
 
-Print debug message with this encoding. Since mpd-dynamic is meant to be a
+Print debug messages with this encoding. Since mpd-dynamic is meant to be a
 silent daemon, this option will not be used outside of debug mode. Default
 to C<utf-8>.
 
