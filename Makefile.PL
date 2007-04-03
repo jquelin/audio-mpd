@@ -13,6 +13,7 @@ WriteMakefile(
     EXE_FILES           => [ 'bin/mpd-dynamic' ],
     PREREQ_PM => {
         'Class::Accessor' => 0,
+        'Encode'          => 0,
         'IO::Socket'	  => 0,
         'Readonly'  	  => 0,
         'Scalar::Util'    => 0,
