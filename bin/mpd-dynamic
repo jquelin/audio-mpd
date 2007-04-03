@@ -182,11 +182,11 @@ itself. Default to false.
 
 Print debug message with this encoding. Since mpd-dynamic is meant to be a
 silent daemon, this option will not be used outside of debug mode. Default
-to C<iso-8859-15>.
+to C<utf-8>.
 
 =for Euclid:
     encoding.type:     string
-    encoding.default:  'iso-8859-15'
+    encoding.default:  'utf-8'
 
 
 =item --version
