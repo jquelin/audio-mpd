@@ -1,6 +1,6 @@
 ---
 name: Audio-MPD
-version: 0.16.1
+version: 0.16.2
 author:
   - 'Jerome Quelin <jquelin@cpan.org>'
   - |-
@@ -12,6 +12,7 @@ resources:
   license: http://www.opensource.org/licenses/gpl-license.php
 requires:
   Class::Accessor: 0
+  Encode: 0
   IO::Socket: 0
   Readonly: 0
   Scalar::Util: 0
@@ -22,7 +23,7 @@ build_requires:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.16.1
+    version: 0.16.2
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
   Audio::MPD::Item:

@@ -1,7 +1,7 @@
 High-level changelog
 ====================
 
-0.16.0  introducing mpd-dynamic script
+0.16.x  utf-8 support + introducing mpd-dynamic script
 0.15.x  introducing AM::Collection
 0.14.x  introducing AM::Items
 0.13.x  rewrote connection mechanism
@@ -15,6 +15,9 @@ High-level changelog
 
 Low-level changelog
 ===================
+
+0.16.2 Tue Apr  3 19:02:29 CEST 2007
+ - utf-8 support generalized
 
 0.16.1 Mon Apr  2 18:26:17 CEST 2007
  - new internal _cooked_command_*() methods, allowing for better code
