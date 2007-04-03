@@ -119,13 +119,13 @@ sub _send_command {
 
     # send password.
     if ( $self->_password ) {
-        $socket->print( 'password ' . $self->_password . "\n" );
+        $socket->print( 'password ' . encode('utf-8', $self->_password) . "\n" );
         $line = $socket->getline;
         die $line if $line =~ s/^ACK //;
     }
 
     # ok, now we're connected - let's issue the command.
-    $socket->print( $command );
+    $socket->print( encode('utf-8', $command) );
     my @output;
     while (defined ( $line = $socket->getline ) ) {
         chomp $line;
