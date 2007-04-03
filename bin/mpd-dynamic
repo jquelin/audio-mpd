@@ -21,6 +21,7 @@ use warnings;
 
 use Audio::MPD;
 use DB_File;
+use Encode;
 use Getopt::Euclid qw[ :minimal_keys ];
 use Proc::Daemon;
 use Time::HiRes    qw[ usleep ];
@@ -94,7 +95,7 @@ sub debug {
     my ($msg) = @_;
     my ($s,$m,$h) = ( localtime(time) )[0,1,2,3,6];
     my $date = sprintf "%02d:%02d:%02d", $h, $m, $s;
-    warn "$date $msg";
+    warn "$date " . encode($ARGV{encoding}, $msg);
 }
 
 __END__
@@ -175,6 +176,17 @@ updated. Default to 5 seconds.
 
 Run mpd-dynamic in debug mode. In particular, the program will not daemonize
 itself. Default to false.
+
+
+=item -e[ncoding] <encoding>
+
+Print debug message with this encoding. Since mpd-dynamic is meant to be a
+silent daemon, this option will not be used outside of debug mode. Default
+to C<iso-8859-15>.
+
+=for Euclid:
+    encoding.type:     string
+    encoding.default:  'iso-8859-15'
 
 
 =item --version
