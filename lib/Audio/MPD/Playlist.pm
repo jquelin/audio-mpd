@@ -256,11 +256,11 @@ of an C<Audio::MPD> object.
 =back
 
 
-=head2 Methods to retrieve information
+=head2 Retrieving information
 
 =over 4
 
-=item as_items()
+=item $pl->as_items( )
 
 Return an array of C<Audio::MPD::Item::Song>s, one for each of the
 songs in the current playlist.
@@ -269,34 +269,34 @@ songs in the current playlist.
 =back
 
 
-=head2 Methods to add / remove songs
+=head2 Adding / removing songs
 
 =over 4
 
-=item add( $path )
+=item $pl->add( $path )
 
 Add the song identified by C<$path> (relative to MPD's music directory) to the
 current playlist. No return value.
 
 
-=item delete( $song [, $song [...] ] )
+=item $pl->delete( $song [, $song [...] ] )
 
 Remove song number C<$song>s (starting from 0) from the current playlist. No
 return value.
 
 
-=item deleteid( $songid [, $songid [...] ] )
+=item $pl->deleteid( $songid [, $songid [...] ] )
 
 Remove the specified C<$songid>s (as assigned by mpd when inserted in playlist)
 from the current playlist. No return value.
 
 
-=item clear()
+=item $pl->clear()
 
 Remove all the songs from the current playlist. No return value.
 
 
-=item crop()
+=item $pl->crop()
 
 Remove all of the songs from the current playlist *except* the
 song currently playing.
@@ -305,49 +305,49 @@ song currently playing.
 =back
 
 
-=head2 Methods to change playlist order
+=head2 Changing playlist order
 
 =over 4
 
-=item swap( $song1, $song2 )
+=item $pl->swap( $song1, $song2 )
 
 Swap positions of song number $song1 and $song2 on the current playlist. No
 return value.
 
 
-=item $mpd->swapid( $songid1, $songid2 )
+=item $pl->swapid( $songid1, $songid2 )
 
 Swap the postions of song ID $songid1 with song ID $songid2 on the current
 playlist. No return value.
 
 
-=item $mpd->move( $song, $newpos )
+=item $pl->move( $song, $newpos )
 
 Move song number $song to the position $newpos. No return value.
 
 
-=item $mpd->moveid( $songid, $newpos )
+=item $pl->moveid( $songid, $newpos )
 
 Move song ID $songid to the position $newpos. No return value.
 
 
-=item $mpd->shuffle()
+=item $pl->shuffle()
 
 Shuffle the current playlist. No return value.
 
 
-=item $mpd->load( $playlist )
+=item $pl->load( $playlist )
 
 Load list of songs from specified $playlist file. No return value.
 
 
-=item $mpd->save( $playlist )
+=item $pl->save( $playlist )
 
 Save the current playlist to a file called $playlist in MPD's playlist
 directory. No return value.
 
 
-=item $mpd->rm( $playlist )
+=item $pl->rm( $playlist )
 
 Delete playlist named $playlist from MPD's playlist directory. No return value.
 

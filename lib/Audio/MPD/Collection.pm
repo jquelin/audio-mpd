@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-#our ($VERSION) = '$Rev: 5805 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5828 $' =~ /(\d+)/;
 
 
 #--
@@ -319,7 +319,7 @@ of an C<Audio::MPD> object.
 
 =over 4
 
-=item all_items( [$path] )
+=item $coll->all_items( [$path] )
 
 Return B<all> C<Audio::MPD::Item>s (both songs & directories) currently known
 by mpd.
@@ -328,7 +328,7 @@ If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
 
 
-=item all_items_simple( [$path] )
+=item $coll->all_items_simple( [$path] )
 
 Return B<all> C<Audio::MPD::Item>s (both songs & directories) currently known
 by mpd.
@@ -341,7 +341,7 @@ tag file filled. Any other tag will be empty, so don't use this sub for any
 other thing than a quick scan!
 
 
-=item items_in_dir( [$path] )
+=item $coll->items_in_dir( [$path] )
 
 Return the items in the given C<$path>. If no C<$path> supplied, do it on
 mpd's root directory.
@@ -356,22 +356,22 @@ Note that this sub does not work recusrively on all directories.
 
 =over 4
 
-=item all_albums()
+=item $coll->all_albums( )
 
 Return the list of all albums (strings) currently known by mpd.
 
 
-=item all_artists()
+=item $coll->all_artists( )
 
 Return the list of all artists (strings) currently known by mpd.
 
 
-=item all_titles()
+=item $coll->all_titles( )
 
 Return the list of all song titles (strings) currently known by mpd.
 
 
-=item all_pathes()
+=item $coll->all_pathes( )
 
 Return the list of all pathes (strings) currently known by mpd.
 
@@ -383,12 +383,12 @@ Return the list of all pathes (strings) currently known by mpd.
 
 =over 4
 
-=item song( $path )
+=item $coll->song( $path )
 
 Return the C<Audio::MPD::Item::Song> which correspond to C<$path>.
 
 
-=item songs_with_filename_partial( $path )
+=item $coll->songs_with_filename_partial( $path )
 
 Return the C<Audio::MPD::Item::Song>s containing $string in their path.
 
@@ -400,39 +400,39 @@ Return the C<Audio::MPD::Item::Song>s containing $string in their path.
 
 =over 4
 
-=item albums_by_artist( $artist )
+=item $coll->albums_by_artist( $artist )
 
 Return all albums (strings) performed by C<$artist> or where C<$artist>
 participated.
 
 
-=item songs_by_artist( $artist )
+=item $coll->songs_by_artist( $artist )
 
 Return all C<Audio::MPD::Item::Song>s performed by C<$artist>.
 
 
-=item songs_by_artist_partial( $string )
+=item $coll->songs_by_artist_partial( $string )
 
 Return all C<Audio::MPD::Item::Song>s performed by an artist with C<$string>
 in her name.
 
 
-=item songs_from_album( $album )
+=item $coll->songs_from_album( $album )
 
 Return all C<Audio::MPD::Item::Song>s appearing in C<$album>.
 
 
-=item songs_from_album_partial( $string )
+=item $coll->songs_from_album_partial( $string )
 
 Return all C<Audio::MPD::Item::Song>s appearing in album containing C<$string>.
 
 
-=item songs_with_title( $title )
+=item $coll->songs_with_title( $title )
 
 Return all C<Audio::MPD::Item::Song>s which title is exactly C<$title>.
 
 
-=item songs_with_title_partial( $string )
+=item $coll->songs_with_title_partial( $string )
 
 Return all C<Audio::MPD::Item::Song>s where C<$string> is part of the title.
 

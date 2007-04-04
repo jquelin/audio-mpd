@@ -25,7 +25,7 @@ __PACKAGE__->mk_accessors
     ( qw[ audio bitrate error playlist playlistlength random
           repeat song songid state time volume xfade ] );
 
-#our ($VERSION) = '$Rev: 5645 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5828 $' =~ /(\d+)/;
 
 
 #--
@@ -100,60 +100,72 @@ Once created, one can access to the following members of the object:
 
 =over 4
 
-=item audio()
+=item $status->audio( )
 
 A string with the sample rate of the song currently playing, number of bits
 of the output and number of channels (2 for stereo) - separated by a colon.
 
-=item bitrate()
+
+=item $status->bitrate( )
 
 The instantaneous bitrate in kbps.
 
-=item error()
+
+=item $status->error( )
 
 May appear in special error cases, such as when disabling output.
 
 
-=item playlist()
+=item $status->playlist( )
 
 The playlist version number, that changes every time the playlist is updated.
 
-=item playlistlength()
+
+=item $status->playlistlength( )
 
 The number of songs in the playlist.
 
-=item random()
+
+=item $status->random( )
 
 Whether the playlist is read randomly or not.
 
-=item repeat()
+
+=item $status->repeat( )
 
 Whether the song is repeated or not.
 
-=item song()
+
+=item $status->song( )
 
 The offset of the song currently played in the playlist.
 
-=item songid()
+
+=item $status->songid( )
 
 The song id (MPD id) of the song currently played.
 
-=item state()
+
+=item $status->state( )
 
 The state of MPD server. Either C<play>, C<stop> or C<pause>.
 
-=item time()
+
+=item $status->time( )
 
 A string with the time played so far and the total time of the current song,
 separated by a colon.
 
-=item volume()
+
+=item $status->volume( )
 
 The current MPD volume - an integer between 0 and 100.
 
-=item xfade()
+
+=item $status->xfade( )
 
 The crossfade in seconds.
+
 
 =back
 
