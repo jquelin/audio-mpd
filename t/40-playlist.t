@@ -29,59 +29,67 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 6;
+plan tests => 7;
 my $mpd = Audio::MPD->new;
 my $nb;
 
+
+#
+# testing collection accessor.
+my $pl = $mpd->playlist;
+isa_ok( $pl, 'Audio::MPD::Playlist',
+        'playlist return an Audio::MPD::Playlist object' );
+
+
 #
 # testing song insertion.
-$mpd->clear;
+$pl->clear;
 $nb = $mpd->status->playlistlength;
-$mpd->add( 'title.ogg' );
-$mpd->add( 'dir1/title-artist-album.ogg' );
-$mpd->add( 'dir1/title-artist.ogg' );
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
 is( $mpd->status->playlistlength, $nb+3, 'adding songs' );
 
 
 #
 # testing song removal.
-$mpd->clear;
-$mpd->add( 'title.ogg' );
-$mpd->add( 'dir1/title-artist-album.ogg' );
-$mpd->add( 'dir1/title-artist.ogg' );
+$pl->clear;
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
 $mpd->play(0); # to set songid
 $mpd->stop;
 $nb = $mpd->status->playlistlength;
-$mpd->delete( reverse 1..2 ); # reverse otherwise mpd will get it wrong
+$pl->delete( reverse 1..2 ); # reverse otherwise mpd will get it wrong
 is( $mpd->status->playlistlength, $nb-2, 'delete songs' );
 
 $nb = $mpd->status->playlistlength;
-$mpd->deleteid( $mpd->status->songid );
+$pl->deleteid( $mpd->status->songid );
 is( $mpd->status->playlistlength, $nb-1, 'deleteid songs' );
 
 
 
 #
 # testing playlist clearing
-$mpd->add( 'title.ogg' );
-$mpd->add( 'dir1/title-artist-album.ogg' );
-$mpd->add( 'dir1/title-artist.ogg' );
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
 $nb = $mpd->status->playlistlength;
-$mpd->clear;
+$pl->clear;
 is(   $mpd->status->playlistlength, 0,   'clearing playlist leaves 0 songs' );
 isnt( $mpd->status->playlistlength, $nb, 'clearing songs changes playlist length' );
 
 
 #
 # testing cropping.
-$mpd->add( 'title.ogg' );
-$mpd->add( 'dir1/title-artist-album.ogg' );
-$mpd->add( 'dir1/title-artist.ogg' );
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
 $mpd->play(1); # to set song
 $mpd->stop;
-$mpd->crop;
+$pl->crop;
 is( $mpd->status->playlistlength, 1, 'cropping leaves only one song' );
-# FIXME is( $mpd->status->get_current
+# FIXME is( $pl->status->get_current
 
 
 exit;
