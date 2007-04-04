@@ -22,13 +22,16 @@ use strict;
 
 use Audio::MPD::Collection;
 use Audio::MPD::Item;
+use Audio::MPD::Playlist;
 use Audio::MPD::Status;
 use Encode;
 use IO::Socket;
 
 
 use base qw[ Class::Accessor::Fast ];
-__PACKAGE__->mk_accessors( qw[ _host _password _port collection version ] );
+__PACKAGE__->mk_accessors(
+    qw[ _host _password _port
+        collection playlist version ] );
 
 
 our $VERSION = '0.16.2';
@@ -62,8 +65,9 @@ sub new {
     };
     bless $self, $class;
 
-    # create the collection object and store it.
+    # create the helper objects and store them.
     $self->collection( Audio::MPD::Collection->new($self) );
+    $self->playlist  ( Audio::MPD::Playlist->new($self) );
 
     # try to issue a ping to test connection - this can die.
     $self->ping;
@@ -347,7 +351,7 @@ sub status {
 # Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
 # songs in the current playlist.
 #
-sub playlist {
+sub playlist_ {
     my ($self) = @_;
 
     my @list = $self->_cooked_command_as_items("playlistinfo\n");
@@ -556,144 +560,6 @@ sub seekid {
     $self->_send_command( "seekid $song $time\n" );
 }
 
-
-# -- MPD interaction: handling playlist
-
-#
-# $mpd->add( $path );
-#
-# Add the song identified by $path (relative to MPD's music directory) to
-# the current playlist. No return value.
-#
-sub add {
-    my ($self, $path) = @_;
-    $self->_send_command( qq[add "$path"\n] );
-}
-
-
-#
-# $mpd->delete( $song [, $song [...] ] );
-#
-# Remove song number $song from the current playlist. No return value.
-#
-sub delete {
-    my ($self, @songs) = @_;
-    my $command =
-          "command_list_begin\n"
-        . join( '', map { "delete $_\n" } @songs )
-        . "command_list_end\n";
-    $self->_send_command( $command );
-}
-
-
-#
-# $mpd->deleteid( $songid [, $songid [...] ]);
-#
-# Remove the specified $songid from the current playlist. No return value.
-#
-sub deleteid {
-    my ($self, @songs) = @_;
-    my $command =
-          "command_list_begin\n"
-        . join( '', map { "deleteid $_\n" } @songs )
-        . "command_list_end\n";
-    $self->_send_command( $command );
-}
-
-
-#
-# $mpd->clear;
-#
-# Remove all the songs from the current playlist. No return value.
-#
-sub clear {
-    my ($self) = @_;
-    $self->_send_command("clear\n");
-}
-
-
-#
-# $mpd->crop;
-#
-#  Remove all of the songs from the current playlist *except* the current one.
-#
-sub crop {
-    my ($self) = @_;
-
-    my $status = $self->status;
-    my $cur = $status->song;
-    my $len = $status->playlistlength - 1;
-
-    my $command =
-          "command_list_begin\n"
-        . join( '', map { $_  != $cur ? "delete $_\n" : '' } reverse 0..$len )
-        . "command_list_end\n";
-    $self->_send_command( $command );
-}
-
-
-
-sub swap {
-    my ($self, $from, $to) = @_;
-    $self->_send_command("swap $from $to\n");
-}
-
-sub swapid {
-    my ($self, $from, $to) = @_;
-    $self->_send_command("swapid $from $to\n");
-}
-
-sub shuffle {
-    my ($self) = @_;
-    $self->_send_command("shuffle\n");
-}
-
-sub move {
-    my ($self, $song, $pos) = @_;
-    $self->_send_command("move $song $pos\n");
-}
-
-sub moveid {
-    my ($self, $song, $pos) = @_;
-    $self->_send_command("moveid $song $pos\n");
-}
-
-sub load {
-    my ($self, $playlist) = @_;
-    return unless defined $playlist;
-    $self->_send_command( qq[load "$playlist"\n] );
-}
-
-sub save {
-    my ($self, $playlist) = @_;
-    return unless defined $playlist;
-    $self->_send_command( qq[save "$playlist"\n] );
-
-=begin FIXME
-
-    if(!$self->_process_feedback)
-    {
-        # Does the playlist already exist?
-        if(${$self->get_error}[0] eq '56' && $config{'OVERWRITE_PLAYLIST'})
-        {
-            $self->rm($playlist);
-            $self->save($playlist);
-            return 1;
-        }
-    }
-    return 1;
-
-=end FIXME
-
-=cut
-
-}
-
-sub rm {
-    my ($self, $playlist) = @_;
-    return unless defined $playlist;
-    $self->_send_command( qq[rm "$playlist"\n] );
-}
 
 
 
@@ -997,82 +863,6 @@ then the perl module will try and seek to $time in the current song.
 
 Seek to $time seconds in song ID $songid. If $song number is not specified
 then the perl module will try and seek to $time in the current song.
-
-=back
-
-
-=head2 Handling playlist
-
-=over 4
-
-=item $mpd->add( $path )
-
-Add the song identified by $path (relative to MPD's music directory) to the
-current playlist. No return value.
-
-
-=item $mpd->delete( $song )
-
-Remove song number $song from the current playlist. No return value.
-
-
-=item $mpd->deleteid( $songid )
-
-Remove the specified $songid from the current playlist. No return value.
-
-
-=item $mpd->clear()
-
-Remove all the songs from the current playlist. No return value.
-
-
-=item $mpd->crop()
-
-Remove all of the songs from the current playlist *except* the
-song currently playing.
-
-
-=item $mpd->swap( $song1, $song2 )
-
-Swap positions of song number $song1 and $song2 on the current playlist. No
-return value.
-
-
-=item $mpd->swapid( $songid1, $songid2 )
-
-Swap the postions of song ID $songid1 with song ID $songid2 on the current
-playlist. No return value.
-
-
-=item $mpd->move( $song, $newpos )
-
-Move song number $song to the position $newpos. No return value.
-
-
-=item $mpd->moveid( $songid, $newpos )
-
-Move song ID $songid to the position $newpos. No return value.
-
-
-=item $mpd->shuffle()
-
-Shuffle the current playlist. No return value.
-
-
-=item $mpd->load( $playlist )
-
-Load list of songs from specified $playlist file. No return value.
-
-
-=item $mpd->save( $playlist )
-
-Save the current playlist to a file called $playlist in MPD's playlist
-directory. No return value.
-
-
-=item $mpd->rm( $playlist )
-
-Delete playlist named $playlist from MPD's playlist directory. No return value.
 
 =back
 
