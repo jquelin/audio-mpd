@@ -901,6 +901,17 @@ See C<Audio::MPD::Collection> documentation for more details on available
 methods.
 
 
+=head2 Handling the playlist
+
+To update the playlist, use the C<playlist()> accessor, returning the
+associated C<Audio::MPD::Playlist> object. You will then be able to call:
+
+    $mpd->playlist->clear;
+
+See C<Audio::MPD::Playlist> documentation for more details on available
+methods.
+
+
 =head1 SEE ALSO
 
 You can find more information on the mpd project on its homepage at
