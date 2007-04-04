@@ -36,9 +36,9 @@ my $song;
 #
 # testing stats
 $mpd->updatedb;
-$mpd->add( 'title.ogg' );
-$mpd->add( 'dir1/title-artist-album.ogg' );
-$mpd->add( 'dir1/title-artist.ogg' );
+$mpd->playlist->add( 'title.ogg' );
+$mpd->playlist->add( 'dir1/title-artist-album.ogg' );
+$mpd->playlist->add( 'dir1/title-artist.ogg' );
 my $stats = $mpd->stats;
 is( $stats->{artists},      1, 'one artist in the database' );
 is( $stats->{albums},       1, 'one album in the database' );
