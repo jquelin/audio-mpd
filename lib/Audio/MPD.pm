@@ -177,6 +177,22 @@ sub _cooked_command_as_items {
 
 
 #
+# my %hash = $mpd->_cooked_command_as_kv( $command );
+#
+# Lots of Audio::MPD methods are using _send_command() and then parse the
+# output to get a list of key / value (with the colon ":" acting as separator).
+# This method is meant to factorize this code, and will parse the raw output
+# of _send_command() in a cooked hash.
+#
+sub _cooked_command_as_kv {
+    my ($self, $command) = @_;
+    my %hash =
+        map { split(/:\s+/, $_, 2) }
+        $self->_send_command($command);
+    return %hash;
+}
+
+#
 # my @list = $mpd->_cooked_command_strip_first_field( $command );
 #
 # Lots of Audio::MPD methods are using _send_command() and then parse the
@@ -339,8 +355,8 @@ sub stats {
 #
 sub status {
     my ($self) = @_;
-    my @output = $self->_send_command( "status\n" );
-    my $status = Audio::MPD::Status->new( @output );
+    my %kv = $self->_cooked_command_as_kv( "status\n" );
+    my $status = Audio::MPD::Status->new( %kv );
     return $status;
 }
 

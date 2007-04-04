@@ -28,24 +28,23 @@ use Test::More tests => 14;
 
 # note that the first line does not match 'key: value' pattern
 # and has been added for the sake of testing. :-)
-my $output = '
-volume: 66
-repeat: 1
-random: 0
-playlist: 24
-playlistlength: 21
-xfade: 14
-state: play
-song: 10
-songid: 11
-time: 45:214
-bitrate: 127
-audio: 44100:16:2
-error: problems opening audio device
-';
-my @output = split /\n/, $output;
+my %kv = (
+    volume         => 66,
+    repeat         => 1,
+    random         => 0,
+    playlist       => 24,
+    playlistlength => 21,
+    xfade          => 14,
+    state          => 'play',
+    song           => 10,
+    songid         => 11,
+    time           => '45:214',
+    bitrate        => 127,
+    audio          => '44100:16:2',
+    error          => 'problems opening audio device',
+);
 
-my $s = Audio::MPD::Status->new( @output );
+my $s = Audio::MPD::Status->new( %kv );
 isa_ok( $s, 'Audio::MPD::Status', 'object creation' );
 is( $s->volume,         66,                              'accessor: volume' );
 is( $s->repeat,         1,                               'accessor: repeat' );

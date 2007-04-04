@@ -25,28 +25,23 @@ __PACKAGE__->mk_accessors
     ( qw[ audio bitrate error playlist playlistlength random
           repeat song songid state time volume xfade ] );
 
-#our ($VERSION) = '$Rev: 5828 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5832 $' =~ /(\d+)/;
 
 
 #--
 # Constructor
 
 #
-# my $status = Audio::MPD::Status->new( @output )
+# my $status = Audio::MPD::Status->new( %kv )
 #
-# The constructor for the class Audio::MPD::Status. @output is what MPD
-# server returns to the status command.
+# The constructor for the class Audio::MPD::Status. %kv is a cooked output
+# of what MPD server returns to the status command.
 #
 sub new {
     my $class = shift;
-    my (@output) = @_;
-
-    my $self = {
-        map { /^([^:]+):\s+(.+)$/ ? ($1 => $2) : () }
-        @output
-    };
-    bless $self, $class;
-    return $self;
+    my %kv = @_;
+    bless \%kv, $class;
+    return \%kv;
 }
 
 1;
@@ -82,7 +77,7 @@ and thus should be used immediately.
 
 =over 4
 
-=item new( @output )
+=item new( %kv )
 
 The C<new()> method is the constructor for the C<Audio::MPD::Status> class.
 It is called internally by the C<status()> method of C<Audio::MPD>, with the
