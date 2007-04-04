@@ -346,20 +346,6 @@ sub status {
 
 
 #
-# my $list = $mpd->playlist;
-#
-# Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
-# songs in the current playlist.
-#
-sub playlist_ {
-    my ($self) = @_;
-
-    my @list = $self->_cooked_command_as_items("playlistinfo\n");
-    return \@list;
-}
-
-
-#
 # my $list = $mpd->pl_changes( $plversion );
 #
 # Return a list with all the songs (as API::Song objects) added to
@@ -757,12 +743,6 @@ last update of the database
 Return an C<Audio::MPD::Status> object with various information on current
 MPD server settings. Check the embedded pod for more information on the
 available accessors.
-
-
-=item $mpd->playlist( )
-
-Return an arrayref of C<Audio::MPD::Item::Song>s, one for each of the
-songs in the current playlist.
 
 
 =item $mpd->pl_changes( $plversion )

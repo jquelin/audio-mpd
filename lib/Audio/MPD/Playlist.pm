@@ -25,7 +25,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-#our ($VERSION) = '$Rev: 5805 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev$' =~ /(\d+)/;
 
 
 #--
@@ -54,6 +54,23 @@ sub new {
 
 #--
 # Public methods
+
+# -- Playlist: retrieving information
+
+#
+# my @items = $pl->as_items;
+#
+# Return an array of C<Audio::MPD::Item::Song>s, one for each of the
+# songs in the current playlist.
+#
+sub as_items {
+    my ($self) = @_;
+
+    my @list = $self->_mpd->_cooked_command_as_items("playlistinfo\n");
+    return @list;
+}
+
+
 
 # -- Playlist: adding / removing songs
 
@@ -235,6 +252,19 @@ to free the memory in time, this reference is weakened.
 Note that you're not supposed to call this constructor yourself, an
 C<Audio::MPD::Playlist> is automatically created for you during the creation
 of an C<Audio::MPD> object.
+
+=back
+
+
+=head2 Methods to retrieve information
+
+=over 4
+
+=item as_items()
+
+Return an array of C<Audio::MPD::Item::Song>s, one for each of the
+songs in the current playlist.
+
 
 =back
 
