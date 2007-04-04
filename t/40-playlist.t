@@ -29,9 +29,9 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 11;
+plan tests => 15;
 my $mpd = Audio::MPD->new;
-my $nb;
+my ($nb, @items);
 
 
 #
@@ -46,11 +46,19 @@ isa_ok( $pl, 'Audio::MPD::Playlist',
 $pl->add( 'title.ogg' );
 $pl->add( 'dir1/title-artist-album.ogg' );
 $pl->add( 'dir1/title-artist.ogg' );
-my @items = $pl->as_items;
+@items = $pl->as_items;
 isa_ok( $_, 'Audio::MPD::Item::Song',
         'as_items() returns Audio::MPD::Item::Song objects' ) for @items;
 is( $items[0]->title, 'ok-title', 'first song reported first' );
 
+
+#
+# testing playlist changes retrieval.
+@items = $pl->items_changed_since(0);
+isa_ok( $_, 'Audio::MPD::Item::Song',
+        'items_changed_since() returns Audio::MPD::Item::Song objects' )
+    for @items;
+is( $items[0]->title, 'ok-title', 'first song reported first' );
 
 
 #

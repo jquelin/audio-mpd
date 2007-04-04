@@ -71,6 +71,18 @@ sub as_items {
 }
 
 
+#
+# my @items = $pl->items_changed_since( $plversion );
+#
+# Return a list with all the songs (as API::Song objects) added to
+# the playlist since playlist $plversion.
+#
+sub items_changed_since {
+    my ($self, $plid) = @_;
+    return $self->_mpd->_cooked_command_as_items("plchanges $plid\n");
+}
+
+
 
 # -- Playlist: adding / removing songs
 
@@ -264,6 +276,12 @@ of an C<Audio::MPD> object.
 
 Return an array of C<Audio::MPD::Item::Song>s, one for each of the
 songs in the current playlist.
+
+
+=item $pl->items_changed_since( $plversion )
+
+Return a list with all the songs (as API::Song objects) added to
+the playlist since playlist $plversion.
 
 
 =back

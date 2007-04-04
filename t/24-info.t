@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 19;
+plan tests => 15;
 my $mpd = Audio::MPD->new;
 my $song;
 
@@ -61,14 +61,6 @@ isa_ok( $status, 'Audio::MPD::Status', 'status return an Audio::MPD::Status obje
 # testing current song.
 $song = $mpd->current;
 isa_ok( $song, 'Audio::MPD::Item::Song', 'current return an Audio::MPD::Item::Song object' );
-
-
-#
-# testing playlist changes retrieval.
-my @list = $mpd->pl_changes(0);
-isa_ok( $_, 'Audio::MPD::Item::Song', 'pl_changes() returns Audio::MPD::Item::Song objects' )
-    for @list;
-is( $list[0]->title, 'ok-title', 'first song reported first' );
 
 
 #
