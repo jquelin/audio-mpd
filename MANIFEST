@@ -8,6 +8,7 @@ lib/Audio/MPD/Collection.pm
 lib/Audio/MPD/Item.pm
 lib/Audio/MPD/Item/Directory.pm
 lib/Audio/MPD/Item/Song.pm
+lib/Audio/MPD/Playlist.pm
 lib/Audio/MPD/Status.pm
 lib/Audio/MPD/Test.pm
 Makefile.PL
@@ -28,8 +29,8 @@ t/23-output.t
 t/24-info.t
 t/25-settings.t
 t/26-playback.t
-t/27-playlist.t
 t/30-collection.t
+t/40-playlist.t
 t/mpd-test/mpd.conf.template
 t/mpd-test/music/dir1/title-artist-album.ogg
 t/mpd-test/music/dir1/title-artist.ogg
