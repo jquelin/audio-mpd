@@ -629,7 +629,7 @@ __END__
 
 =head1 NAME
 
-Audio::MPD - Class for talking to MPD (Music Player Daemon) servers
+Audio::MPD - class to talk to MPD (Music Player Daemon) servers
 
 
 =head1 SYNOPSIS
