@@ -23,13 +23,14 @@ use strict;
 use warnings;
 
 use Audio::MPD;
+use FindBin qw[ $Bin ];
 use Test::More;
 
 # are we able to test module?
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 18;
+plan tests => 22;
 my $mpd = Audio::MPD->new;
 my ($nb, @items);
 
@@ -142,6 +143,27 @@ $pl->add( 'dir1/title-artist.ogg' );
 $pl->swapid($items[0]->id,$items[2]->id);
 is( ($pl->as_items)[2]->title, 'ok-title', 'swapid() changes songs' );
 
+
+#
+# testing load.
+$pl->clear;
+$pl->load( 'test' );
+@items = $pl->as_items;
+is( scalar @items, 1, 'load() adds songs' );
+is( $items[0]->title, 'ok-title', 'load() adds the correct songs' );
+
+
+#
+# testing save.
+$pl->clear;
+$pl->save( 'test-jq' );
+ok( -f "$Bin/mpd-test/playlists/test-jq.m3u", 'save() creates a playlist' );
+
+
+#
+# testing rm.
+$pl->rm( 'test-jq' );
+ok( ! -f "$Bin/mpd-test/playlists/test-jq.m3u", 'rm() removes a playlist' );
 
 
 
