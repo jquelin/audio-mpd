@@ -219,35 +219,31 @@ sub moveid {
     $self->_mpd->_send_command("moveid $song $pos\n");
 }
 
+
+# -- Playlist: managing playlists
+
+#
+# $pl->load( $playlist );
+#
+# Load list of songs from specified $playlist file. No return value.
+#
 sub load {
     my ($self, $playlist) = @_;
     return unless defined $playlist;
     $self->_mpd->_send_command( qq[load "$playlist"\n] );
 }
 
+
+#
+# $pl->save( $playlist );
+#
+# Save the current playlist to a file called $playlist in MPD's playlist
+# directory. No return value.
+#
 sub save {
     my ($self, $playlist) = @_;
     return unless defined $playlist;
     $self->_mpd->_send_command( qq[save "$playlist"\n] );
-
-=begin FIXME
-
-    if(!$self->_process_feedback)
-    {
-        # Does the playlist already exist?
-        if(${$self->get_error}[0] eq '56' && $config{'OVERWRITE_PLAYLIST'})
-        {
-            $self->rm($playlist);
-            $self->save($playlist);
-            return 1;
-        }
-    }
-    return 1;
-
-=end FIXME
-
-=cut
-
 }
 
 sub rm {
@@ -384,14 +380,21 @@ Move song number C<$song> to the position C<$newpos>. No return value.
 Move song ID C<$songid> to the position C<$newpos>. No return value.
 
 
+=back
+
+
+=head2 Managing playlists
+
+=over 4
+
 =item $pl->load( $playlist )
 
-Load list of songs from specified $playlist file. No return value.
+Load list of songs from specified C<$playlist> file. No return value.
 
 
 =item $pl->save( $playlist )
 
-Save the current playlist to a file called $playlist in MPD's playlist
+Save the current playlist to a file called C<$playlist> in MPD's playlist
 directory. No return value.
 
 
