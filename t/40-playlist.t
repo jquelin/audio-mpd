@@ -30,7 +30,8 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 22;
+
+plan tests => 24;
 my $mpd = Audio::MPD->new;
 my ($nb, @items);
 
@@ -142,6 +143,27 @@ $pl->add( 'dir1/title-artist.ogg' );
 @items = $pl->as_items;
 $pl->swapid($items[0]->id,$items[2]->id);
 is( ($pl->as_items)[2]->title, 'ok-title', 'swapid() changes songs' );
+
+
+#
+# testing move.
+$pl->clear;
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
+$pl->move(0,2);
+is( ($pl->as_items)[2]->title, 'ok-title', 'move() changes song' );
+
+
+#
+# testing moveid.
+$pl->clear;
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
+@items = $pl->as_items;
+$pl->moveid($items[0]->id,2);
+is( ($pl->as_items)[2]->title, 'ok-title', 'moveid() changes song' );
 
 
 #
