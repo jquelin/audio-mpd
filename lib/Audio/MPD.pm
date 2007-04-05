@@ -339,9 +339,7 @@ sub output_disable {
 #
 sub stats {
     my ($self) = @_;
-    my %kv =
-        map { my ($k,$v) = split(/:\s+/, $_, 2); ($k => $v) }
-        $self->_send_command( "stats\n" );
+    my %kv = $self->_cooked_command_as_kv( "stats\n" );
     return \%kv;
 }
 
