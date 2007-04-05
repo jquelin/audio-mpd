@@ -54,13 +54,13 @@ while (1) { # endless loop
     # keep at most $ARGV{old} songs.
     if ( $song > $ARGV{old} ) {
         my $old = $song - $ARGV{old};
-        eval { $mpd->delete(0) for 1..$old };
+        eval { $mpd->playlist->delete(0) for 1..$old };
     }
 
     # add at most $ARGV{new} songs.
-    my $pl = $mpd->playlist;
-    if ( $#$pl - $song < $ARGV{new} ) {
-        my $new = $ARGV{new} - ( $#$pl - $song );
+    my @pl = $mpd->playlist->as_items;
+    if ( $#pl - $song < $ARGV{new} ) {
+        my $new = $ARGV{new} - ( $#pl - $song );
         debug("need to add $new songs\n");
 
         my %ratings;
@@ -78,7 +78,7 @@ while (1) { # endless loop
                 redo PICK_ONE;
             }
             debug("will add [$random]\n");
-            eval { $mpd->add( $random ) };
+            eval { $mpd->playlist->add( $random ) };
             debug("error: $@\n") if $@;
         }
         untie %ratings if $istied;
