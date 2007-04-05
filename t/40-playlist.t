@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 17;
+plan tests => 18;
 my $mpd = Audio::MPD->new;
 my ($nb, @items);
 
@@ -112,13 +112,24 @@ is( $mpd->status->playlistlength, 1, 'crop() leaves only one song' );
 
 
 #
+# testing shuffle.
+$pl->clear;
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
+my $vers = $mpd->status->playlist;
+$pl->shuffle;
+is( $mpd->status->playlist, $vers+1, 'shuffle() changes playlist version' );
+
+
+#
 # testing swap.
 $pl->clear;
 $pl->add( 'title.ogg' );
 $pl->add( 'dir1/title-artist-album.ogg' );
 $pl->add( 'dir1/title-artist.ogg' );
 $pl->swap(0,2);
-is( ($pl->as_items)[2]->title, 'ok-title', 'swap() changes' );
+is( ($pl->as_items)[2]->title, 'ok-title', 'swap() changes songs' );
 
 
 #
@@ -129,7 +140,7 @@ $pl->add( 'dir1/title-artist-album.ogg' );
 $pl->add( 'dir1/title-artist.ogg' );
 @items = $pl->as_items;
 $pl->swapid($items[0]->id,$items[2]->id);
-is( ($pl->as_items)[2]->title, 'ok-title', 'swapid() changes' );
+is( ($pl->as_items)[2]->title, 'ok-title', 'swapid() changes songs' );
 
 
 
