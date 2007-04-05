@@ -122,11 +122,10 @@ This program implements a dynamic playlist for MPD, build on top of the
 C<Audio::MPD> perl module.
 
 MPD (music player daemon) is a cool music player, but it lacks a dynamic
-playlist. A dynamic playlist is a playlist that will change automatically
-over time.
-
-In particular, it will remove already played songs (keeping at most a given
-number) and add new songs to the playlist so it never fall short of songs.
+playlist. A dynamic playlist is a playlist that will change
+automatically over time. In particular, it will remove already played
+songs (keeping at most a given number of songs) and add new songs to the
+playlist so it never fall short of songs.
 
 Note that since mpd is a daemon needing no gui to work, C<mpd-dynamic> is
 also a daemon. That is, it will fork and do all its work from the background.
