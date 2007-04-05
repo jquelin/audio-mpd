@@ -229,7 +229,6 @@ sub moveid {
 #
 sub load {
     my ($self, $playlist) = @_;
-    return unless defined $playlist;
     $self->_mpd->_send_command( qq[load "$playlist"\n] );
 }
 
@@ -242,7 +241,6 @@ sub load {
 #
 sub save {
     my ($self, $playlist) = @_;
-    return unless defined $playlist;
     $self->_mpd->_send_command( qq[save "$playlist"\n] );
 }
 
@@ -255,7 +253,6 @@ sub save {
 #
 sub rm {
     my ($self, $playlist) = @_;
-    return unless defined $playlist;
     $self->_mpd->_send_command( qq[rm "$playlist"\n] );
 }
 
