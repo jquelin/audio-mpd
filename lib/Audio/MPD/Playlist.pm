@@ -163,6 +163,16 @@ sub crop {
 
 # -- Playlist: changing playlist order
 
+#
+# $pl->shuffle();
+#
+# Shuffle the current playlist. No return value.
+#
+sub shuffle {
+    my ($self) = @_;
+    $self->_mpd->_send_command("shuffle\n");
+}
+
 
 #
 # $pl->swap( $song1, $song2 );
@@ -187,16 +197,23 @@ sub swapid {
     $self->_mpd->_send_command("swapid $from $to\n");
 }
 
-sub shuffle {
-    my ($self) = @_;
-    $self->_mpd->_send_command("shuffle\n");
-}
 
+#
+# $pl->move( $song, $newpos );
+#
+# Move song number $song to the position $newpos. No return value.
+#
 sub move {
     my ($self, $song, $pos) = @_;
     $self->_mpd->_send_command("move $song $pos\n");
 }
 
+
+#
+# $pl->moveid( $songid, $newpos );
+#
+# Move song ID $songid to the position $newpos. No return value.
+#
 sub moveid {
     my ($self, $song, $pos) = @_;
     $self->_mpd->_send_command("moveid $song $pos\n");
@@ -340,6 +357,11 @@ song currently playing.
 
 =over 4
 
+=item $pl->shuffle( )
+
+Shuffle the current playlist. No return value.
+
+
 =item $pl->swap( $song1, $song2 )
 
 Swap positions of song number C<$song1> and C<$song2> in the current
@@ -354,17 +376,12 @@ current playlist. No return value.
 
 =item $pl->move( $song, $newpos )
 
-Move song number $song to the position $newpos. No return value.
+Move song number C<$song> to the position C<$newpos>. No return value.
 
 
 =item $pl->moveid( $songid, $newpos )
 
-Move song ID $songid to the position $newpos. No return value.
-
-
-=item $pl->shuffle()
-
-Shuffle the current playlist. No return value.
+Move song ID C<$songid> to the position C<$newpos>. No return value.
 
 
 =item $pl->load( $playlist )
