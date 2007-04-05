@@ -246,6 +246,13 @@ sub save {
     $self->_mpd->_send_command( qq[save "$playlist"\n] );
 }
 
+
+#
+# $pl->rm( $playlist )
+#
+# Delete playlist named $playlist from MPD's playlist directory. No
+# return value.
+#
 sub rm {
     my ($self, $playlist) = @_;
     return unless defined $playlist;
@@ -400,7 +407,9 @@ directory. No return value.
 
 =item $pl->rm( $playlist )
 
-Delete playlist named $playlist from MPD's playlist directory. No return value.
+Delete playlist named C<$playlist> from MPD's playlist directory. No
+return value.
+
 
 =back
 
