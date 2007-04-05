@@ -164,41 +164,54 @@ sub crop {
 # -- Playlist: changing playlist order
 
 
+#
+# $pl->swap( $song1, $song2 );
+#
+# Swap positions of song number $song1 and $song2 in the current playlist.
+# No return value.
+#
 sub swap {
     my ($self, $from, $to) = @_;
-    $self->_send_command("swap $from $to\n");
+    $self->_mpd->_send_command("swap $from $to\n");
 }
 
+
+#
+# $pl->swapid( $songid1, $songid2 );
+#
+# Swap the postions of song ID $songid1 with song ID $songid2 in the
+# current playlist. No return value.
+#
 sub swapid {
     my ($self, $from, $to) = @_;
-    $self->_send_command("swapid $from $to\n");
+    $self->_mpd->_send_command("swapid $from $to\n");
 }
 
 sub shuffle {
     my ($self) = @_;
-    $self->_send_command("shuffle\n");
+    $self->_mpd->_send_command("shuffle\n");
 }
 
 sub move {
     my ($self, $song, $pos) = @_;
-    $self->_send_command("move $song $pos\n");
+    $self->_mpd->_send_command("move $song $pos\n");
 }
 
 sub moveid {
     my ($self, $song, $pos) = @_;
-    $self->_send_command("moveid $song $pos\n");
+    $self->_mpd->_send_command("moveid $song $pos\n");
 }
 
 sub load {
     my ($self, $playlist) = @_;
     return unless defined $playlist;
-    $self->_send_command( qq[load "$playlist"\n] );
+    $self->_mpd->_send_command( qq[load "$playlist"\n] );
 }
 
 sub save {
     my ($self, $playlist) = @_;
     return unless defined $playlist;
-    $self->_send_command( qq[save "$playlist"\n] );
+    $self->_mpd->_send_command( qq[save "$playlist"\n] );
 
 =begin FIXME
 
@@ -223,7 +236,7 @@ sub save {
 sub rm {
     my ($self, $playlist) = @_;
     return unless defined $playlist;
-    $self->_send_command( qq[rm "$playlist"\n] );
+    $self->_mpd->_send_command( qq[rm "$playlist"\n] );
 }
 
 
@@ -309,12 +322,12 @@ Remove the specified C<$songid>s (as assigned by mpd when inserted in playlist)
 from the current playlist. No return value.
 
 
-=item $pl->clear()
+=item $pl->clear( )
 
 Remove all the songs from the current playlist. No return value.
 
 
-=item $pl->crop()
+=item $pl->crop( )
 
 Remove all of the songs from the current playlist *except* the
 song currently playing.
@@ -329,14 +342,14 @@ song currently playing.
 
 =item $pl->swap( $song1, $song2 )
 
-Swap positions of song number $song1 and $song2 on the current playlist. No
-return value.
+Swap positions of song number C<$song1> and C<$song2> in the current
+playlist. No return value.
 
 
 =item $pl->swapid( $songid1, $songid2 )
 
-Swap the postions of song ID $songid1 with song ID $songid2 on the current
-playlist. No return value.
+Swap the postions of song ID C<$songid1> with song ID C<$songid2> in the
+current playlist. No return value.
 
 
 =item $pl->move( $song, $newpos )
