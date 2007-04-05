@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 15;
+plan tests => 17;
 my $mpd = Audio::MPD->new;
 my ($nb, @items);
 
@@ -68,7 +68,7 @@ $nb = $mpd->status->playlistlength;
 $pl->add( 'title.ogg' );
 $pl->add( 'dir1/title-artist-album.ogg' );
 $pl->add( 'dir1/title-artist.ogg' );
-is( $mpd->status->playlistlength, $nb+3, 'adding songs' );
+is( $mpd->status->playlistlength, $nb+3, 'add() songs' );
 
 
 #
@@ -81,11 +81,11 @@ $mpd->play(0); # to set songid
 $mpd->stop;
 $nb = $mpd->status->playlistlength;
 $pl->delete( reverse 1..2 ); # reverse otherwise mpd will get it wrong
-is( $mpd->status->playlistlength, $nb-2, 'delete songs' );
+is( $mpd->status->playlistlength, $nb-2, 'delete() songs' );
 
 $nb = $mpd->status->playlistlength;
 $pl->deleteid( $mpd->status->songid );
-is( $mpd->status->playlistlength, $nb-1, 'deleteid songs' );
+is( $mpd->status->playlistlength, $nb-1, 'deleteid() songs' );
 
 
 
@@ -96,8 +96,8 @@ $pl->add( 'dir1/title-artist-album.ogg' );
 $pl->add( 'dir1/title-artist.ogg' );
 $nb = $mpd->status->playlistlength;
 $pl->clear;
-is(   $mpd->status->playlistlength, 0,   'clearing playlist leaves 0 songs' );
-isnt( $mpd->status->playlistlength, $nb, 'clearing songs changes playlist length' );
+is(   $mpd->status->playlistlength, 0,   'clear() leaves 0 songs' );
+isnt( $mpd->status->playlistlength, $nb, 'clear() changes playlist length' );
 
 
 #
@@ -108,8 +108,30 @@ $pl->add( 'dir1/title-artist.ogg' );
 $mpd->play(1); # to set song
 $mpd->stop;
 $pl->crop;
-is( $mpd->status->playlistlength, 1, 'cropping leaves only one song' );
-# FIXME is( $pl->status->get_current
+is( $mpd->status->playlistlength, 1, 'crop() leaves only one song' );
+
+
+#
+# testing swap.
+$pl->clear;
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
+$pl->swap(0,2);
+is( ($pl->as_items)[2]->title, 'ok-title', 'swap() changes' );
+
+
+#
+# testing swapid.
+$pl->clear;
+$pl->add( 'title.ogg' );
+$pl->add( 'dir1/title-artist-album.ogg' );
+$pl->add( 'dir1/title-artist.ogg' );
+@items = $pl->as_items;
+$pl->swapid($items[0]->id,$items[2]->id);
+is( ($pl->as_items)[2]->title, 'ok-title', 'swapid() changes' );
+
+
 
 
 exit;
