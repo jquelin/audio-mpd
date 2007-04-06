@@ -1,6 +1,7 @@
 High-level changelog
 ====================
 
+0.17.x  introducing AM::Playlist
 0.16.x  utf-8 support + introducing mpd-dynamic script
 0.15.x  introducing AM::Collection
 0.14.x  introducing AM::Items
@@ -15,6 +16,12 @@ High-level changelog
 
 Low-level changelog
 ===================
+
+0.17.0 Fri Apr  6 16:54:07 CEST 2007
+ - introducing AM::Playlist for better segregation of playlist handling
+ - completed tests to cover all playlist operations, AM is now 95.1% covered
+
+**
 
 0.16.2 Tue Apr  3 19:02:29 CEST 2007
  - utf-8 support generalized

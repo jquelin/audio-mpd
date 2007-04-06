@@ -1,12 +1,12 @@
 ---
 name: Audio-MPD
-version: 0.16.2
+version: 0.17.0
 author:
   - 'Jerome Quelin <jquelin@cpan.org>'
   - |-
     Original code by Tue Abrahamsen <tue.abrahamsen@gmail.com>, documented by
     Nicholas J. Humfrey <njh@aelius.com>.
-abstract: Class for talking to MPD (Music Player Daemon) servers
+abstract: class to talk to MPD (Music Player Daemon) servers
 license: gpl
 resources:
   license: http://www.opensource.org/licenses/gpl-license.php
@@ -23,7 +23,7 @@ build_requires:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.16.2
+    version: 0.17.0
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
   Audio::MPD::Item:
@@ -32,6 +32,8 @@ provides:
     file: lib/Audio/MPD/Item/Directory.pm
   Audio::MPD::Item::Song:
     file: lib/Audio/MPD/Item/Song.pm
+  Audio::MPD::Playlist:
+    file: lib/Audio/MPD/Playlist.pm
   Audio::MPD::Status:
     file: lib/Audio/MPD/Status.pm
   Audio::MPD::Test:
