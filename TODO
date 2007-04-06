@@ -6,31 +6,38 @@ can be either minor, medium or major.
 
 ** distribution:
 
-- sign module using Module::Signature. (minor)
+- sign module using Module::Signature.
+
+
+** module cleaning
+
+- creating AM::Stats, on the same model than AM::Status, since a plain
+  hash ref is quite ugly to manipulate, and not encapsulated
+- maybe creating AM::Time, to get rid of the get_time_format and
+  get_time_info methods, for exactly the same reasons
+
+
+** module enhancements
+
+- implementing missing methods in am::collection (random, etc.)
+- extending and harmonizing subs in am::playlist (add() should allow
+  multiple arguments, for example)
+- what about improving am::status to allow for auto-update?
 
 
 ** tests:
 
-- write more tests. really. (minor)
-- perform test coverage and fill in the blanks. (medium when 100%)
+- perform test coverage and fill in the blanks.
 
 
 ** dialog with mpd:
 
-- more error handling. (medium)
-- more extensive coverage of supported mpd instruction set. (medium)
-- auto-reconnect. (medium)
+- more extensive coverage of supported mpd instruction set.
+- better communication with mpd (including auto-reconnect).
 
 
-** mpd enhancements:
+** mpd scripts:
 
-- song ratings. (major)
-- support for notifications. (major)
+- mpd proxy adding song ratings on-the-fly.
+- small daemon watching collcetion dir (inotify) and updating mpd
 
-
-
-Maybe:
-	Make subs check for permissions before executing
-	Make it possible to use MPD.pm in "light"-mode:
-		For small clients/scripts
-		Don't fetch outputs, commands etc.
