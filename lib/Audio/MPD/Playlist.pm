@@ -302,7 +302,7 @@ of an C<Audio::MPD> object.
 
 =over 4
 
-=item $pl->as_items( )
+=item $pl->as_items()
 
 Return an array of C<Audio::MPD::Item::Song>s, one for each of the
 songs in the current playlist.
@@ -339,12 +339,12 @@ Remove the specified C<$songid>s (as assigned by mpd when inserted in playlist)
 from the current playlist. No return value.
 
 
-=item $pl->clear( )
+=item $pl->clear()
 
 Remove all the songs from the current playlist. No return value.
 
 
-=item $pl->crop( )
+=item $pl->crop()
 
 Remove all of the songs from the current playlist *except* the
 song currently playing.
@@ -357,7 +357,7 @@ song currently playing.
 
 =over 4
 
-=item $pl->shuffle( )
+=item $pl->shuffle()
 
 Shuffle the current playlist. No return value.
 

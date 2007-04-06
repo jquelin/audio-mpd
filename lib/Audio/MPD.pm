@@ -746,7 +746,7 @@ MPD server settings. Check the embedded pod for more information on the
 available accessors.
 
 
-=item $mpd->current( )
+=item $mpd->current()
 
 Return an C<Audio::MPD::Item::Song> representing the song currently playing.
 
@@ -846,14 +846,14 @@ then the perl module will try and seek to $time in the current song.
 
 =over 4
 
-=item $mpd->get_time_format( )
+=item $mpd->get_time_format()
 
 Returns the current position and duration of the current song.
 String is formatted at "M:SS/M:SS", with current time first and total time
 after.
 
 
-=item $mpd->get_time_info( )
+=item $mpd->get_time_info()
 
 Return current timing information in various different formats
 contained in a hashref with the following keys:

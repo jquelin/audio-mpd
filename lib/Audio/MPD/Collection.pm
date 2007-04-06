@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-#our ($VERSION) = '$Rev: 5828 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5853 $' =~ /(\d+)/;
 
 
 #--
@@ -356,22 +356,22 @@ Note that this sub does not work recusrively on all directories.
 
 =over 4
 
-=item $coll->all_albums( )
+=item $coll->all_albums()
 
 Return the list of all albums (strings) currently known by mpd.
 
 
-=item $coll->all_artists( )
+=item $coll->all_artists()
 
 Return the list of all artists (strings) currently known by mpd.
 
 
-=item $coll->all_titles( )
+=item $coll->all_titles()
 
 Return the list of all song titles (strings) currently known by mpd.
 
 
-=item $coll->all_pathes( )
+=item $coll->all_pathes()
 
 Return the list of all pathes (strings) currently known by mpd.
 
