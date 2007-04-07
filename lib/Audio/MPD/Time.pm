@@ -58,8 +58,8 @@ sub new {
     my $total = sprintf "%d:%02d", $total_mins, $total_secs;
 
     # Parse the time left
-    $left_mins = $seconds_left / 60;
-    $left_secs = $seconds_left % 60;
+    my $left_mins = $seconds_left / 60;
+    my $left_secs = $seconds_left % 60;
     my $left = sprintf "%d:%02d", $left_mins, $left_secs;
 
 
