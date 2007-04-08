@@ -54,6 +54,7 @@ while (1) { # endless loop
     # keep at most $ARGV{old} songs.
     if ( $song > $ARGV{old} ) {
         my $old = $song - $ARGV{old};
+        debug( "need to remove $old songs\n" );
         eval { $mpd->playlist->delete(0) for 1..$old };
     }
 
@@ -77,7 +78,7 @@ while (1) { # endless loop
                 debug("rating too low: $ratings{$random} [$random]\n");
                 redo PICK_ONE;
             }
-            debug("will add [$random]\n");
+            debug("adding [$random]\n");
             eval { $mpd->playlist->add( $random ) };
             debug("error: $@\n") if $@;
         }
