@@ -42,64 +42,64 @@ $mpd->playlist->add( 'dir1/title-artist.ogg' );
 $mpd->playlist->add( 'dir2/album.ogg' );
 
 $mpd->play;
-is( $mpd->status->state, 'play', 'play starts playback' );
+is( $mpd->status->state, 'play', 'play() starts playback' );
 $mpd->play(2);
-is( $mpd->status->song,       2, 'play can start playback at a given song' );
+is( $mpd->status->song,       2, 'play() can start playback at a given song' );
 
 $mpd->play(0);
 $mpd->pause;
 $mpd->playid;
-is( $mpd->status->state, 'play', 'playid starts playback' );
+is( $mpd->status->state, 'play', 'playid() starts playback' );
 $mpd->playid(1);
-is( $mpd->status->songid,     1, 'playid can start playback at a given song' );
+is( $mpd->status->songid,     1, 'playid() can start playback at a given song' );
 
 
 #
 # testing pause.
 $mpd->pause(1);
-is( $mpd->status->state, 'pause', 'pause forces playback pause' );
+is( $mpd->status->state, 'pause', 'pause() forces playback pause' );
 $mpd->pause(0);
-is( $mpd->status->state, 'play', 'pause can force playback resume' );
+is( $mpd->status->state, 'play', 'pause() can force playback resume' );
 $mpd->pause;
-is( $mpd->status->state, 'pause', 'pause toggles to pause' );
+is( $mpd->status->state, 'pause', 'pause() toggles to pause' );
 $mpd->pause;
-is( $mpd->status->state, 'play', 'pause toggles to play' );
+is( $mpd->status->state, 'play', 'pause() toggles to play' );
 
 
 #
 # testing stop.
 $mpd->stop;
-is( $mpd->status->state, 'stop', 'stop forces full stop' );
+is( $mpd->status->state, 'stop', 'stop() forces full stop' );
 
 
 #
 # testing prev / next.
 $mpd->play(1); $mpd->pause;
 $mpd->next;
-is( $mpd->status->song, 2, 'next changes track to next one' );
+is( $mpd->status->song, 2, 'next() changes track to next one' );
 $mpd->prev;
-is( $mpd->status->song, 1, 'prev changes track to previous one' );
+is( $mpd->status->song, 1, 'prev() changes track to previous one' );
 
 
 #
 # testing seek / seekid.
 $mpd->pause(1);
 $mpd->seek( 1, 2 );
-is( $mpd->status->song,     2, 'seek can change the current track' );
-is( $mpd->status->time, '1:2', 'seek seeks in the song' );
+is( $mpd->status->song,     2, 'seek() can change the current track' );
+is( $mpd->status->time->sofar_secs, 1, 'seek() seeks in the song' );
 $mpd->seek;
-is( $mpd->status->time, '0:2', 'seek defaults to beginning of song' );
+is( $mpd->status->time->sofar_secs, 0, 'seek() defaults to beginning of song' );
 $mpd->seek(1);
-is( $mpd->status->time, '1:2', 'seek defaults to current song ' );
+is( $mpd->status->time->sofar_secs, 1, 'seek() defaults to current song ' );
 
 
 $mpd->seekid( 1, 1 );
-is( $mpd->status->songid,   1, 'seekid can change the current track' );
-is( $mpd->status->time, '1:2', 'seekid seeks in the song' );
+is( $mpd->status->songid,   1, 'seekid() can change the current track' );
+is( $mpd->status->time->sofar_secs, 1, 'seekid() seeks in the song' );
 $mpd->seekid;
-is( $mpd->status->time, '0:2', 'seekid defaults to beginning of song' );
+is( $mpd->status->time->sofar_secs, 0, 'seekid() defaults to beginning of song' );
 $mpd->seekid(1);
-is( $mpd->status->time, '1:2', 'seekid defaults to current song' );
+is( $mpd->status->time->sofar_secs, 1, 'seekid() defaults to current song' );
 
 
 

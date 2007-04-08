@@ -55,7 +55,7 @@ is( $s->xfade,          14,                              'accessor: xfade' );
 is( $s->state,          'play',                          'accessor: state' );
 is( $s->song,           10,                              'accessor: song' );
 is( $s->songid,         11,                              'accessor: songid' );
-is( $s->time,           '45:214',                        'accessor: time' );
+isa_ok( $s->time,       'Audio::MPD::Time',              'accessor: time' );
 is( $s->bitrate,        127,                             'accessor: bitrate' );
 is( $s->audio,          '44100:16:2',                    'accessor: audio' );
 is( $s->error,          'problems opening audio device', 'accessor: error' );

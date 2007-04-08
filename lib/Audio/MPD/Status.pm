@@ -20,12 +20,14 @@ package Audio::MPD::Status;
 use warnings;
 use strict;
 
+use Audio::MPD::Time;
+
 use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors
     ( qw[ audio bitrate error playlist playlistlength random
           repeat song songid state time volume xfade ] );
 
-#our ($VERSION) = '$Rev: 5853 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5865 $' =~ /(\d+)/;
 
 
 #--
@@ -40,6 +42,7 @@ __PACKAGE__->mk_accessors
 sub new {
     my $class = shift;
     my %kv = @_;
+    $kv{time} = Audio::MPD::Time->new( delete $kv{time} );
     bless \%kv, $class;
     return \%kv;
 }
@@ -148,8 +151,8 @@ The state of MPD server. Either C<play>, C<stop> or C<pause>.
 
 =item $status->time()
 
-A string with the time played so far and the total time of the current song,
-separated by a colon.
+An C<Audio::MPD::Time> object, representing the time elapsed / remainging and
+total. See the associated pod for more details.
 
 
 =item $status->volume()
