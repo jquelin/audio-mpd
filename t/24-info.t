@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 15;
+plan tests => 16;
 my $mpd = Audio::MPD->new;
 my $song;
 
@@ -40,13 +40,14 @@ $mpd->playlist->add( 'title.ogg' );
 $mpd->playlist->add( 'dir1/title-artist-album.ogg' );
 $mpd->playlist->add( 'dir1/title-artist.ogg' );
 my $stats = $mpd->stats;
-is( $stats->{artists},      1, 'one artist in the database' );
-is( $stats->{albums},       1, 'one album in the database' );
-is( $stats->{songs},        4, '4 songs in the database' );
-is( $stats->{playtime},     0, 'already played 0 seconds' );
-is( $stats->{db_playtime},  8, '8 seconds worth of music in the db' );
-isnt( $stats->{uptime}, undef, 'uptime is defined' );
-isnt( $stats->{db_update},  0, 'database has been updated' );
+isa_ok( $stats, 'Audio::MPD::Stats', 'stats() returns an am::stats object' );
+is( $stats->artists,      1, 'one artist in the database' );
+is( $stats->albums,       1, 'one album in the database' );
+is( $stats->songs,        4, '4 songs in the database' );
+is( $stats->playtime,     0, 'already played 0 seconds' );
+is( $stats->db_playtime,  8, '8 seconds worth of music in the db' );
+isnt( $stats->uptime, undef, 'uptime is defined' );
+isnt( $stats->db_update,  0, 'database has been updated' );
 
 
 #
@@ -54,7 +55,7 @@ isnt( $stats->{db_update},  0, 'database has been updated' );
 $mpd->play;
 $mpd->pause;
 my $status = $mpd->status;
-isa_ok( $status, 'Audio::MPD::Status', 'status return an Audio::MPD::Status object' );
+isa_ok( $status, 'Audio::MPD::Status', 'status return an am::status object' );
 
 
 #

@@ -23,6 +23,7 @@ use strict;
 use Audio::MPD::Collection;
 use Audio::MPD::Item;
 use Audio::MPD::Playlist;
+use Audio::MPD::Stats;
 use Audio::MPD::Status;
 use Encode;
 use IO::Socket;
@@ -333,14 +334,12 @@ sub output_disable {
 #
 # $mpd->stats;
 #
-# Return a hashref with the number of artists, albums, songs in the database,
-# as well as mpd uptime, the playtime of the playlist / the database and the
-# last update of the database.
+# Return an Audio::MPD::Stats object with the current statistics of MPD.
 #
 sub stats {
     my ($self) = @_;
     my %kv = $self->_cooked_command_as_kv( "stats\n" );
-    return \%kv;
+    return Audio::MPD::Stats->new(%kv);
 }
 
 
@@ -665,9 +664,8 @@ Disable the specified audio output. $output is the ID of the audio output.
 
 =item $mpd->stats()
 
-Return a hashref with the number of artists, albums, songs in the database,
-as well as mpd uptime, the playtime of the playlist / the database and the
-last update of the database
+Return an C<Audio::MPD::Stats> object with the current statistics of MPD.
+See the associated pod for more information.
 
 
 =item $mpd->status()
