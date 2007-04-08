@@ -548,75 +548,6 @@ sub seekid {
 }
 
 
-
-
-###############################################################
-#                     CUSTOM METHODS                          #
-#-------------------------------------------------------------#
-#   This section contains all methods not directly accessing  #
-#   MPD, but may be useful for most people using the module.  #
-###############################################################
-
-
-sub get_time_format {
-    my ($self) = shift;
-
-    # Get the time from MPD; example: 49:395 (seconds so far:total seconds)
-    my ($sofar, $total) = split /:/, $self->status->time;
-    return sprintf "%d:%02d/%d:%02d",
-        ($sofar / 60), # minutes so far
-        ($sofar % 60), # seconds - minutes so far
-        ($total / 60), # minutes total
-        ($total % 60);# seconds - minutes total
-}
-
-sub get_time_info {
-    my ($self) = @_;
-
-    # Get the time from MPD; example: 49:395 (seconds so far:total seconds)
-    my ($sofar, $total) = split /:/, $self->status->time;
-    my $left = $total - $sofar;
-
-    # Store seconds for everything
-    my $rv = {};
-    $rv->{seconds_so_far} = $sofar;
-    $rv->{seconds_total}  = $total;
-    $rv->{seconds_left}   = $left;
-
-    # Store the percentage; use one decimal point
-    $rv->{percentage} =
-    $rv->{seconds_total}
-    ? 100*$rv->{seconds_so_far}/$rv->{seconds_total}
-    : 0;
-    $rv->{percentage} = sprintf "%.1f",$rv->{percentage};
-
-
-    # Parse the time so far
-    my $min_so_far = ($sofar / 60);
-    my $sec_so_far = ($sofar % 60);
-
-    $rv->{time_so_far} = sprintf("%d:%02d", $min_so_far, $sec_so_far);
-    $rv->{minutes_so_far} = sprintf("%00d", $min_so_far);
-    $rv->{seconds_so_far} = sprintf("%00d", $sec_so_far);
-
-
-    # Parse the total time
-    my $min_tot = ($total / 60);
-    my $sec_tot = ($total % 60);
-
-    $rv->{time_total} = sprintf("%d:%02d", $min_tot, $sec_tot);
-    $rv->{minutes} = $min_tot;
-    $rv->{seconds} = $sec_tot;
-
-    # Parse the time left
-    my $min_left = ($left / 60);
-    my $sec_left = ($left % 60);
-    $rv->{time_left} = sprintf("-%d:%02d", $min_left, $sec_left);
-
-    return $rv;
-}
-
-
 1;
 
 
@@ -838,49 +769,6 @@ then the perl module will try and seek to $time in the current song.
 
 Seek to $time seconds in song ID $songid. If $song number is not specified
 then the perl module will try and seek to $time in the current song.
-
-=back
-
-
-=head2 Retrieving information from current playlist
-
-=over 4
-
-=item $mpd->get_time_format()
-
-Returns the current position and duration of the current song.
-String is formatted at "M:SS/M:SS", with current time first and total time
-after.
-
-
-=item $mpd->get_time_info()
-
-Return current timing information in various different formats
-contained in a hashref with the following keys:
-
-=over 4
-
-=item minutes_so_far
-
-=item seconds_so_far
-
-=item time_so_far
-
-=item minutes
-
-=item seconds
-
-=item percentage
-
-=item time_total
-
-=item seconds_total
-
-=item seconds_left
-
-=item time_left
-
-=back
 
 =back
 
