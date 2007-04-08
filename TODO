@@ -14,6 +14,7 @@ can be either minor, medium or major.
 - creating AM::Stats, on the same model than AM::Status, since a plain
   hash ref is quite ugly to manipulate, and not encapsulated
 
+
 ** module enhancements
 
 - implementing missing methods in am::collection (random, etc.)
@@ -21,7 +22,8 @@ can be either minor, medium or major.
   multiple arguments, for example)
 - what about improving am::status to allow for auto-update?
 
-** dialog with mpd:
+
+** dialog with mpd
 
 - more extensive coverage of supported mpd instruction set.
 - better communication with mpd (including auto-reconnect).
