@@ -9,6 +9,7 @@ lib/Audio/MPD/Item.pm
 lib/Audio/MPD/Item/Directory.pm
 lib/Audio/MPD/Item/Song.pm
 lib/Audio/MPD/Playlist.pm
+lib/Audio/MPD/Stats.pm
 lib/Audio/MPD/Status.pm
 lib/Audio/MPD/Test.pm
 lib/Audio/MPD/Time.pm
