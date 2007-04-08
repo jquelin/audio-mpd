@@ -1,6 +1,6 @@
 ---
 name: Audio-MPD
-version: 0.17.0
+version: 0.17.1
 author:
   - 'Jerome Quelin <jquelin@cpan.org>'
   - |-
@@ -23,7 +23,7 @@ build_requires:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.17.0
+    version: 0.17.1
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
   Audio::MPD::Item:
@@ -38,6 +38,8 @@ provides:
     file: lib/Audio/MPD/Status.pm
   Audio::MPD::Test:
     file: lib/Audio/MPD/Test.pm
+  Audio::MPD::Time:
+    file: lib/Audio/MPD/Time.pm
 generated_by: Module::Build version 0.2806
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

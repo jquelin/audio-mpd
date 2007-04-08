@@ -1,7 +1,7 @@
 High-level changelog
 ====================
 
-0.17.x  introducing AM::Playlist
+0.17.x  introducing AM::Playlist + AM::Time
 0.16.x  utf-8 support + introducing mpd-dynamic script
 0.15.x  introducing AM::Collection
 0.14.x  introducing AM::Items
@@ -16,6 +16,11 @@ High-level changelog
 
 Low-level changelog
 ===================
+
+0.17.1 Sun Apr  8 12:23:53 CEST 2007
+ - introducing AM::Time for better encapsulation
+ - thus, removed get_time_info() and get_time_format()
+ - test coverage up to 100% \o/
 
 0.17.0 Fri Apr  6 16:54:07 CEST 2007
  - introducing AM::Playlist for better segregation of playlist handling
