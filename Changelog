@@ -17,6 +17,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.17.2
+ - introducing AM::Stats for better encapsulation
+
 0.17.1 Sun Apr  8 12:23:53 CEST 2007
  - introducing AM::Time for better encapsulation
  - thus, removed get_time_info() and get_time_format()

@@ -35,7 +35,7 @@ __PACKAGE__->mk_accessors(
         collection playlist version ] );
 
 
-our $VERSION = '0.17.1';
+our $VERSION = '0.17.2';
 
 
 #--
