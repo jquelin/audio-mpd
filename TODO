@@ -9,18 +9,12 @@ can be either minor, medium or major.
 - sign module using Module::Signature.
 
 
-** module cleaning
-
-- creating AM::Stats, on the same model than AM::Status, since a plain
-  hash ref is quite ugly to manipulate, and not encapsulated
-
-
 ** module enhancements
 
 - implementing missing methods in am::collection (random, etc.)
 - extending and harmonizing subs in am::playlist (add() should allow
   multiple arguments, for example)
-- what about improving am::status to allow for auto-update?
+- what about improving am::* to allow for auto-update?
 
 
 ** dialog with mpd
@@ -32,5 +26,5 @@ can be either minor, medium or major.
 ** mpd scripts:
 
 - mpd proxy adding song ratings on-the-fly.
-- small daemon watching collcetion dir (inotify) and updating mpd
+- small daemon watching collection dir (inotify) and updating mpd
 
