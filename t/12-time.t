@@ -54,7 +54,7 @@ is( $time->seconds_total, 225, 'seconds_total() gives time total in secs' );
 
 #
 # testing null time
-my $time = Audio::MPD::Time->new( '126:0' );
+$time = Audio::MPD::Time->new( '126:0' );
 is( $time->percent, '0.0', 'percent() defaults to 0' );
 
 exit;
