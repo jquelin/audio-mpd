@@ -25,7 +25,7 @@ __PACKAGE__->mk_accessors
     ( qw[ percent sofar left total
           sofar_secs sofar_mins seconds_sofar
           total_secs total_mins seconds_total
-          left_secs  left_mins  seconds_let
+          left_secs  left_mins  seconds_left
         ] );
 
 #our ($VERSION) = '$Rev$' =~ /(\d+)/;
@@ -48,17 +48,17 @@ sub new {
     my $percent      = $seconds_total ? 100*$seconds_sofar/$seconds_total : 0;
 
     # Parse the time so far
-    my $sofar_mins = $seconds_sofar / 60;
+    my $sofar_mins = int( $seconds_sofar / 60 );
     my $sofar_secs = $seconds_sofar % 60;
     my $sofar = sprintf "%d:%02d", $sofar_mins, $sofar_secs;
 
     # Parse the total time
-    my $total_mins = $seconds_total / 60;
+    my $total_mins = int( $seconds_total / 60 );
     my $total_secs = $seconds_total % 60;
     my $total = sprintf "%d:%02d", $total_mins, $total_secs;
 
     # Parse the time left
-    my $left_mins = $seconds_left / 60;
+    my $left_mins = int( $seconds_left / 60 );
     my $left_secs = $seconds_left % 60;
     my $left = sprintf "%d:%02d", $left_mins, $left_secs;
 
