@@ -13,9 +13,6 @@ can be either minor, medium or major.
 
 - creating AM::Stats, on the same model than AM::Status, since a plain
   hash ref is quite ugly to manipulate, and not encapsulated
-- maybe creating AM::Time, to get rid of the get_time_format and
-  get_time_info methods, for exactly the same reasons
-
 
 ** module enhancements
 
@@ -23,12 +20,6 @@ can be either minor, medium or major.
 - extending and harmonizing subs in am::playlist (add() should allow
   multiple arguments, for example)
 - what about improving am::status to allow for auto-update?
-
-
-** tests:
-
-- perform test coverage and fill in the blanks.
-
 
 ** dialog with mpd:
 
