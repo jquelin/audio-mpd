@@ -43,6 +43,7 @@ __PACKAGE__->mk_accessors
 #
 sub new {
     my ($class, $time) = @_;
+    $time ||= '0:0';
     my ($seconds_sofar, $seconds_total) = split /:/, $time;
     my $seconds_left = $seconds_total - $seconds_sofar;
     my $percent      = $seconds_total ? 100*$seconds_sofar/$seconds_total : 0;
