@@ -26,8 +26,6 @@ use Audio::MPD::Status;
 use Test::More tests => 14;
 
 
-# note that the first line does not match 'key: value' pattern
-# and has been added for the sake of testing. :-)
 my %kv = (
     volume         => 66,
     repeat         => 1,
