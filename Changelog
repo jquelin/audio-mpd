@@ -17,7 +17,7 @@ High-level changelog
 Low-level changelog
 ===================
 
-0.17.2
+0.17.2 Sun Apr  8 15:35:43 CEST 2007
  - introducing AM::Stats for better encapsulation
 
 0.17.1 Sun Apr  8 12:23:53 CEST 2007
