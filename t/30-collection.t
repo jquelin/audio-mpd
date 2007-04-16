@@ -66,6 +66,15 @@ is( $list[1]->artist, undef, 'all_items_simple does not return full tags' );
 
 
 #
+# testing items_in_dir.
+@list = $coll->items_in_dir;
+is( scalar @list, 3, 'items_in_dir defaults to root' );
+isa_ok( $_, 'Audio::MPD::Item', 'items_in_dir return AMI objects' ) for @list;
+@list = $coll->items_in_dir( 'dir1' );
+is( scalar @list, 2, 'items_in_dir can take a param' );
+
+
+#
 # testing all_songs.
 @list = $coll->all_songs;
 is( scalar @list, 4, 'all_songs return all 4 songs' );
@@ -73,15 +82,6 @@ isa_ok( $_, 'Audio::MPD::Item::Song', 'all_items return AMIS objects' ) for @lis
 @list = $coll->all_songs( 'dir1' );
 is( scalar @list, 2, 'all_songs can be restricted to a subdir' );
 is( $list[0]->artist, 'dir1-artist', 'all_songs can be restricted to a subdir' );
-
-
-#
-# testing items_in_dir.
-@list = $coll->items_in_dir;
-is( scalar @list, 3, 'items_in_dir defaults to root' );
-isa_ok( $_, 'Audio::MPD::Item', 'items_in_dir return AMI objects' ) for @list;
-@list = $coll->items_in_dir( 'dir1' );
-is( scalar @list, 2, 'items_in_dir can take a param' );
 
 
 #
