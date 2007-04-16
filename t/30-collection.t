@@ -29,7 +29,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 66;
+plan tests => 73;
 my $mpd = Audio::MPD->new;
 my @list;
 
@@ -63,6 +63,16 @@ isa_ok( $_, 'Audio::MPD::Item', 'all_items_simple return AMI objects' )
 is( scalar @list, 3, 'all_items_simple can be restricted to a subdir' );
 is( $list[0]->directory, 'dir1', 'all_items_simple return a subdir first' );
 is( $list[1]->artist, undef, 'all_items_simple does not return full tags' );
+
+
+#
+# testing all_songs.
+@list = $coll->all_songs;
+is( scalar @list, 4, 'all_songs return all 4 songs' );
+isa_ok( $_, 'Audio::MPD::Item::Song', 'all_items return AMIS objects' ) for @list;
+@list = $coll->all_songs( 'dir1' );
+is( scalar @list, 2, 'all_songs can be restricted to a subdir' );
+is( $list[0]->artist, 'dir1-artist', 'all_songs can be restricted to a subdir' );
 
 
 #

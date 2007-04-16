@@ -27,7 +27,7 @@ use base qw[ Class::Accessor::Fast ];
 __PACKAGE__->mk_accessors( qw[ _mpd ] );
 
 
-#our ($VERSION) = '$Rev: 5853 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5916 $' =~ /(\d+)/;
 
 
 #--
@@ -115,6 +115,20 @@ sub items_in_dir {
 
 
 # -- Collection: retrieving the whole collection
+
+#
+# my @songs = $collection->all_songs( [$path] );
+#
+# Return *all* Audio::MPD::Item::Songs currently known by mpd.
+#
+# If $path is supplied (relative to mpd root), restrict the retrieval to
+# songs and dirs in this directory.
+#
+sub all_songs {
+    my ($self, $path) = @_;
+    return grep { $_->isa('Audio::MPD::Item::Song') } $self->all_items($path);
+}
+
 
 #
 # my @albums = $collection->all_albums;
@@ -355,6 +369,14 @@ Note that this sub does not work recusrively on all directories.
 =head2 Retrieving the whole collection
 
 =over 4
+
+=item $coll->all_songs( [$path] )
+
+Return B<all> C<Audio::MPD::Item::Song>s currently known by mpd.
+
+If C<$path> is supplied (relative to mpd root), restrict the retrieval to
+songs and dirs in this directory.
+
 
 =item $coll->all_albums()
 
