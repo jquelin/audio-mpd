@@ -264,7 +264,7 @@ sub password {
 #
 # $mpd->updatedb( [$path] );
 #
-# Force mpd to recan its collection. If $path (relative to MPD's music
+# Force mpd to rescan its collection. If $path (relative to MPD's music
 # directory) is supplied, MPD will only scan it - otherwise, MPD will rescan
 # its whole collection.
 #
@@ -520,7 +520,7 @@ sub prev {
 
 
 #
-# $mpd->seek( $time, [$song]);
+# $mpd->seek( $time, [$song] );
 #
 # Seek to $time seconds in song number $song. If $song number is not specified
 # then the perl module will try and seek to $time in the current song.
@@ -534,9 +534,9 @@ sub seek {
 
 
 #
-# $mpd->seekid( $time, $songid );
+# $mpd->seekid( $time, [$songid] );
 #
-# Seek to $time seconds in song ID $songid. If $song number is not specified
+# Seek to $time seconds in song ID $songid. If $songid number is not specified
 # then the perl module will try and seek to $time in the current song.
 #
 sub seekid {
