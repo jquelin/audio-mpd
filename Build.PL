@@ -14,7 +14,7 @@ use Module::Build;
 
 my $builder = Module::Build->new (
 	module_name         => 'Audio::MPD',
-	license             => 'gpl',
+	license             => 'perl',
     dist_version_from   => 'lib/Audio/MPD.pm',
     add_to_cleanup => [ 'Audio-MPD-*', '*~', '*/*~', '*/*/*~',
                         '*/*/*/*~', '*/*/*/*/*~' ],
