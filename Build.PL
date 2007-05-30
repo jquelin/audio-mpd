@@ -17,12 +17,13 @@ my $builder = Module::Build->new (
         'perl'          => '5.8.0',
     },
     requires => {
-        'Class::Accessor' => 0,
-        'IO::Socket'	  => 0,
-        'Encode'          => 0,
-        'Readonly'  	  => 0,
-        'Scalar::Util'    => 0,
-        'perl'            => '5.8.0',
+        'Audio::MPD::Common' => 0,
+        'Class::Accessor'    => 0,
+        'IO::Socket'         => 0,
+        'Encode'             => 0,
+        'Readonly'           => 0,
+        'Scalar::Util'       => 0,
+        'perl'               => '5.8.0',
     },
 );
 
