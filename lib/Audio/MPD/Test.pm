@@ -19,7 +19,7 @@ use Readonly;
 
 use base qw[ Exporter ];
 our @EXPORT = qw[ customize_test_mpd_configuration start_test_mpd stop_test_mpd ];
-#our ($VERSION) = '$Rev: 6374 $' =~ /(\d+)/;
+#our ($VERSION) = '$Rev: 5284 $' =~ /(\d+)/;
 
 
 Readonly my $TEMPLATE => "$Bin/mpd-test/mpd.conf.template";
