@@ -1,7 +1,7 @@
 AUTHORS
 bin/mpd-dynamic
 Build.PL
-Changelog
+Changes
 lib/Audio/MPD.pm
 lib/Audio/MPD/Collection.pm
 lib/Audio/MPD/Item.pm
