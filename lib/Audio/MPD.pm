@@ -1,17 +1,9 @@
 #
+# This file is part of Audio::MPD
+# Copyright (c) 2007 Jerome Quelin, all rights reserved.
+#
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# it under the same terms as Perl itself.
 #
 #
 
@@ -806,34 +798,21 @@ to join us. (use L<http://groups.google.com/group/audio-mpd> to sign in). Our
 subversion repository is located at L<https://svn.musicpd.org>.
 
 
+=head1 AUTHOR
 
-=head1 AUTHORS
+Jerome Quelin, C<< <jquelin at cpan.org> >>
 
-Jerome Quelin <jquelin@cpan.org>
-
-Original code by Tue Abrahamsen <tue.abrahamsen@gmail.com>, documented by
-Nicholas J. Humfrey <njh@aelius.com>.
-
+Original code by Tue Abrahamsen C<< <tue.abrahamsen at gmail.com> >>,
+documented by Nicholas J. Humfrey C<< <njh at aelius.com> >>.
 
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT & LICENSE
 
-Copyright (c) 2005 Tue Abrahamsen <tue.abrahamsen@gmail.com>
-
-Copyright (c) 2006 Nicholas J. Humfrey <njh@aelius.com>
-
-Copyright (c) 2007 Jerome Quelin <jquelin@cpan.org>
-
+Copyright (c) 2005 Tue Abrahamsen, all rights reserved.
+Copyright (c) 2006 Nicolas J. Humfrey, all rights reserved.
+Copyright (c) 2007 Jerome Quelin, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+it under the same terms as Perl itself.
 
 =cut
-
