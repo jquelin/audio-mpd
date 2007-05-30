@@ -13,10 +13,10 @@ use warnings;
 use strict;
 
 use Audio::MPD::Collection;
-use Audio::MPD::Item;
+use Audio::MPD::Common::Item;
+use Audio::MPD::Common::Stats;
+use Audio::MPD::Common::Status;
 use Audio::MPD::Playlist;
-use Audio::MPD::Stats;
-use Audio::MPD::Status;
 use Encode;
 use IO::Socket;
 
@@ -142,9 +142,9 @@ sub _send_command {
 # my @items = $mpd->_cooked_command_as_items( $command );
 #
 # Lots of Audio::MPD methods are using _send_command() and then parse the
-# output as a collection of Audio::MPD::Item. This method is meant to
-# factorize this code, and will parse the raw output of _send_command() in
-# a cooked list of items.
+# output as a collection of AMC::Item. This method is meant to factorize
+# this code, and will parse the raw output of _send_command() in a cooked
+# list of items.
 #
 sub _cooked_command_as_items {
     my ($self, $command) = @_;
@@ -161,7 +161,7 @@ sub _cooked_command_as_items {
         my ($k,$v) = split /:\s+/, $line, 2;
         $param{$k} = $v;
         next unless $k eq 'file' || $k eq 'directory'; # last param of item
-        unshift @items, Audio::MPD::Item->new(%param);
+        unshift @items, Audio::MPD::Common::Item->new(%param);
         %param = ();
     }
 
@@ -326,26 +326,26 @@ sub output_disable {
 #
 # $mpd->stats;
 #
-# Return an Audio::MPD::Stats object with the current statistics of MPD.
+# Return an AMC::Stats object with the current statistics of MPD.
 #
 sub stats {
     my ($self) = @_;
     my %kv = $self->_cooked_command_as_kv( "stats\n" );
-    return Audio::MPD::Stats->new(%kv);
+    return Audio::MPD::Common::Stats->new(%kv);
 }
 
 
 #
 # my $status = $mpd->status;
 #
-# Return an Audio::MPD::Status object with various information on current
+# Return an AMC::Status object with various information on current
 # MPD server settings. Check the embedded pod for more information on the
 # available accessors.
 #
 sub status {
     my ($self) = @_;
     my %kv = $self->_cooked_command_as_kv( "status\n" );
-    my $status = Audio::MPD::Status->new( %kv );
+    my $status = Audio::MPD::Common::Status->new( %kv );
     return $status;
 }
 
@@ -353,7 +353,7 @@ sub status {
 #
 # my $song = $mpd->current;
 #
-# Return an C<Audio::MPD::Item::Song> representing the song currently playing.
+# Return an AMC::Item::Song representing the song currently playing.
 #
 sub current {
     my ($self) = @_;
@@ -365,8 +365,8 @@ sub current {
 #
 # my $song = $mpd->song( [$song] )
 #
-# Return an C<Audio::MPD::Item::Song> representing the song number C<$song>.
-# If C<$song> is not supplied, returns the current song.
+# Return an AMC::Item::Song representing the song number $song.
+# If $song is not supplied, returns the current song.
 #
 sub song {
     my ($self, $song) = @_;
@@ -379,8 +379,8 @@ sub song {
 #
 # my $song = $mpd->songid( [$songid] )
 #
-# Return an C<Audio::MPD::Item::Song> representing the song with id C<$songid>.
-# If C<$songid> is not supplied, returns the current song.
+# Return an AMC::Item::Song representing the song with id $songid.
+# If $songid is not supplied, returns the current song.
 #
 sub songid {
     my ($self, $songid) = @_;
@@ -656,32 +656,33 @@ Disable the specified audio output. $output is the ID of the audio output.
 
 =item $mpd->stats()
 
-Return an C<Audio::MPD::Stats> object with the current statistics of MPD.
-See the associated pod for more information.
+Return an C<Audio::MPD::Common::Stats> object with the current statistics
+of MPD. See the associated pod for more information.
 
 
 =item $mpd->status()
 
-Return an C<Audio::MPD::Status> object with various information on current
-MPD server settings. Check the embedded pod for more information on the
-available accessors.
+Return an C<Audio::MPD::Common::Status> object with various information on
+current MPD server settings. Check the embedded pod for more information on
+the available accessors.
 
 
 =item $mpd->current()
 
-Return an C<Audio::MPD::Item::Song> representing the song currently playing.
+Return an C<Audio::MPD::Common::Item::Song> representing the song currently
+playing.
 
 
 =item $mpd->song( [$song] )
 
-Return an C<Audio::MPD::Item::Song> representing the song number C<$song>. If
-C<$song> is not supplied, returns the current song.
+Return an C<Audio::MPD::Common::Item::Song> representing the song number
+C<$song>. If C<$song> is not supplied, returns the current song.
 
 
 =item $mpd->songid( [$songid] )
 
-Return an C<Audio::MPD::Item::Song> representing the song with id C<$songid>.
-If C<$songid> is not supplied, returns the current song.
+Return an C<Audio::MPD::Common::Item::Song> representing the song with id
+C<$songid>. If C<$songid> is not supplied, returns the current song.
 
 =back
 

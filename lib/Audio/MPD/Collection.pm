@@ -11,8 +11,6 @@ package Audio::MPD::Collection;
 
 use strict;
 use warnings;
-use Audio::MPD::Item::Directory;
-use Audio::MPD::Item::Song;
 use Scalar::Util qw[ weaken ];
 
 use base qw[ Class::Accessor::Fast ];
@@ -54,7 +52,7 @@ sub new {
 #
 # my @items = $collection->all_items( [$path] );
 #
-# Return *all* Audio::MPD::Items (both songs & directories) currently known
+# Return *all* AMC::Items (both songs & directories) currently known
 # by mpd.
 #
 # If $path is supplied (relative to mpd root), restrict the retrieval to
@@ -71,13 +69,13 @@ sub all_items {
 #
 # my @items = $collection->all_items_simple( [$path] );
 #
-# Return *all* Audio::MPD::Items (both songs & directories) currently known
+# Return *all* AMC::Items (both songs & directories) currently known
 # by mpd.
 #
 # If $path is supplied (relative to mpd root), restrict the retrieval to
 # songs and dirs in this directory.
 #
-# /!\ Warning: the Audio::MPD::Item::Song objects will only have their tag
+# /!\ Warning: the AMC::Item::Song objects will only have their tag
 # file filled. Any other tag will be empty, so don't use this sub for any
 # other thing than a quick scan!
 #
@@ -111,14 +109,14 @@ sub items_in_dir {
 #
 # my @songs = $collection->all_songs( [$path] );
 #
-# Return *all* Audio::MPD::Item::Songs currently known by mpd.
+# Return *all* AMC::Item::Songs currently known by mpd.
 #
 # If $path is supplied (relative to mpd root), restrict the retrieval to
 # songs and dirs in this directory.
 #
 sub all_songs {
     my ($self, $path) = @_;
-    return grep { $_->isa('Audio::MPD::Item::Song') } $self->all_items($path);
+    return grep { $_->isa('Audio::MPD::Common::Item::Song') } $self->all_items($path);
 }
 
 
@@ -171,7 +169,7 @@ sub all_pathes {
 #
 # my $song = $collection->song( $path );
 #
-# Return the Audio::MPD::Item::Song which correspond to $path.
+# Return the AMC::Item::Song which correspond to $path.
 #
 sub song {
     my ($self, $what) = @_;
@@ -184,7 +182,7 @@ sub song {
 #
 # my $song = $collection->songs_with_filename_partial( $path );
 #
-# Return the Audio::MPD::Item::Songs containing $string in their path.
+# Return the AMC::Item::Songs containing $string in their path.
 #
 sub songs_with_filename_partial {
     my ($self, $what) = @_;
@@ -210,7 +208,7 @@ sub albums_by_artist {
 #
 # my @songs = $collection->songs_by_artist( $artist );
 #
-# Return all Audio::MPD::Item::Songs performed by $artist.
+# Return all AMC::Item::Songs performed by $artist.
 #
 sub songs_by_artist {
     my ($self, $what) = @_;
@@ -222,7 +220,7 @@ sub songs_by_artist {
 #
 # my @songs = $collection->songs_by_artist_partial( $string );
 #
-# Return all Audio::MPD::Item::Songs performed by an artist with $string
+# Return all AMC::Item::Songs performed by an artist with $string
 # in her name.
 #
 sub songs_by_artist_partial {
@@ -235,7 +233,7 @@ sub songs_by_artist_partial {
 #
 # my @songs = $collection->songs_from_album( $album );
 #
-# Return all Audio::MPD::Item::Songs appearing in $album.
+# Return all AMC::Item::Songs appearing in $album.
 #
 sub songs_from_album {
     my ($self, $what) = @_;
@@ -247,7 +245,7 @@ sub songs_from_album {
 #
 # my @songs = $collection->songs_from_album_partial( $string );
 #
-# Return all Audio::MPD::Item::Songs appearing in album containing $string.
+# Return all AMC::Item::Songs appearing in album containing $string.
 #
 sub songs_from_album_partial {
     my ($self, $what) = @_;
@@ -259,7 +257,7 @@ sub songs_from_album_partial {
 #
 # my @songs = $collection->songs_with_title( $title );
 #
-# Return all Audio::MPD::Item::Songs which title is exactly $title.
+# Return all AMC::Item::Songs which title is exactly $title.
 #
 sub songs_with_title {
     my ($self, $what) = @_;
@@ -271,7 +269,7 @@ sub songs_with_title {
 #
 # my @songs = $collection->songs_with_title_partial( $string );
 #
-# Return all Audio::MPD::Item::Songs where $string is part of the title.
+# Return all AMC::Item::Songs where $string is part of the title.
 #
 sub songs_with_title_partial {
     my ($self, $what) = @_;
@@ -327,8 +325,8 @@ of an C<Audio::MPD> object.
 
 =item $coll->all_items( [$path] )
 
-Return B<all> C<Audio::MPD::Item>s (both songs & directories) currently known
-by mpd.
+Return B<all> C<Audio::MPD::Common::Item>s (both songs & directories)
+currently known by mpd.
 
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
@@ -336,15 +334,15 @@ songs and dirs in this directory.
 
 =item $coll->all_items_simple( [$path] )
 
-Return B<all> C<Audio::MPD::Item>s (both songs & directories) currently known
-by mpd.
+Return B<all> C<Audio::MPD::Common::Item>s (both songs & directories)
+currently known by mpd.
 
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
 
-B</!\ Warning>: the C<Audio::MPD::Item::Song> objects will only have their
-tag file filled. Any other tag will be empty, so don't use this sub for any
-other thing than a quick scan!
+B</!\ Warning>: the C<Audio::MPD::Common::Item::Song> objects will only have
+their tag file filled. Any other tag will be empty, so don't use this sub for
+any other thing than a quick scan!
 
 
 =item $coll->items_in_dir( [$path] )
@@ -364,7 +362,7 @@ Note that this sub does not work recusrively on all directories.
 
 =item $coll->all_songs( [$path] )
 
-Return B<all> C<Audio::MPD::Item::Song>s currently known by mpd.
+Return B<all> C<Audio::MPD::Common::Item::Song>s currently known by mpd.
 
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
@@ -399,12 +397,12 @@ Return the list of all pathes (strings) currently known by mpd.
 
 =item $coll->song( $path )
 
-Return the C<Audio::MPD::Item::Song> which correspond to C<$path>.
+Return the C<Audio::MPD::Common::Item::Song> which correspond to C<$path>.
 
 
 =item $coll->songs_with_filename_partial( $path )
 
-Return the C<Audio::MPD::Item::Song>s containing $string in their path.
+Return the C<Audio::MPD::Common::Item::Song>s containing $string in their path.
 
 
 =back
@@ -422,33 +420,33 @@ participated.
 
 =item $coll->songs_by_artist( $artist )
 
-Return all C<Audio::MPD::Item::Song>s performed by C<$artist>.
+Return all C<Audio::MPD::Common::Item::Song>s performed by C<$artist>.
 
 
 =item $coll->songs_by_artist_partial( $string )
 
-Return all C<Audio::MPD::Item::Song>s performed by an artist with C<$string>
-in her name.
+Return all C<Audio::MPD::Common::Item::Song>s performed by an artist with
+C<$string> in her name.
 
 
 =item $coll->songs_from_album( $album )
 
-Return all C<Audio::MPD::Item::Song>s appearing in C<$album>.
+Return all C<Audio::MPD::Common::Item::Song>s appearing in C<$album>.
 
 
 =item $coll->songs_from_album_partial( $string )
 
-Return all C<Audio::MPD::Item::Song>s appearing in album containing C<$string>.
+Return all C<Audio::MPD::Common::Item::Song>s appearing in album containing C<$string>.
 
 
 =item $coll->songs_with_title( $title )
 
-Return all C<Audio::MPD::Item::Song>s which title is exactly C<$title>.
+Return all C<Audio::MPD::Common::Item::Song>s which title is exactly C<$title>.
 
 
 =item $coll->songs_with_title_partial( $string )
 
-Return all C<Audio::MPD::Item::Song>s where C<$string> is part of the title.
+Return all C<Audio::MPD::Common::Item::Song>s where C<$string> is part of the title.
 
 
 =back

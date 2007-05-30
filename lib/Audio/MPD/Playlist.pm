@@ -52,7 +52,7 @@ sub new {
 #
 # my @items = $pl->as_items;
 #
-# Return an array of C<Audio::MPD::Item::Song>s, one for each of the
+# Return an array of AMC::Item::Songs, one for each of the
 # songs in the current playlist.
 #
 sub as_items {
@@ -296,13 +296,13 @@ of an C<Audio::MPD> object.
 
 =item $pl->as_items()
 
-Return an array of C<Audio::MPD::Item::Song>s, one for each of the
+Return an array of C<Audio::MPD::Common::Item::Song>s, one for each of the
 songs in the current playlist.
 
 
 =item $pl->items_changed_since( $plversion )
 
-Return a list with all the songs (as API::Song objects) added to
+Return a list with all the songs (as AMC::Item::Song objects) added to
 the playlist since playlist $plversion.
 
 
