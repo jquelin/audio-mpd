@@ -38,16 +38,16 @@ $pl->add( 'title.ogg' );
 $pl->add( 'dir1/title-artist-album.ogg' );
 $pl->add( 'dir1/title-artist.ogg' );
 @items = $pl->as_items;
-isa_ok( $_, 'Audio::MPD::Item::Song',
-        'as_items() returns Audio::MPD::Item::Song objects' ) for @items;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song',
+        'as_items() returns AMC::Item::Song objects' ) for @items;
 is( $items[0]->title, 'ok-title', 'first song reported first' );
 
 
 #
 # testing playlist changes retrieval.
 @items = $pl->items_changed_since(0);
-isa_ok( $_, 'Audio::MPD::Item::Song',
-        'items_changed_since() returns Audio::MPD::Item::Song objects' )
+isa_ok( $_, 'Audio::MPD::Common::Item::Song',
+        'items_changed_since() returns AMC::Item::Song objects' )
     for @items;
 is( $items[0]->title, 'ok-title', 'first song reported first' );
 

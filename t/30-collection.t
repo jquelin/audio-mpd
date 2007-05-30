@@ -34,7 +34,7 @@ isa_ok( $coll, 'Audio::MPD::Collection',
 # testing all_items.
 @list = $coll->all_items;
 is( scalar @list, 6, 'all_items return all 6 items' );
-isa_ok( $_, 'Audio::MPD::Item', 'all_items return AMI objects' )
+isa_ok( $_, 'Audio::MPD::Common::Item', 'all_items return AMCI objects' )
     for @list;
 @list = $coll->all_items( 'dir1' );
 is( scalar @list, 3, 'all_items can be restricted to a subdir' );
@@ -46,7 +46,7 @@ is( $list[1]->artist, 'dir1-artist', 'all_items can be restricted to a subdir' )
 # testing all_items_simple.
 @list = $coll->all_items_simple;
 is( scalar @list, 6, 'all_items_simple return all 6 items' );
-isa_ok( $_, 'Audio::MPD::Item', 'all_items_simple return AMI objects' )
+isa_ok( $_, 'Audio::MPD::Common::Item', 'all_items_simple return AMCI objects' )
     for @list;
 @list = $coll->all_items_simple( 'dir1' );
 is( scalar @list, 3, 'all_items_simple can be restricted to a subdir' );
@@ -58,7 +58,7 @@ is( $list[1]->artist, undef, 'all_items_simple does not return full tags' );
 # testing items_in_dir.
 @list = $coll->items_in_dir;
 is( scalar @list, 3, 'items_in_dir defaults to root' );
-isa_ok( $_, 'Audio::MPD::Item', 'items_in_dir return AMI objects' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item', 'items_in_dir return AMCI objects' ) for @list;
 @list = $coll->items_in_dir( 'dir1' );
 is( scalar @list, 2, 'items_in_dir can take a param' );
 
@@ -67,7 +67,7 @@ is( scalar @list, 2, 'items_in_dir can take a param' );
 # testing all_songs.
 @list = $coll->all_songs;
 is( scalar @list, 4, 'all_songs return all 4 songs' );
-isa_ok( $_, 'Audio::MPD::Item::Song', 'all_items return AMIS objects' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'all_items return AMCIS objects' ) for @list;
 @list = $coll->all_songs( 'dir1' );
 is( scalar @list, 2, 'all_songs can be restricted to a subdir' );
 is( $list[0]->artist, 'dir1-artist', 'all_songs can be restricted to a subdir' );
@@ -105,7 +105,7 @@ like( $list[0], qr/\.ogg$/, 'all_pathes return strings' );
 # testing song.
 my $path = 'dir1/title-artist-album.ogg';
 my $song = $coll->song($path);
-isa_ok( $song, 'Audio::MPD::Item::Song', 'song return an AMI::Song object' );
+isa_ok( $song, 'Audio::MPD::Common::Item::Song', 'song return an AMCI::Song object' );
 is( $song->file, $path, 'song return the correct song' );
 is( $song->title, 'foo-title', 'song return a full AMI::Song' );
 
@@ -113,7 +113,7 @@ is( $song->title, 'foo-title', 'song return a full AMI::Song' );
 #
 # testing songs_with_filename_partial.
 @list = $coll->songs_with_filename_partial('album');
-isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_with_filename_partial return AMI::Song objects' )
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_with_filename_partial return AMCI::Song objects' )
     for @list;
 like( $list[0]->file, qr/album/, 'songs_with_filename_partial return the correct song' );
 
@@ -129,7 +129,7 @@ is( $list[0], 'our album', 'albums_by_artist return plain strings' );
 # testing songs_by_artist.
 @list = $coll->songs_by_artist( 'dir1-artist' );
 is( scalar @list, 2, 'songs_by_artist return all the songs found' );
-isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_by_artist return AMI::Songs' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_by_artist return AMCI::Songs' ) for @list;
 is( $list[0]->artist, 'dir1-artist', 'songs_by_artist return correct objects' );
 
 
@@ -137,7 +137,7 @@ is( $list[0]->artist, 'dir1-artist', 'songs_by_artist return correct objects' );
 # testing songs_by_artist_partial.
 @list = $coll->songs_by_artist_partial( 'artist' );
 is( scalar @list, 2, 'songs_by_artist_partial return all the songs found' );
-isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_by_artist_partial return AMI::Songs' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_by_artist_partial return AMCI::Songs' ) for @list;
 like( $list[0]->artist, qr/artist/, 'songs_by_artist_partial return correct objects' );
 
 
@@ -145,7 +145,7 @@ like( $list[0]->artist, qr/artist/, 'songs_by_artist_partial return correct obje
 # testing songs_from_album.
 @list = $coll->songs_from_album( 'our album' );
 is( scalar @list, 2, 'songs_from_album return all the songs found' );
-isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_from_album return AMI::Songs' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_from_album return AMCI::Songs' ) for @list;
 is( $list[0]->album, 'our album', 'songs_from_album_partial return correct objects' );
 
 
@@ -153,7 +153,7 @@ is( $list[0]->album, 'our album', 'songs_from_album_partial return correct objec
 # testing songs_from_album_partial.
 @list = $coll->songs_from_album_partial( 'album' );
 is( scalar @list, 2, 'songs_from_album_partial return all the songs found' );
-isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_from_album_partial return AMI::Songs' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_from_album_partial return AMI::Songs' ) for @list;
 like( $list[0]->album, qr/album/, 'songs_from_album_partial return correct objects' );
 
 
@@ -161,7 +161,7 @@ like( $list[0]->album, qr/album/, 'songs_from_album_partial return correct objec
 # testing songs_with_title.
 @list = $coll->songs_with_title( 'ok-title' );
 is( scalar @list, 1, 'songs_with_title return all the songs found' );
-isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_with_title return AMI::Songs' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_with_title return AMCI::Songs' ) for @list;
 is( $list[0]->title, 'ok-title', 'songs_with_title return correct objects' );
 
 
@@ -169,7 +169,7 @@ is( $list[0]->title, 'ok-title', 'songs_with_title return correct objects' );
 # testing songs_with_title_partial.
 @list = $coll->songs_with_title_partial( 'title' );
 is( scalar @list, 3, 'songs_with_title_partial return all the songs found' );
-isa_ok( $_, 'Audio::MPD::Item::Song', 'songs_with_title_partial return AMI::Songs' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_with_title_partial return AMCI::Songs' ) for @list;
 like( $list[0]->title, qr/title/, 'songs_with_title_partial return correct objects' );
 
 

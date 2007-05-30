@@ -68,7 +68,7 @@ isnt(scalar @output, 0, 'commands return stuff');
 #
 # testing _cooked_command_as_items
 my @items = $mpd->_cooked_command_as_items( "lsinfo\n" );
-isa_ok( $_, "Audio::MPD::Item", '_cooked_command_as_items return items' ) for @items;
+isa_ok( $_, 'Audio::MPD::Common::Item', '_cooked_command_as_items return items' ) for @items;
 
 
 #
