@@ -24,6 +24,7 @@ my $mpd = Audio::MPD->new;
 
 #
 # testing absolute volume.
+my $oldvol = $mpd->status->volume; # saving volume.
 $mpd->volume(10); # init to sthg that we know
 $mpd->volume(42);
 is( $mpd->status->volume, 42, 'setting volume' );
@@ -37,7 +38,7 @@ is( $mpd->status->volume, 51, 'increasing volume' );
 # testing negative relative volume.
 $mpd->volume('-4');
 is( $mpd->status->volume, 47, 'decreasing volume' );
-
+$mpd->volume($oldvol);  # resoring volume.
 
 #
 # testing disable_output.
