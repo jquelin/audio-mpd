@@ -1,16 +1,13 @@
 ---
 name: Audio-MPD
-version: 0.17.2
-author:
-  - 'Jerome Quelin <jquelin@cpan.org>'
-  - |-
-    Original code by Tue Abrahamsen <tue.abrahamsen@gmail.com>, documented by
-    Nicholas J. Humfrey <njh@aelius.com>.
+version: 0.18.0
+author: []
 abstract: class to talk to MPD (Music Player Daemon) servers
-license: gpl
+license: perl
 resources:
-  license: http://www.opensource.org/licenses/gpl-license.php
+  license: http://dev.perl.org/licenses/
 requires:
+  Audio::MPD::Common: 0
   Class::Accessor: 0
   Encode: 0
   IO::Socket: 0
@@ -23,25 +20,13 @@ build_requires:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.17.2
+    version: 0.18.0
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
-  Audio::MPD::Item:
-    file: lib/Audio/MPD/Item.pm
-  Audio::MPD::Item::Directory:
-    file: lib/Audio/MPD/Item/Directory.pm
-  Audio::MPD::Item::Song:
-    file: lib/Audio/MPD/Item/Song.pm
   Audio::MPD::Playlist:
     file: lib/Audio/MPD/Playlist.pm
-  Audio::MPD::Stats:
-    file: lib/Audio/MPD/Stats.pm
-  Audio::MPD::Status:
-    file: lib/Audio/MPD/Status.pm
   Audio::MPD::Test:
     file: lib/Audio/MPD/Test.pm
-  Audio::MPD::Time:
-    file: lib/Audio/MPD/Time.pm
 generated_by: Module::Build version 0.2806
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

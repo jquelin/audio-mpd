@@ -1,6 +1,7 @@
 High-level changelog
 ====================
 
+0.18.x  using common classes in audio::mpd::common
 0.17.x  introducing AM::Playlist + AM::Time
 0.16.x  utf-8 support + introducing mpd-dynamic script
 0.15.x  introducing AM::Collection
@@ -17,8 +18,13 @@ High-level changelog
 Low-level changelog
 ===================
 
-0.17.3
+0.18.0 Wed May 30 12:29:11 CEST 2007
+ - moved to perl license
+ - using common classes outsourced in audio::mpd::common, namely: item*,
+   stats, status and time.
  - new methods AM::Collection::all_songs()
+
+**
 
 0.17.2 Sun Apr  8 15:35:43 CEST 2007
  - introducing AM::Stats for better encapsulation
