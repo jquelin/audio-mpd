@@ -107,7 +107,7 @@ my $path = 'dir1/title-artist-album.ogg';
 my $song = $coll->song($path);
 isa_ok( $song, 'Audio::MPD::Common::Item::Song', 'song return an AMCI::Song object' );
 is( $song->file, $path, 'song return the correct song' );
-is( $song->title, 'foo-title', 'song return a full AMI::Song' );
+is( $song->title, 'foo-title', 'song return a full AMCI::Song' );
 
 
 #
@@ -153,7 +153,7 @@ is( $list[0]->album, 'our album', 'songs_from_album_partial return correct objec
 # testing songs_from_album_partial.
 @list = $coll->songs_from_album_partial( 'album' );
 is( scalar @list, 2, 'songs_from_album_partial return all the songs found' );
-isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_from_album_partial return AMI::Songs' ) for @list;
+isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_from_album_partial return AMCI::Songs' ) for @list;
 like( $list[0]->album, qr/album/, 'songs_from_album_partial return correct objects' );
 
 

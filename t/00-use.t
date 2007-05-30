@@ -11,7 +11,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 3;
 
 BEGIN { use_ok( 'Audio::MPD' ); }
 diag( "Testing Audio::MPD $Audio::MPD::VERSION, Perl $], $^X" );
