@@ -331,7 +331,7 @@ sub output_disable {
 sub stats {
     my ($self) = @_;
     my %kv = $self->_cooked_command_as_kv( "stats\n" );
-    return Audio::MPD::Common::Stats->new(%kv);
+    return Audio::MPD::Common::Stats->new(\%kv);
 }
 
 
@@ -345,7 +345,7 @@ sub stats {
 sub status {
     my ($self) = @_;
     my %kv = $self->_cooked_command_as_kv( "status\n" );
-    my $status = Audio::MPD::Common::Status->new( %kv );
+    my $status = Audio::MPD::Common::Status->new( \%kv );
     return $status;
 }
 
