@@ -454,15 +454,7 @@ Return all C<Audio::MPD::Common::Item::Song>s where C<$string> is part of the ti
 
 =head1 SEE ALSO
 
-You can find more information on the mpd project on its homepage at
-L<http://www.musicpd.org>, or its wiki L<http://mpd.wikia.com>.
-
-Regarding this Perl module, you can report bugs on CPAN via
-L<http://rt.cpan.org/Public/Bug/Report.html?Queue=Audio-MPD>.
-
-Audio::MPD development takes place on <audio-mpd@googlegroups.com>: feel free
-to join us. (use L<http://groups.google.com/group/audio-mpd> to sign in). Our
-subversion repository is located at L<https://svn.musicpd.org>.
+L<Audio::MPD>
 
 
 =head1 AUTHOR

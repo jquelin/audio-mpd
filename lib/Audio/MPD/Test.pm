@@ -197,6 +197,11 @@ by $port if specified, 6600 otherwise (MPD default).
 This might be useful when trying to test connections with mpd server.
 
 
+=head1 SEE ALSO
+
+L<Audio::MPD>
+
+
 =head1 AUTHOR
 
 Jerome Quelin, C<< <jquelin at cpan.org> >>
