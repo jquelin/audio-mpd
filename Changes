@@ -18,6 +18,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.18.1 Thu May 31 20:57:47 CEST 2007
+ - fixing mantis bug #556: support for multiple $path in playlist->add
+
 0.18.0 Wed May 30 12:29:11 CEST 2007
  - moved to perl license
  - using common classes outsourced in audio::mpd::common, namely: item*,
