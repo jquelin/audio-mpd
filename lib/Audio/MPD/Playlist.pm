@@ -79,14 +79,18 @@ sub items_changed_since {
 # -- Playlist: adding / removing songs
 
 #
-# $pl->add( $path );
+# $pl->add( $path [, $path [...] ] );
 #
-# Add the song identified by $path (relative to MPD's music directory) to
+# Add the songs identified by $path (relative to MPD's music directory) to
 # the current playlist. No return value.
 #
 sub add {
-    my ($self, $path) = @_;
-    $self->_mpd->_send_command( qq[add "$path"\n] );
+    my ($self, @pathes) = @_;
+    my $command =
+          "command_list_begin\n"
+        . join( '', map { qq[add "$_"\n] } @pathes )
+        . "command_list_end\n";
+    $self->_mpd->_send_command( $command );
 }
 
 
@@ -313,9 +317,9 @@ the playlist since playlist $plversion.
 
 =over 4
 
-=item $pl->add( $path )
+=item $pl->add( $path [, $path [...] ] )
 
-Add the song identified by C<$path> (relative to MPD's music directory) to the
+Add the songs identified by C<$path> (relative to MPD's music directory) to the
 current playlist. No return value.
 
 

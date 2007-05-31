@@ -34,9 +34,10 @@ isa_ok( $pl, 'Audio::MPD::Playlist',
 
 #
 # testing playlist retrieval.
-$pl->add( 'title.ogg' );
-$pl->add( 'dir1/title-artist-album.ogg' );
-$pl->add( 'dir1/title-artist.ogg' );
+$pl->add(
+    'title.ogg',
+    'dir1/title-artist-album.ogg',
+    'dir1/title-artist.ogg' );
 @items = $pl->as_items;
 isa_ok( $_, 'Audio::MPD::Common::Item::Song',
         'as_items() returns AMC::Item::Song objects' ) for @items;
