@@ -18,6 +18,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.18.2 Tue Nov 13 20:20:59 CET 2007
+ - fixing bug 29232 (courtesy of David Bitseff)
+
 0.18.1 Thu May 31 20:57:47 CEST 2007
  - fixing mantis bug #556: support for multiple $path in playlist->add
 
