@@ -61,6 +61,7 @@ sub new {
 sub all_items {
     my ($self, $path) = @_;
     $path ||= '';
+    $path =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[listallinfo "$path"\n] );
 }
@@ -82,6 +83,7 @@ sub all_items {
 sub all_items_simple {
     my ($self, $path) = @_;
     $path ||= '';
+    $path =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[listall "$path"\n] );
 }
@@ -98,6 +100,7 @@ sub all_items_simple {
 sub items_in_dir {
     my ($self, $path) = @_;
     $path ||= '';
+    $path =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[lsinfo "$path"\n] );
 }
@@ -173,6 +176,7 @@ sub all_pathes {
 #
 sub song {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     my ($item) = $self->_mpd->_cooked_command_as_items( qq[find filename "$what"\n] );
     return $item;
@@ -186,6 +190,7 @@ sub song {
 #
 sub songs_with_filename_partial {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[search filename "$what"\n] );
 }
@@ -201,6 +206,7 @@ sub songs_with_filename_partial {
 #
 sub albums_by_artist {
     my ($self, $artist) = @_;
+    $artist =~ s/"/\\"/g;
     return $self->_mpd->_cooked_command_strip_first_field( qq[list album "$artist"\n] );
 }
 
@@ -212,6 +218,7 @@ sub albums_by_artist {
 #
 sub songs_by_artist {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[find artist "$what"\n] );
 }
@@ -225,6 +232,7 @@ sub songs_by_artist {
 #
 sub songs_by_artist_partial {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[search artist "$what"\n] );
 }
@@ -237,6 +245,7 @@ sub songs_by_artist_partial {
 #
 sub songs_from_album {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[find album "$what"\n] );
 }
@@ -249,6 +258,7 @@ sub songs_from_album {
 #
 sub songs_from_album_partial {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[search album "$what"\n] );
 }
@@ -261,6 +271,7 @@ sub songs_from_album_partial {
 #
 sub songs_with_title {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[find title "$what"\n] );
 }
@@ -273,6 +284,7 @@ sub songs_with_title {
 #
 sub songs_with_title_partial {
     my ($self, $what) = @_;
+    $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[search title "$what"\n] );
 }
