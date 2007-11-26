@@ -20,17 +20,27 @@ my $builder = Module::Build->new (
                         map { ( '*/' x $_ ) . '*~' } 0..6 ],
     script_files => [ 'bin/mpd-dynamic' ],
     build_requires => {
-        'Test::More'    => 0,
-        'perl'          => '5.8.0',
+        'Audio::MPD::Common' => 0,
+        'Class::Accessor'    => 0,
+        'Encode'             => 0,
+        'IO::Socket'         => 0,
+        'Readonly'           => 0,
+        'Scalar::Util'       => 0,
+        'Test::More'         => 0,
+        'perl'               => '5.008',
     },
     requires => {
         'Audio::MPD::Common' => 0,
         'Class::Accessor'    => 0,
-        'IO::Socket'         => 0,
         'Encode'             => 0,
+        'IO::Socket'         => 0,
         'Readonly'           => 0,
         'Scalar::Util'       => 0,
-        'perl'               => '5.8.0',
+        'perl'               => '5.008',
+    },
+    recommends     => {
+        'Test::Pod'           => 0,
+        'Test::Pod::Coverage' => 0,
     },
 );
 
