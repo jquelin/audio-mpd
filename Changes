@@ -18,6 +18,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.18.3 Mon Nov 26 12:51:40 CET 2007
+ - kwalitee/cpants release
+
 0.18.2 Tue Nov 13 20:20:59 CET 2007
  - fixing bug 29232 (courtesy of David Bitseff)
 

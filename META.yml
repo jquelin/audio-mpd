@@ -1,6 +1,6 @@
 ---
 name: Audio-MPD
-version: 0.18.2
+version: 0.18.3
 author: []
 abstract: class to talk to MPD (Music Player Daemon) servers
 license: perl
@@ -13,14 +13,23 @@ requires:
   IO::Socket: 0
   Readonly: 0
   Scalar::Util: 0
-  perl: 5.8.0
+  perl: 5.008
 build_requires:
+  Audio::MPD::Common: 0
+  Class::Accessor: 0
+  Encode: 0
+  IO::Socket: 0
+  Readonly: 0
+  Scalar::Util: 0
   Test::More: 0
-  perl: 5.8.0
+  perl: 5.008
+recommends:
+  Test::Pod: 0
+  Test::Pod::Coverage: 0
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.18.2
+    version: 0.18.3
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
   Audio::MPD::Playlist:
