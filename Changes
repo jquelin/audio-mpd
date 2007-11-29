@@ -1,6 +1,7 @@
 High-level changelog
 ====================
 
+0.19.x  possibility to change connection scheme
 0.18.x  using common classes in audio::mpd::common
 0.17.x  introducing AM::Playlist + AM::Time
 0.16.x  utf-8 support + introducing mpd-dynamic script
@@ -17,6 +18,16 @@ High-level changelog
 
 Low-level changelog
 ===================
+
+0.19.0 Thu Nov 29 20:10:18 CET 2007
+ - changed constructor api: using a hash for options instead of
+   positional paraemters
+ - new conntype param for constructor to change the way connection is
+   handled
+ - MPD_HOST env var supports password@host
+ - mpd-dynamic daemonizes after mpd connection to trap problems
+
+**
 
 0.18.3 Mon Nov 26 12:51:40 CET 2007
  - kwalitee/cpants release
