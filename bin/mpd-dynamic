@@ -18,12 +18,13 @@ use Getopt::Euclid qw[ :minimal_keys ];
 use Proc::Daemon;
 use Time::HiRes    qw[ usleep ];
 
-Proc::Daemon::Init unless $ARGV{debug};
 
 #
 my $song     = 0; # song currently playing
 my $playlist = 0; # playlist version
 my $mpd = Audio::MPD->new;
+
+Proc::Daemon::Init unless $ARGV{debug};
 
 # fetch list of songs known by mpd.
 my @files = $mpd->collection->all_pathes;
