@@ -55,9 +55,11 @@ sub new {
     my ($class, %opts) = @_;
 
     # use mpd defaults.
-    my $host     = $opts{host}     || $ENV{MPD_HOST}     || 'localhost';
+    my ($default_password, $default_host) = split( '@', $ENV{MPD_HOST} )
+       if exists $ENV{MPD_HOST} && $ENV{MPD_HOST} =~ /@/;
+    my $host     = $opts{host}     || $default_host      || $ENV{MPD_HOST} || 'localhost';
     my $port     = $opts{port}     || $ENV{MPD_PORT}     || '6600';
-    my $password = $opts{password} || $ENV{MPD_PASSWORD} || '';
+    my $password = $opts{password} || $ENV{MPD_PASSWORD} || $default_password || '';
 
     # create & bless the object.
     my $self = {
@@ -619,7 +621,8 @@ options:
 
 =item hostname => C<$hostname>
 
-defaults to environment var MPD_HOST, then to 'localhost'.
+defaults to environment var MPD_HOST, then to 'localhost'. Note that
+MPD_HOST can be of the form password@host.
 
 =item port => C<$port>
 
