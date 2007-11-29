@@ -18,7 +18,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 10;
+plan tests => 11;
 my $mpd;
 
 #
@@ -40,7 +40,7 @@ start_test_mpd();
 
 #
 # testing constructor params.
-$mpd = Audio::MPD->new('127.0.0.1', $port, 'foobar' );
+$mpd = Audio::MPD->new( host=>'127.0.0.1', port=>$port, password=>'foobar' );
 is( $mpd->_host,     '127.0.0.1', 'host set to param' );
 is( $mpd->_port,     $port,       'port set to param' );
 is( $mpd->_password, 'foobar',    'password set to param' );
@@ -58,5 +58,14 @@ is( $mpd->_password, $ENV{MPD_PASSWORD}, 'port default to $ENV{MPD_PASSWORD}' );
 delete $ENV{MPD_HOST};
 delete $ENV{MPD_PORT};
 delete $ENV{MPD_PASSWORD};
+
+
+#
+# testing connection type
+$mpd = Audio::MPD->new( port=>16600,conntype=>$REUSE );
+$mpd->ping;
+$mpd->ping;
+$mpd->ping;
+isa_ok( $mpd->_socket, 'IO::Socket', 'socket is created and retained' );
 
 exit;
