@@ -19,44 +19,58 @@ use Audio::MPD::Common::Status;
 use Audio::MPD::Playlist;
 use Encode;
 use IO::Socket;
+use Readonly;
 
 
-use base qw[ Class::Accessor::Fast ];
+use base qw[ Class::Accessor::Fast Exporter ];
 __PACKAGE__->mk_accessors(
-    qw[ _host _password _port
+    qw[ _conntype _host _password _port _socket
         collection playlist version ] );
 
 
 our $VERSION = '0.18.3';
+
+Readonly our $REUSE => 0;
+Readonly our $ONCE  => 1;
+
+our @EXPORT = qw[ $REUSE $ONCE ];
 
 
 #--
 # Constructor
 
 #
-# my $mpd = Audio::MPD->new( [$hostname], [$port], [$password] )
+# my $mpd = Audio::MPD->new( [%opts] )
 #
-# This is the constructor for Audio::MPD. One can specify a $hostname, a
-# $port, and a $password.
-# If none is specified then defaults to environment vars MPD_HOST, MPD_PORT
-# and MPD_PASSWORD. If those aren't set, defaults to 'localhost', 6600 and ''.
-#
+# This is the constructor for Audio::MPD. One can specify the following
+# options:
+#   - hostname => $hostname : defaults to environment var MPD_HOST, then to 'localhost'
+#   - port     => $port     : defaults to env var MPD_PORT, then to 6600
+#   - password => $password : defaults to env var MPD_PASSWORD, then to ''
+#   - conntype => $type     : how the connection to mpd server is handled. it can be
+#               either $REUSE: reuse the same connection
+#                    or $ONCE: open a new connection per command (default)
+#   
 sub new {
-    my $class = shift;
-    my ($host, $port, $password) = @_;
+    my ($class, %opts) = @_;
 
     # use mpd defaults.
-    $host     = $ENV{MPD_HOST}     || 'localhost' unless defined $host;
-    $port     = $ENV{MPD_PORT}     || '6600'      unless defined $port;
-    $password = $ENV{MPD_PASSWORD} || ''          unless defined $password;
+    my $host     = $opts{host}     || $ENV{MPD_HOST}     || 'localhost';
+    my $port     = $opts{port}     || $ENV{MPD_PORT}     || '6600';
+    my $password = $opts{password} || $ENV{MPD_PASSWORD} || '';
 
     # create & bless the object.
     my $self = {
         _host     => $host,
         _port     => $port,
         _password => $password,
+        _conntype => exists $opts{conntype} ? $opts{conntype} : $ONCE,
     };
     bless $self, $class;
+
+    # create the connection if conntype is set to $REUSE
+    $self->_connect_to_mpd_server if $self->_conntype == $REUSE;
+
 
     # create the helper objects and store them.
     $self->collection( Audio::MPD::Collection->new($self) );
@@ -74,41 +88,25 @@ sub new {
 
 
 #
-# my @result = $mpd->_send_command( $command );
+# $mpd->_connect_to_mpd_server;
 #
-# This method is central to the module. It is responsible for interacting with
-# mpd by sending the $command and reading output - that will be returned as an
-# array of chomped lines (status line will not be returned).
-#
-# Note that currently, this method will connect to mpd before sending any
-# command, and will disconnect after the command has been issued. This scheme
-# is far from optimal, but allows us not to care about timeout disconnections.
-#
-# /!\ Note that we're using high-level, blocking sockets. This means that if
-# the mpd server is slow, or hangs for whatever reason, or even crash abruptly,
-# the program will be hung forever in this sub. The POE::Component::Client::MPD
-# module is way safer - you're advised to use it instead of Audio::MPD.
-#
-# This method can die on several conditions:
+# This method connects to the mpd server. It can die on several conditions:
 #  - if the server cannot be reached,
 #  - if it's not an mpd server,
-#  - if the password is incorrect,
-#  - or if the command is an invalid mpd command.
-# In the latter case, the mpd error message will be returned.
+#  - or if the password is incorrect,
 #
-sub _send_command {
-    my ($self, $command) = @_;
+sub _connect_to_mpd_server {
+    my ($self) = @_;
 
     # try to connect to mpd.
     my $socket = IO::Socket::INET->new(
         PeerAddr => $self->_host,
-        PeerPort => $self->_port
+        PeerPort => $self->_port,
     )
     or die "Could not create socket: $!\n";
-    my $line;
 
     # parse version information.
-    $line = $socket->getline;
+    my $line = $socket->getline;
     chomp $line;
     die "Not a mpd server - welcome string was: [$line]\n"
         if $line !~ /^OK MPD (.+)$/;
@@ -121,10 +119,35 @@ sub _send_command {
         die $line if $line =~ s/^ACK //;
     }
 
+    # save socket
+    $self->_socket($socket);
+}
+
+
+#
+# my @result = $mpd->_send_command( $command );
+#
+# This method is central to the module. It is responsible for interacting with
+# mpd by sending the $command and reading output - that will be returned as an
+# array of chomped lines (status line will not be returned).
+#
+# This method can die on several conditions:
+#  - if the server cannot be reached,
+#  - if it's not an mpd server,
+#  - if the password is incorrect,
+#  - or if the command is an invalid mpd command.
+# In the latter case, the mpd error message will be returned.
+#
+sub _send_command {
+    my ($self, $command) = @_;
+
+    $self->_connect_to_mpd_server if $self->_conntype == $ONCE;
+    my $socket = $self->_socket;
+
     # ok, now we're connected - let's issue the command.
     $socket->print( encode('utf-8', $command) );
     my @output;
-    while (defined ( $line = $socket->getline ) ) {
+    while (defined ( my $line = $socket->getline ) ) {
         chomp $line;
         die $line if $line =~ s/^ACK //; # oops - error.
         last if $line =~ /^OK/;          # end of output.
@@ -132,7 +155,7 @@ sub _send_command {
     }
 
     # close the socket.
-    $socket->close;
+    $socket->close if $self->_conntype == $ONCE;
 
     return @output;
 }
@@ -567,7 +590,18 @@ Audio::MPD - class to talk to MPD (Music Player Daemon) servers
 Audio::MPD gives a clear object-oriented interface for talking to and
 controlling MPD (Music Player Daemon) servers. A connection to the MPD
 server is established as soon as a new Audio::MPD object is created.
-Commands are then sent to the server as the class's methods are called.
+
+Note that the module will by default connect to mpd before sending any
+command, and will disconnect after the command has been issued. This scheme
+is far from optimal, but allows us not to care about timeout disconnections.
+
+B</!\> Note that Audio::MPD is using high-level, blocking sockets. This
+means that if the mpd server is slow, or hangs for whatever reason, or
+even crash abruptly, the program will be hung forever in this sub. The
+POE::Component::Client::MPD module is way safer - you're advised to use
+it instead of Audio::MPD. Or you can try to set C<conntype> to C<$REUSE>
+(see Audio::MPD constructor for more details), but you would be then on
+your own to deal with disconnections.
 
 
 =head1 METHODS
@@ -576,13 +610,33 @@ Commands are then sent to the server as the class's methods are called.
 
 =over 4
 
-=item new( [$host] [, $port] [, $password] )
+=item new( [%opts] )
 
-This is the constructor for Audio::MPD. One can specify a $hostname, a
-$port, and a $password.
+This is the constructor for Audio::MPD. One can specify the following
+options:
 
-If none is specified then defaults to environment vars MPD_HOST, MPD_PORT
-and MPD_PASSWORD. If those aren't set, defaults to 'localhost', 6600 and ''.
+=over 4
+
+=item hostname => C<$hostname>
+
+defaults to environment var MPD_HOST, then to 'localhost'.
+
+=item port => C<$port>
+
+defaults to environment var MPD_PORT, then to 6600.
+
+=item password => $password
+
+defaults to environment var MPD_PASSWORD, then to ''.
+
+=item conntype => $type
+
+change how the connection to mpd server is handled. It can be either
+C<$REUSE> to reuse the same connection or C<$ONCE> to open a new
+connection per command (default)
+
+=back
+
 
 =back
 
