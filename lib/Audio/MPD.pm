@@ -183,9 +183,9 @@ sub _cooked_command_as_items {
     # of course, since we want to preserve the playlist order, this means
     # that we're going to unshift the objects instead of push.
     foreach my $line (reverse @lines) {
-        my ($k,$v) = split /:\s+/, $line, 2;
+        my ($k,$v) = split /:\s/, $line, 2;
         $param{$k} = $v;
-        next unless $k eq 'file' || $k eq 'directory'; # last param of item
+        next unless $k eq 'file' || $k eq 'directory' || $k eq 'playlist'; # last param of item
         unshift @items, Audio::MPD::Common::Item->new(%param);
         %param = ();
     }
@@ -205,7 +205,7 @@ sub _cooked_command_as_items {
 sub _cooked_command_as_kv {
     my ($self, $command) = @_;
     my %hash =
-        map { split(/:\s+/, $_, 2) }
+        map { split(/:\s/, $_, 2) }
         $self->_send_command($command);
     return %hash;
 }
