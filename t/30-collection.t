@@ -18,7 +18,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 73;
+plan tests => 74;
 my $mpd = Audio::MPD->new;
 my @list;
 
@@ -57,7 +57,7 @@ is( $list[1]->artist, undef, 'all_items_simple does not return full tags' );
 #
 # testing items_in_dir.
 @list = $coll->items_in_dir;
-is( scalar @list, 3, 'items_in_dir defaults to root' );
+is( scalar @list, 4, 'items_in_dir defaults to root' );
 isa_ok( $_, 'Audio::MPD::Common::Item', 'items_in_dir return AMCI objects' ) for @list;
 @list = $coll->items_in_dir( 'dir1' );
 is( scalar @list, 2, 'items_in_dir can take a param' );
