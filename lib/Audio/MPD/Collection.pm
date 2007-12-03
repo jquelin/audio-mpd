@@ -167,6 +167,21 @@ sub all_pathes {
 }
 
 
+#
+# my @items = $collection->all_playlists;
+#
+# Return the list of playlists (strings) currently known by mpd.
+#
+sub all_playlists {
+    my ($self) = @_;
+
+    return
+        map { /^playlist: (.*)$/ ? ($1) : () }
+        $self->_mpd->_send_command( "lsinfo\n" );
+}
+
+
+
 # -- Collection: picking songs
 
 #
@@ -398,6 +413,11 @@ Return the list of all song titles (strings) currently known by mpd.
 =item $coll->all_pathes()
 
 Return the list of all pathes (strings) currently known by mpd.
+
+
+=item $coll->all_playlists()
+
+Return the list of all playlists (strings) currently known by mpd.
 
 
 =back
