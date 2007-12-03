@@ -1,6 +1,6 @@
 ---
 name: Audio-MPD
-version: 0.19.0
+version: 0.19.1
 author: []
 abstract: class to talk to MPD (Music Player Daemon) servers
 license: perl
@@ -29,7 +29,7 @@ recommends:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.19.0
+    version: 0.19.1
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
   Audio::MPD::Playlist:
