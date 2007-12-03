@@ -18,7 +18,7 @@ use Test::More;
 eval 'use Audio::MPD::Test';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 74;
+plan tests => 76;
 my $mpd = Audio::MPD->new;
 my @list;
 
@@ -99,6 +99,13 @@ like( $list[0], qr/-title$/, 'all_titles return strings' );
 @list = $coll->all_pathes;
 is( scalar @list, 4, 'all_pathes return the pathes' );
 like( $list[0], qr/\.ogg$/, 'all_pathes return strings' );
+
+
+#
+# testing all_playlists
+@list = $coll->all_playlists;
+is( scalar @list, 1, 'all_playlists return the playlists' );
+is( $list[0], 'test', 'all_playlists return strings' );
 
 
 #
