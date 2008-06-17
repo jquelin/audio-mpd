@@ -64,7 +64,7 @@ while (1) { # endless loop
 
         PICK_ONE:
         for (1..$new) {
-            my $random = $files[ rand @files ];
+            my $random = encode('utf-8', $files[ rand @files ]);
             if ( $istied && exists $ratings{$random}
                  && $ratings{$random} != 0
                  && $ratings{$random} < $ARGV{min} ) {
@@ -72,7 +72,7 @@ while (1) { # endless loop
                 redo PICK_ONE;
             }
             debug("adding [$random]\n");
-            eval { $mpd->playlist->add( $random ) };
+            eval { $mpd->playlist->add( decode('utf-8', $random) ) };
             debug("error: $@\n") if $@;
         }
         untie %ratings if $istied;
@@ -89,7 +89,7 @@ sub debug {
     my ($msg) = @_;
     my ($s,$m,$h) = ( localtime(time) )[0,1,2,3,6];
     my $date = sprintf "%02d:%02d:%02d", $h, $m, $s;
-    warn "$date " . encode($ARGV{encoding}, $msg);
+    warn "$date $msg";
 }
 
 __END__
