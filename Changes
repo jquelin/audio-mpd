@@ -19,6 +19,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.19.2 Tue Jun 17 19:24:16 CEST 2008
+ - mpd-dynamic should lookup ratings with utf8 encoded pathes
+
 0.19.1 Mon Dec  3 18:23:58 CET 2007
  - new method all_playlists() (courtesy of Joey Hess)
  - fix for filenames / playlists beginning with a space (courtesy of
