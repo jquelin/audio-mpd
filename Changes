@@ -19,8 +19,10 @@ High-level changelog
 Low-level changelog
 ===================
 
-0.19.3
+0.19.3 Tue Aug 12 19:04:23 CEST 2008
  - version() reports *protocol* version, not real mpd version
+ - fix some tests that failed because of detection method not precise
+   enough (timing issues)
 
 0.19.2 Tue Jun 17 19:24:16 CEST 2008
  - mpd-dynamic should lookup ratings with utf8 encoded pathes
