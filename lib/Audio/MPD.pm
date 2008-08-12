@@ -655,7 +655,11 @@ Sends a ping command to the mpd server.
 
 =item $mpd->version()
 
-Return the version number for the server we are connected to.
+Return mpd's version number as advertised during connection. Note that
+mpd returns B<protocol> version when connected. This protocol version
+can differ from the real mpd version. eg, mpd version 0.13.2 is
+"speaking" and thus advertising version 0.13.0.
+
 
 
 =item $mpd->kill()
