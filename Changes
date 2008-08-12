@@ -19,6 +19,8 @@ High-level changelog
 Low-level changelog
 ===================
 
+ - doc update
+
 0.19.3 Tue Aug 12 19:04:23 CEST 2008
  - version() reports *protocol* version, not real mpd version
  - fix some tests that failed because of detection method not precise
