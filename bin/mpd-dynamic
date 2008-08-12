@@ -236,7 +236,7 @@ The minimum rating for a song to be inserted in the playlist. Default to 4.
 
 =head1 AUTHOR
 
-Jerome Quelin, C<< <jquelin at cpan.org> >>
+Jerome Quelin, C<< <jquelin@cpan.org> >>
 
 
 =head1 COPYRIGHT & LICENSE

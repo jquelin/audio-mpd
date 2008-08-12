@@ -891,10 +891,10 @@ L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Audio-MPD>
 
 =head1 AUTHOR
 
-Jerome Quelin, C<< <jquelin at cpan.org> >>
+Jerome Quelin, C<< <jquelin@cpan.org> >>
 
-Original code by Tue Abrahamsen C<< <tue.abrahamsen at gmail.com> >>,
-documented by Nicholas J. Humfrey C<< <njh at aelius.com> >>.
+Original code by Tue Abrahamsen C<< <tue.abrahamsen@gmail.com> >>,
+documented by Nicholas J. Humfrey C<< <njh@aelius.com> >>.
 
 
 =head1 COPYRIGHT & LICENSE

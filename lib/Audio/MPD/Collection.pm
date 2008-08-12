@@ -486,12 +486,13 @@ Return all C<Audio::MPD::Common::Item::Song>s where C<$string> is part of the ti
 
 =head1 SEE ALSO
 
-L<Audio::MPD>
+For all related information (bug reporting, mailing-list, pointers to
+MPD, etc.), refer to C<Audio::MPD>'s pod, section C<SEE ALSO>
 
 
 =head1 AUTHOR
 
-Jerome Quelin, C<< <jquelin at cpan.org> >>
+Jerome Quelin, C<< <jquelin@cpan.org> >>
 
 
 =head1 COPYRIGHT & LICENSE
