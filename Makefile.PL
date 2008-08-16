@@ -19,13 +19,17 @@ WriteMakefile(
     ABSTRACT_FROM       => 'lib/Audio/MPD.pm',
     EXE_FILES           => [ 'bin/mpd-dynamic' ],
     PREREQ_PM => {
-        'Audio::MPD::Common' => 0,
-        'Class::Accessor'    => 0,
-        'Encode'             => 0,
-        'IO::Socket'         => 0,
-        'Readonly'           => 0,
-        'Scalar::Util'       => 0,
-        'Test::More'         => 0,
+        'Audio::MPD::Common'    => 0,
+        'Class::Accessor::Fast' => 0,
+        'DB_File'               => 0, # for mpd-dynamic
+        'Encode'                => 0,
+        'Getopt::Euclid'        => 0, # for mpd-dynamic
+        'IO::Socket'            => 0,
+        'Proc::Daemon'          => 0, # for mpd-dynamic
+        'Readonly'              => 0,
+        'Scalar::Util'          => 0,
+        'Test::More'            => 0,
+        'Time::HiRes'           => 0, # for mpd-dynamic
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => [ 'Audio-MPD-*', 'MANIFEST.bak',
