@@ -19,7 +19,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.19.4 Sat Aug 16 10:38:12 CEST 2008
  - doc update
+ - listing mpd-dynamic script prereqs as module prereqs
 
 0.19.3 Tue Aug 12 19:04:23 CEST 2008
  - version() reports *protocol* version, not real mpd version
