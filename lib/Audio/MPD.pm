@@ -581,29 +581,30 @@ Audio::MPD - class to talk to MPD (Music Player Daemon) servers
 
     use Audio::MPD;
 
-    my $mpd = Audio::MPD->new();
-    $mpd->play();
+    my $mpd = Audio::MPD->new;
+    $mpd->play;
     sleep 10;
-    $mpd->next();
+    $mpd->next;
 
 
 =head1 DESCRIPTION
 
-Audio::MPD gives a clear object-oriented interface for talking to and
+C<Audio::MPD> gives a clear object-oriented interface for talking to and
 controlling MPD (Music Player Daemon) servers. A connection to the MPD
-server is established as soon as a new Audio::MPD object is created.
+server is established as soon as a new C<Audio::MPD> object is created.
 
 Note that the module will by default connect to mpd before sending any
-command, and will disconnect after the command has been issued. This scheme
-is far from optimal, but allows us not to care about timeout disconnections.
+command, and will disconnect after the command has been issued. This
+scheme is far from optimal, but allows us not to care about timeout
+disconnections.
 
-B</!\> Note that Audio::MPD is using high-level, blocking sockets. This
-means that if the mpd server is slow, or hangs for whatever reason, or
-even crash abruptly, the program will be hung forever in this sub. The
-POE::Component::Client::MPD module is way safer - you're advised to use
-it instead of Audio::MPD. Or you can try to set C<conntype> to C<$REUSE>
-(see Audio::MPD constructor for more details), but you would be then on
-your own to deal with disconnections.
+B</!\> Note that C<Audio::MPD> is using high-level, blocking sockets.
+This means that if the mpd server is slow, or hangs for whatever reason,
+or even crash abruptly, the program will be hung forever in this sub.
+The C<POE::Component::Client::MPD> module is way safer - you're advised
+to use it instead of C<Audio::MPD>. Or you can try to set C<conntype> to
+C<$REUSE> (see C<Audio::MPD> constructor for more details), but you
+would be then on your own to deal with disconnections.
 
 
 =head1 METHODS
@@ -614,23 +615,23 @@ your own to deal with disconnections.
 
 =item new( [%opts] )
 
-This is the constructor for Audio::MPD. One can specify the following
+This is the constructor for C<Audio::MPD>. One can specify the following
 options:
 
 =over 4
 
 =item hostname => C<$hostname>
 
-defaults to environment var MPD_HOST, then to 'localhost'. Note that
-MPD_HOST can be of the form password@host.
+defaults to environment var C<MPD_HOST>, then to 'localhost'. Note that
+C<MPD_HOST> can be of the form password@host.
 
 =item port => C<$port>
 
-defaults to environment var MPD_PORT, then to 6600.
+defaults to environment var C<MPD_PORT>, then to 6600.
 
 =item password => $password
 
-defaults to environment var MPD_PASSWORD, then to ''.
+defaults to environment var C<MPD_PASSWORD>, then to ''.
 
 =item conntype => $type
 
@@ -669,15 +670,15 @@ Send a message to the MPD server telling it to shut down.
 
 =item $mpd->password( [$password] )
 
-Change password used to communicate with MPD server to $password.
-Empty string is assumed if $password is not supplied.
+Change password used to communicate with MPD server to C<$password>.
+Empty string is assumed if C<$password> is not supplied.
 
 
 =item $mpd->updatedb( [$path] )
 
-Force mpd to recan its collection. If $path (relative to MPD's music directory)
-is supplied, MPD will only scan it - otherwise, MPD will rescan its whole
-collection.
+Force mpd to recan its collection. If C<$path> (relative to MPD's music
+directory) is supplied, MPD will only scan it - otherwise, MPD will
+rescan its whole collection.
 
 
 =item $mpd->urlhandlers()
@@ -694,19 +695,21 @@ Return an array of supported URL schemes.
 
 =item $mpd->volume( [+][-]$volume )
 
-Sets the audio output volume percentage to absolute $volume.
-If $volume is prefixed by '+' or '-' then the volume is changed relatively
-by that value.
+Sets the audio output volume percentage to absolute C<$volume>.  If
+C<$volume> is prefixed by '+' or '-' then the volume is changed
+relatively by that value.
 
 
 =item $mpd->output_enable( $output )
 
-Enable the specified audio output. $output is the ID of the audio output.
+Enable the specified audio output. C<$output> is the ID of the audio
+output.
 
 
 =item $mpd->output_disable( $output )
 
-Disable the specified audio output. $output is the ID of the audio output.
+Disable the specified audio output. C<$output> is the ID of the audio
+output.
 
 =back
 
@@ -754,20 +757,21 @@ C<$songid>. If C<$songid> is not supplied, returns the current song.
 
 =item $mpd->repeat( [$repeat] )
 
-Set the repeat mode to $repeat (1 or 0). If $repeat is not specified then
-the repeat mode is toggled.
+Set the repeat mode to C<$repeat> (1 or 0). If C<$repeat> is not
+specified then the repeat mode is toggled.
 
 
 =item $mpd->random( [$random] )
 
-Set the random mode to $random (1 or 0). If $random is not specified then
-the random mode is toggled.
+Set the random mode to C<$random> (1 or 0). If C<$random> is not
+specified then the random mode is toggled.
 
 
 =item $mpd->fade( [$seconds] )
 
-Enable crossfading and set the duration of crossfade between songs.
-If $seconds is not specified or $seconds is 0, then crossfading is disabled.
+Enable crossfading and set the duration of crossfade between songs.  If
+C<$seconds> is not specified or $seconds is 0, then crossfading is
+disabled.
 
 =back
 
@@ -778,20 +782,20 @@ If $seconds is not specified or $seconds is 0, then crossfading is disabled.
 
 =item $mpd->play( [$song] )
 
-Begin playing playlist at song number $song. If no argument supplied,
+Begin playing playlist at song number C<$song>. If no argument supplied,
 resume playing.
 
 
 =item $mpd->playid( [$songid] )
 
-Begin playing playlist at song ID $songid. If no argument supplied,
+Begin playing playlist at song ID C<$songid>. If no argument supplied,
 resume playing.
 
 
 =item $mpd->pause( [$state] )
 
 Pause playback. If C<$state> is 0 then the current track is unpaused,
-if $state is 1 then the current track is paused.
+if C<$state> is 1 then the current track is paused.
 
 Note that if C<$state> is not given, pause state will be toggled.
 
@@ -813,14 +817,16 @@ Play previous song in playlist.
 
 =item $mpd->seek( $time, [$song])
 
-Seek to $time seconds in song number $song. If $song number is not specified
-then the perl module will try and seek to $time in the current song.
+Seek to C<$time> seconds in song number C<$song>. If C<$song> number is
+not specified then the perl module will try and seek to C<$time> in the
+current song.
 
 
 =item $mpd->seekid( $time, $songid )
 
-Seek to $time seconds in song ID $songid. If $song number is not specified
-then the perl module will try and seek to $time in the current song.
+Seek to C<$time> seconds in song ID C<$songid>. If C<$song> number is
+not specified then the perl module will try and seek to C<$time> in the
+current song.
 
 =back
 
@@ -861,12 +867,13 @@ bug as I make changes.
 =head1 SEE ALSO
 
 You can find more information on the mpd project on its homepage at
-L<http://www.musicpd.org>, or its wiki L<http://mpd.wikia.com>.
+L<http://www.musicpd.org>.wikia.com>.
 
-Audio::MPD development takes place on <audio-mpd@googlegroups.com>: feel free
-to join us. (use L<http://groups.google.com/group/audio-mpd> to sign in). Our
-git repository is located at L<git://repo.or.cz/audio-mpd.git>, and can
-be browsed at L<http://repo.or.cz/w/audio-mpd.git>.
+C<Audio::MPD> development takes place on <audio-mpd@googlegroups.com>:
+feel free to join us. (use L<http://groups.google.com/group/audio-mpd>
+to sign in). Our git repository is located at
+L<git://repo.or.cz/audio-mpd.git>, and can be browsed at
+L<http://repo.or.cz/w/audio-mpd.git>.
 
 
 You can also look for information on this module at:
