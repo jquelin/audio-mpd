@@ -600,7 +600,9 @@ maintain backward compatibility.
 Note that the module will by default connect to mpd before sending any
 command, and will disconnect after the command has been issued. This
 scheme is far from optimal, but allows us not to care about timeout
-disconnections.
+disconnections. Because of that, the C<idle> command (new in mpd 0.14)
+is B<not> (and will not) be supported in C<Audio::MPD>. This will be
+implemented in C<POE::Component::Client::MPD>.
 
 B</!\> Note that C<Audio::MPD> is using high-level, blocking sockets.
 This means that if the mpd server is slow, or hangs for whatever reason,
