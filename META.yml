@@ -1,6 +1,6 @@
 ---
 name: Audio-MPD
-version: 0.19.4
+version: 0.19.5
 author:
   - 'Jerome Quelin, C<< <jquelin@cpan.org> >>'
   - |-
@@ -41,14 +41,14 @@ recommends:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.19.4
+    version: 0.19.5
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
   Audio::MPD::Playlist:
     file: lib/Audio/MPD/Playlist.pm
   Audio::MPD::Test:
     file: lib/Audio/MPD/Test.pm
-generated_by: Module::Build version 0.2808
+generated_by: Module::Build version 0.31
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
   version: 1.2

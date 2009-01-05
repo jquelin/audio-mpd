@@ -28,7 +28,7 @@ __PACKAGE__->mk_accessors(
         collection playlist version ] );
 
 
-our $VERSION = '0.19.4';
+our $VERSION = '0.19.5';
 
 Readonly our $REUSE => 0;
 Readonly our $ONCE  => 1;

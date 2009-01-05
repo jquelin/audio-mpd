@@ -19,6 +19,10 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.19.5 Mon Jan  5 15:31:29 CET 2009
+ - updated to match mpd 0.14 behaviour
+ - doc update
+
 0.19.4 Sat Aug 16 10:38:12 CEST 2008
  - doc update
  - listing mpd-dynamic script prereqs as module prereqs
