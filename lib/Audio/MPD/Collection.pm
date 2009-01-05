@@ -199,7 +199,7 @@ sub song {
 
 
 #
-# my $song = $collection->songs_with_filename_partial( $path );
+# my $song = $collection->songs_with_filename_partial( $string );
 #
 # Return the AMC::Item::Songs containing $string in their path.
 #
@@ -367,9 +367,9 @@ currently known by mpd.
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
 
-B</!\ Warning>: the C<Audio::MPD::Common::Item::Song> objects will only have
-their tag file filled. Any other tag will be empty, so don't use this sub for
-any other thing than a quick scan!
+B</!\ Warning>: the C<Audio::MPD::Common::Item::Song> objects will only
+have their tag C<file> filled. Any other tag will be empty, so don't use
+this sub for any other thing than a quick scan!
 
 
 =item $coll->items_in_dir( [$path] )
@@ -432,9 +432,10 @@ Return the list of all playlists (strings) currently known by mpd.
 Return the C<Audio::MPD::Common::Item::Song> which correspond to C<$path>.
 
 
-=item $coll->songs_with_filename_partial( $path )
+=item $coll->songs_with_filename_partial( $string )
 
-Return the C<Audio::MPD::Common::Item::Song>s containing $string in their path.
+Return the C<Audio::MPD::Common::Item::Song>s containing C<$string> in
+their path.
 
 
 =back
@@ -457,8 +458,8 @@ Return all C<Audio::MPD::Common::Item::Song>s performed by C<$artist>.
 
 =item $coll->songs_by_artist_partial( $string )
 
-Return all C<Audio::MPD::Common::Item::Song>s performed by an artist with
-C<$string> in her name.
+Return all C<Audio::MPD::Common::Item::Song>s performed by an artist
+with C<$string> in her name.
 
 
 =item $coll->songs_from_album( $album )
@@ -468,17 +469,20 @@ Return all C<Audio::MPD::Common::Item::Song>s appearing in C<$album>.
 
 =item $coll->songs_from_album_partial( $string )
 
-Return all C<Audio::MPD::Common::Item::Song>s appearing in album containing C<$string>.
+Return all C<Audio::MPD::Common::Item::Song>s appearing in album
+containing C<$string>.
 
 
 =item $coll->songs_with_title( $title )
 
-Return all C<Audio::MPD::Common::Item::Song>s which title is exactly C<$title>.
+Return all C<Audio::MPD::Common::Item::Song>s which title is exactly
+C<$title>.
 
 
 =item $coll->songs_with_title_partial( $string )
 
-Return all C<Audio::MPD::Common::Item::Song>s where C<$string> is part of the title.
+Return all C<Audio::MPD::Common::Item::Song>s where C<$string> is part
+of the title.
 
 
 =back
