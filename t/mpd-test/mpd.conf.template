@@ -11,3 +11,8 @@ password             "fulladmin@read,add,control,admin"
 password             "foobar@read"
 default_permissions  "read,add,control,admin"
 connection_timeout   "10"
+audio_output {
+    name "alsa"
+    type "alsa"
+}
+
