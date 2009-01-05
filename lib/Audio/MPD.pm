@@ -836,7 +836,7 @@ current song.
 To search the collection, use the C<collection()> accessor, returning the
 associated C<Audio::MPD::Collection> object. You will then be able to call:
 
-    $mpd->collection->random_song();
+    $mpd->collection->random_song;
 
 See C<Audio::MPD::Collection> documentation for more details on available
 methods.
