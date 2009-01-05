@@ -75,22 +75,25 @@ is( $list[0]->artist, 'dir1-artist', 'all_songs can be restricted to a subdir' )
 
 #
 # testing all_albums.
+# note: mpd 0.14 also returns empty albums
 @list = $coll->all_albums;
-is( scalar @list, 1, 'all_albums return the albums' );
-is( $list[0], 'our album', 'all_albums return strings' );
+is( scalar @list, 2, 'all_albums return the albums' );
+is( $list[1], 'our album', 'all_albums return strings' );
 
 
 #
 # testing all_artists.
+# note: mpd 0.14 also returns empty artists
 @list = $coll->all_artists;
-is( scalar @list, 1, 'all_artists return the artists' );
+is( scalar @list, 2, 'all_artists return the artists' );
 is( $list[0], 'dir1-artist', 'all_artists return strings' );
 
 
 #
 # testing all_titles.
+# note: mpd 0.14 also returns empty titles
 @list = $coll->all_titles;
-is( scalar @list, 3, 'all_titles return the titles' );
+is( scalar @list, 4, 'all_titles return the titles' );
 like( $list[0], qr/-title$/, 'all_titles return strings' );
 
 
@@ -127,9 +130,10 @@ like( $list[0]->file, qr/album/, 'songs_with_filename_partial return the correct
 
 #
 # testing albums_by_artist.
+# note: mpd 0.14 also returns empty albums
 @list = $coll->albums_by_artist( 'dir1-artist' );
-is( scalar @list, 1, 'albums_by_artist return the album' );
-is( $list[0], 'our album', 'albums_by_artist return plain strings' );
+is( scalar @list, 2, 'albums_by_artist return the album' );
+is( $list[1], 'our album', 'albums_by_artist return plain strings' );
 
 
 #
