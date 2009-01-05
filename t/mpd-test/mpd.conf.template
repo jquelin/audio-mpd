@@ -12,7 +12,7 @@ password             "foobar@read"
 default_permissions  "read,add,control,admin"
 connection_timeout   "10"
 audio_output {
-    name "alsa"
-    type "alsa"
+    name "null"
+    type "null"
 }
 
