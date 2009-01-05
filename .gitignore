@@ -27,4 +27,4 @@ cover_db
 
 # Avoid archives of this distribution
 Audio-MPD-*
-
+t/mpd-test/mpd.conf
