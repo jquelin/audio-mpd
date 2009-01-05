@@ -593,6 +593,10 @@ C<Audio::MPD> gives a clear object-oriented interface for talking to and
 controlling MPD (Music Player Daemon) servers. A connection to the MPD
 server is established as soon as a new C<Audio::MPD> object is created.
 
+Since mpd is still in 0.x versions, C<Audio::MPD> sticks to latest mpd
+(0.14 as time of writing) protocol & behaviour, and does B<not> try to
+maintain backward compatibility.
+
 Note that the module will by default connect to mpd before sending any
 command, and will disconnect after the command has been issued. This
 scheme is far from optimal, but allows us not to care about timeout
