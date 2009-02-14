@@ -1,6 +1,6 @@
 ---
 name: Audio-MPD
-version: 0.19.5
+version: 0.19.6
 author:
   - 'Jerome Quelin, C<< <jquelin@cpan.org> >>'
   - |-
@@ -41,7 +41,7 @@ recommends:
 provides:
   Audio::MPD:
     file: lib/Audio/MPD.pm
-    version: 0.19.5
+    version: 0.19.6
   Audio::MPD::Collection:
     file: lib/Audio/MPD/Collection.pm
   Audio::MPD::Playlist:

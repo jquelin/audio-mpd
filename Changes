@@ -19,6 +19,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.19.6 Sat Feb 14 13:03:22 CET 2009
+ - doc update (catched by streamingmeemee)
+
 0.19.5 Mon Jan  5 15:31:29 CET 2009
  - updated to match mpd 0.14 behaviour
  - doc update
