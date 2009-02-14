@@ -44,7 +44,7 @@ our @EXPORT = qw[ $REUSE $ONCE ];
 #
 # This is the constructor for Audio::MPD. One can specify the following
 # options:
-#   - hostname => $hostname : defaults to environment var MPD_HOST, then to 'localhost'
+#   - host     => $hostname : defaults to environment var MPD_HOST, then to 'localhost'
 #   - port     => $port     : defaults to env var MPD_PORT, then to 6600
 #   - password => $password : defaults to env var MPD_PASSWORD, then to ''
 #   - conntype => $type     : how the connection to mpd server is handled. it can be
@@ -626,7 +626,7 @@ options:
 
 =over 4
 
-=item hostname => C<$hostname>
+=item host => C<$hostname>
 
 defaults to environment var C<MPD_HOST>, then to 'localhost'. Note that
 C<MPD_HOST> can be of the form password@host.
