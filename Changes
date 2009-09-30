@@ -19,6 +19,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.19.7 Wed Sep 30 16:56:37 2009
+ - fix #50109 problem with newer class::accessor
+
 0.19.6 Sat Feb 14 13:03:22 CET 2009
  - doc update (catched by streamingmeemee)
 
