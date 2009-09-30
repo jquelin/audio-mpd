@@ -22,7 +22,7 @@ use IO::Socket;
 use Readonly;
 
 
-use base qw[ Class::Accessor::Fast Exporter ];
+use base qw{ Exporter Class::Accessor::Fast };
 __PACKAGE__->mk_accessors(
     qw[ _conntype _host _password _port _socket
         collection playlist version ] );
