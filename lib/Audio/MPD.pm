@@ -18,9 +18,6 @@ __PACKAGE__->mk_accessors(
     qw[ _conntype _host _password _port _socket
         collection playlist version ] );
 
-
-our $VERSION = '0.19.7';
-
 Readonly our $REUSE => 0;
 Readonly our $ONCE  => 1;
 
