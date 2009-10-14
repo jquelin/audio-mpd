@@ -1,8 +1,7 @@
-
-package Audio::MPD;
-
 use warnings;
 use strict;
+
+package Audio::MPD;
 
 use Audio::MPD::Collection;
 use Audio::MPD::Common::Item;

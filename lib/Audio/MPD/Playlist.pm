@@ -1,8 +1,8 @@
+use warnings;
+use strict;
 
 package Audio::MPD::Playlist;
 
-use strict;
-use warnings;
 use Scalar::Util qw[ weaken ];
 
 use base qw[ Class::Accessor::Fast ];

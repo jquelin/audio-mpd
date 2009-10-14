@@ -1,8 +1,7 @@
-
-package Audio::MPD::Test;
-
 use strict;
 use warnings;
+
+package Audio::MPD::Test;
 
 use Exporter;
 use FindBin     qw[ $Bin ];
