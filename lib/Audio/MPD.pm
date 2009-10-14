@@ -2,6 +2,7 @@ use warnings;
 use strict;
 
 package Audio::MPD;
+# ABSTRACT: class to talk to MPD (Music Player Daemon) servers
 
 use Audio::MPD::Collection;
 use Audio::MPD::Common::Item;
@@ -559,11 +560,6 @@ sub seekid {
 __END__
 
 =pod
-
-=head1 NAME
-
-Audio::MPD - class to talk to MPD (Music Player Daemon) servers
-
 
 =head1 SYNOPSIS
 

@@ -2,6 +2,7 @@ use warnings;
 use strict;
 
 package Audio::MPD::Playlist;
+# ABSTRACT: class to mess MPD's playlist
 
 use Scalar::Util qw[ weaken ];
 
@@ -246,12 +247,6 @@ sub rm {
 1;
 
 __END__
-
-
-=head1 NAME
-
-Audio::MPD::Playlist - an object to mess MPD's playlist
-
 
 =head1 SYNOPSIS
 

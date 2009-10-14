@@ -2,6 +2,8 @@ use warnings;
 use strict;
 
 package Audio::MPD::Collection;
+# ABSTRACT: class to query MPD's collection
+
 
 use Scalar::Util qw[ weaken ];
 
@@ -297,12 +299,6 @@ sub songs_with_title_partial {
 1;
 
 __END__
-
-
-=head1 NAME
-
-Audio::MPD::Collection - an object to query MPD's collection
-
 
 =head1 SYNOPSIS
 

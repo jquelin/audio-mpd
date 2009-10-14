@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 package Audio::MPD::Test;
+# ABSTRACT: automate launching of fake mdp for testing purposes
 
 use Exporter;
 use FindBin     qw[ $Bin ];
@@ -123,11 +124,6 @@ sub _stop_user_mpd_if_needed {
 1;
 
 __END__
-
-=head1 NAME
-
-Audio::MPD::Test - automate launching of fake mdp for testing purposes
-
 
 =head1 SYNOPSIS
 
