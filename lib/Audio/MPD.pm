@@ -1,11 +1,3 @@
-#
-# This file is part of Audio::MPD
-# Copyright (c) 2007-2009 Jerome Quelin, all rights reserved.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the same terms as Perl itself.
-#
-#
 
 package Audio::MPD;
 
