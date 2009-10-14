@@ -855,8 +855,7 @@ documented in 2006 by Nicholas J. Humfrey C<< <njh@aelius.com> >>.
 C<Audio::MPD> development takes place on <audio-mpd@googlegroups.com>:
 feel free to join us. (use L<http://groups.google.com/group/audio-mpd>
 to sign in). Our git repository is located at
-L<git://repo.or.cz/audio-mpd.git>, and can be browsed at
-L<http://repo.or.cz/w/audio-mpd.git>.
+L<http://github.com/jquelin/audio-mpd.git>.
 
 
 You can also look for information on this module at:
