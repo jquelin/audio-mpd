@@ -850,21 +850,13 @@ See C<Audio::MPD::Playlist> documentation for more details on available
 methods.
 
 
-
-=head1 BUGS
-
-Please report any bugs or feature requests to
-C<bug-audio-mpd@rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Audio-MPD>. I will be
-notified, and then you'll automatically be notified of progress on your
-bug as I make changes.
-
-
-
 =head1 SEE ALSO
 
 You can find more information on the mpd project on its homepage at
 L<http://www.musicpd.org>.wikia.com>.
+
+Original code (2005) by Tue Abrahamsen C<< <tue.abrahamsen@gmail.com> >>,
+documented in 2006 by Nicholas J. Humfrey C<< <njh@aelius.com> >>.
 
 C<Audio::MPD> development takes place on <audio-mpd@googlegroups.com>:
 feel free to join us. (use L<http://groups.google.com/group/audio-mpd>
@@ -897,8 +889,6 @@ L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Audio-MPD>
 
 Jerome Quelin, C<< <jquelin@cpan.org> >>
 
-Original code by Tue Abrahamsen C<< <tue.abrahamsen@gmail.com> >>,
-documented by Nicholas J. Humfrey C<< <njh@aelius.com> >>.
 
 
 =head1 COPYRIGHT & LICENSE

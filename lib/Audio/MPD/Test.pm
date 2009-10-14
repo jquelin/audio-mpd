@@ -188,22 +188,3 @@ by $port if specified, 6600 otherwise (MPD default).
 This might be useful when trying to test connections with mpd server.
 
 
-=head1 SEE ALSO
-
-For all related information (bug reporting, mailing-list, pointers to
-MPD, etc.), refer to C<Audio::MPD>'s pod, section C<SEE ALSO>
-
-
-=head1 AUTHOR
-
-Jerome Quelin, C<< <jquelin@cpan.org> >>
-
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright (c) 2007-2009 Jerome Quelin, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
-
-=cut
