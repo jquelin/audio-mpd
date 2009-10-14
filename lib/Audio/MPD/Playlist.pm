@@ -78,7 +78,7 @@ sub add {
     my ($self, @pathes) = @_;
     my $command =
           "command_list_begin\n"
-        . join( '', map { s/"/\\"/g; qq[add "$_"\n] } @pathes )
+        . join( '', map { my $p=$_; $p=~s/"/\\"/g; qq[add "$p"\n] } @pathes )
         . "command_list_end\n";
     $self->_mpd->_send_command( $command );
 }
@@ -94,7 +94,7 @@ sub delete {
     my ($self, @songs) = @_;
     my $command =
           "command_list_begin\n"
-        . join( '', map { s/"/\\"/g; "delete $_\n" } @songs )
+        . join( '', map { my $p=$_; $p=~s/"/\\"/g; "delete $p\n" } @songs )
         . "command_list_end\n";
     $self->_mpd->_send_command( $command );
 }

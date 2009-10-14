@@ -44,7 +44,8 @@ sub new {
     my ($class, %opts) = @_;
 
     # use mpd defaults.
-    my ($default_password, $default_host) = split( '@', $ENV{MPD_HOST} )
+    my ($default_password, $default_host);
+    ($default_password, $default_host) = split( '@', $ENV{MPD_HOST} )
        if exists $ENV{MPD_HOST} && $ENV{MPD_HOST} =~ /@/;
     my $host     = $opts{host}     || $default_host      || $ENV{MPD_HOST} || 'localhost';
     my $port     = $opts{port}     || $ENV{MPD_PORT}     || '6600';
