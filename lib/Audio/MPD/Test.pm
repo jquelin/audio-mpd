@@ -137,7 +137,7 @@ __END__
 =head2 General usage
 
 This module will try to launch a new mpd server for testing purposes. This
-mpd server will then be used during Audio::MPD tests.
+mpd server will then be used during L<Audio::MPD> tests.
 
 In order to achieve this, the module will create a fake mpd.conf file with
 the correct pathes (ie, where you untarred the module tarball). It will then

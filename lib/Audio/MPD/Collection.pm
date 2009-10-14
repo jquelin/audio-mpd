@@ -320,13 +320,13 @@ of using the low-level methods provided by mpd itself.
 
 =item new( $mpd )
 
-This will create the object, holding a back-reference to the C<Audio::MPD>
+This will create the object, holding a back-reference to the L<Audio::MPD>
 object itself (for communication purposes). But in order to play safe and
 to free the memory in time, this reference is weakened.
 
 Note that you're not supposed to call this constructor yourself, an
-C<Audio::MPD::Collection> is automatically created for you during the creation
-of an C<Audio::MPD> object.
+L<Audio::MPD::Collection> is automatically created for you during the creation
+of an L<Audio::MPD> object.
 
 =back
 
@@ -337,7 +337,7 @@ of an C<Audio::MPD> object.
 
 =item $coll->all_items( [$path] )
 
-Return B<all> C<Audio::MPD::Common::Item>s (both songs & directories)
+Return B<all> L<Audio::MPD::Common::Item>s (both songs & directories)
 currently known by mpd.
 
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
@@ -346,13 +346,13 @@ songs and dirs in this directory.
 
 =item $coll->all_items_simple( [$path] )
 
-Return B<all> C<Audio::MPD::Common::Item>s (both songs & directories)
+Return B<all> L<Audio::MPD::Common::Item>s (both songs & directories)
 currently known by mpd.
 
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
 
-B</!\ Warning>: the C<Audio::MPD::Common::Item::Song> objects will only
+B</!\ Warning>: the L<Audio::MPD::Common::Item::Song> objects will only
 have their tag C<file> filled. Any other tag will be empty, so don't use
 this sub for any other thing than a quick scan!
 
@@ -374,7 +374,7 @@ Note that this sub does not work recusrively on all directories.
 
 =item $coll->all_songs( [$path] )
 
-Return B<all> C<Audio::MPD::Common::Item::Song>s currently known by mpd.
+Return B<all> L<Audio::MPD::Common::Item::Song>s currently known by mpd.
 
 If C<$path> is supplied (relative to mpd root), restrict the retrieval to
 songs and dirs in this directory.
@@ -414,12 +414,12 @@ Return the list of all playlists (strings) currently known by mpd.
 
 =item $coll->song( $path )
 
-Return the C<Audio::MPD::Common::Item::Song> which correspond to C<$path>.
+Return the L<Audio::MPD::Common::Item::Song> which correspond to C<$path>.
 
 
 =item $coll->songs_with_filename_partial( $string )
 
-Return the C<Audio::MPD::Common::Item::Song>s containing C<$string> in
+Return the L<Audio::MPD::Common::Item::Song>s containing C<$string> in
 their path.
 
 
@@ -438,35 +438,35 @@ participated.
 
 =item $coll->songs_by_artist( $artist )
 
-Return all C<Audio::MPD::Common::Item::Song>s performed by C<$artist>.
+Return all L<Audio::MPD::Common::Item::Song>s performed by C<$artist>.
 
 
 =item $coll->songs_by_artist_partial( $string )
 
-Return all C<Audio::MPD::Common::Item::Song>s performed by an artist
+Return all L<Audio::MPD::Common::Item::Song>s performed by an artist
 with C<$string> in her name.
 
 
 =item $coll->songs_from_album( $album )
 
-Return all C<Audio::MPD::Common::Item::Song>s appearing in C<$album>.
+Return all L<Audio::MPD::Common::Item::Song>s appearing in C<$album>.
 
 
 =item $coll->songs_from_album_partial( $string )
 
-Return all C<Audio::MPD::Common::Item::Song>s appearing in album
+Return all L<Audio::MPD::Common::Item::Song>s appearing in album
 containing C<$string>.
 
 
 =item $coll->songs_with_title( $title )
 
-Return all C<Audio::MPD::Common::Item::Song>s which title is exactly
+Return all L<Audio::MPD::Common::Item::Song>s which title is exactly
 C<$title>.
 
 
 =item $coll->songs_with_title_partial( $string )
 
-Return all C<Audio::MPD::Common::Item::Song>s where C<$string> is part
+Return all L<Audio::MPD::Common::Item::Song>s where C<$string> is part
 of the title.
 
 

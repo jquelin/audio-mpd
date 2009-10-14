@@ -587,12 +587,12 @@ command, and will disconnect after the command has been issued. This
 scheme is far from optimal, but allows us not to care about timeout
 disconnections. Because of that, the C<idle> command (new in mpd 0.14)
 is B<not> (and will not) be supported in C<Audio::MPD>. This will be
-implemented in C<POE::Component::Client::MPD>.
+implemented in L<POE::Component::Client::MPD>.
 
 B</!\> Note that C<Audio::MPD> is using high-level, blocking sockets.
 This means that if the mpd server is slow, or hangs for whatever reason,
 or even crash abruptly, the program will be hung forever in this sub.
-The C<POE::Component::Client::MPD> module is way safer - you're advised
+The L<POE::Component::Client::MPD> module is way safer - you're advised
 to use it instead of C<Audio::MPD>. Or you can try to set C<conntype> to
 C<$REUSE> (see C<Audio::MPD> constructor for more details), but you
 would be then on your own to deal with disconnections.
@@ -711,32 +711,32 @@ output.
 
 =item $mpd->stats()
 
-Return an C<Audio::MPD::Common::Stats> object with the current statistics
+Return an L<Audio::MPD::Common::Stats> object with the current statistics
 of MPD. See the associated pod for more information.
 
 
 =item $mpd->status()
 
-Return an C<Audio::MPD::Common::Status> object with various information on
+Return an L<Audio::MPD::Common::Status> object with various information on
 current MPD server settings. Check the embedded pod for more information on
 the available accessors.
 
 
 =item $mpd->current()
 
-Return an C<Audio::MPD::Common::Item::Song> representing the song currently
+Return an L<Audio::MPD::Common::Item::Song> representing the song currently
 playing.
 
 
 =item $mpd->song( [$song] )
 
-Return an C<Audio::MPD::Common::Item::Song> representing the song number
+Return an L<Audio::MPD::Common::Item::Song> representing the song number
 C<$song>. If C<$song> is not supplied, returns the current song.
 
 
 =item $mpd->songid( [$songid] )
 
-Return an C<Audio::MPD::Common::Item::Song> representing the song with id
+Return an L<Audio::MPD::Common::Item::Song> representing the song with id
 C<$songid>. If C<$songid> is not supplied, returns the current song.
 
 =back
@@ -825,11 +825,11 @@ current song.
 =head2 Searching the collection
 
 To search the collection, use the C<collection()> accessor, returning the
-associated C<Audio::MPD::Collection> object. You will then be able to call:
+associated L<Audio::MPD::Collection> object. You will then be able to call:
 
     $mpd->collection->random_song;
 
-See C<Audio::MPD::Collection> documentation for more details on available
+See L<Audio::MPD::Collection> documentation for more details on available
 methods.
 
 
@@ -840,7 +840,7 @@ associated C<Audio::MPD::Playlist> object. You will then be able to call:
 
     $mpd->playlist->clear;
 
-See C<Audio::MPD::Playlist> documentation for more details on available
+See L<Audio::MPD::Playlist> documentation for more details on available
 methods.
 
 

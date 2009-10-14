@@ -255,7 +255,7 @@ __END__
 
 =head1 DESCRIPTION
 
-C<Audio::MPD::Playlist> is a class meant to access & update MPD's
+L<Audio::MPD::Playlist> is a class meant to access & update MPD's
 playlist.
 
 
@@ -273,7 +273,7 @@ to free the memory in time, this reference is weakened.
 
 Note that you're not supposed to call this constructor yourself, an
 C<Audio::MPD::Playlist> is automatically created for you during the creation
-of an C<Audio::MPD> object.
+of an L<Audio::MPD> object.
 
 =back
 
@@ -284,14 +284,14 @@ of an C<Audio::MPD> object.
 
 =item $pl->as_items()
 
-Return an array of C<Audio::MPD::Common::Item::Song>s, one for each of the
+Return an array of L<Audio::MPD::Common::Item::Song>s, one for each of the
 songs in the current playlist.
 
 
 =item $pl->items_changed_since( $plversion )
 
-Return a list with all the songs (as AMC::Item::Song objects) added to
-the playlist since playlist C<$plversion>.
+Return a list with all the songs (as L<Audio::MPD::Common::Item::Song> objects)
+added to the playlist since playlist C<$plversion>.
 
 
 =back
