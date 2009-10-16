@@ -27,6 +27,7 @@ SKIP: {
 # testing kill.
 $mpd->ping;
 $mpd->kill;
+sleep 1; # let mpd shut down the socket cleanly
 eval { $mpd->ping };
 like( $@, qr/^Could not create socket:/, 'kill shuts mpd down' );
 start_test_mpd();
