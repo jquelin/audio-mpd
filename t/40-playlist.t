@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Audio::MPD;
-use FindBin qw[ $Bin ];
 use Test::More;
 
 # are we able to test module?
@@ -158,15 +157,14 @@ is( $items[0]->title, 'ok-title', 'load() adds the correct songs' );
 
 #
 # testing save.
+my $pdir = playlist_dir();
 $pl->clear;
 $pl->save( 'test-jq' );
-ok( -f "$Bin/mpd-test/playlists/test-jq.m3u", 'save() creates a playlist' );
+ok( -f "$pdir/test-jq.m3u", 'save() creates a playlist' );
 
 
 #
 # testing rm.
 $pl->rm( 'test-jq' );
-ok( ! -f "$Bin/mpd-test/playlists/test-jq.m3u", 'rm() removes a playlist' );
-
-
+ok( ! -f "$pdir/test-jq.m3u", 'rm() removes a playlist' );
 
