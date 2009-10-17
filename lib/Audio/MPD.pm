@@ -574,11 +574,11 @@ __END__
 
 =head1 DESCRIPTION
 
-C<Audio::MPD> gives a clear object-oriented interface for talking to and
+L<Audio::MPD> gives a clear object-oriented interface for talking to and
 controlling MPD (Music Player Daemon) servers. A connection to the MPD
-server is established as soon as a new C<Audio::MPD> object is created.
+server is established as soon as a new L<Audio::MPD> object is created.
 
-Since mpd is still in 0.x versions, C<Audio::MPD> sticks to latest mpd
+Since mpd is still in 0.x versions, L<Audio::MPD> sticks to latest mpd
 (0.14 as time of writing) protocol & behaviour, and does B<not> try to
 maintain backward compatibility.
 
@@ -586,15 +586,15 @@ Note that the module will by default connect to mpd before sending any
 command, and will disconnect after the command has been issued. This
 scheme is far from optimal, but allows us not to care about timeout
 disconnections. Because of that, the C<idle> command (new in mpd 0.14)
-is B<not> (and will not) be supported in C<Audio::MPD>. This will be
+is B<not> (and will not) be supported in L<Audio::MPD>. This will be
 implemented in L<POE::Component::Client::MPD>.
 
-B</!\> Note that C<Audio::MPD> is using high-level, blocking sockets.
+B</!\> Note that L<Audio::MPD> is using high-level, blocking sockets.
 This means that if the mpd server is slow, or hangs for whatever reason,
 or even crash abruptly, the program will be hung forever in this sub.
 The L<POE::Component::Client::MPD> module is way safer - you're advised
-to use it instead of C<Audio::MPD>. Or you can try to set C<conntype> to
-C<$REUSE> (see C<Audio::MPD> constructor for more details), but you
+to use it instead of L<Audio::MPD>. Or you can try to set C<conntype> to
+C<$REUSE> (see L<Audio::MPD> constructor for more details), but you
 would be then on your own to deal with disconnections.
 
 
@@ -606,7 +606,7 @@ would be then on your own to deal with disconnections.
 
 =item new( [%opts] )
 
-This is the constructor for C<Audio::MPD>. One can specify the following
+This is the constructor for L<Audio::MPD>. One can specify the following
 options:
 
 =over 4
@@ -836,7 +836,7 @@ methods.
 =head2 Handling the playlist
 
 To update the playlist, use the C<playlist()> accessor, returning the
-associated C<Audio::MPD::Playlist> object. You will then be able to call:
+associated L<Audio::MPD::Playlist> object. You will then be able to call:
 
     $mpd->playlist->clear;
 
@@ -852,7 +852,7 @@ L<http://www.musicpd.org>.wikia.com>.
 Original code (2005) by Tue Abrahamsen C<< <tue.abrahamsen@gmail.com> >>,
 documented in 2006 by Nicholas J. Humfrey C<< <njh@aelius.com> >>.
 
-C<Audio::MPD> development takes place on <audio-mpd@googlegroups.com>:
+L<Audio::MPD> development takes place on <audio-mpd@googlegroups.com>:
 feel free to join us. (use L<http://groups.google.com/group/audio-mpd>
 to sign in). Our git repository is located at
 L<http://github.com/jquelin/audio-mpd.git>.

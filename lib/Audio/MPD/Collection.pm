@@ -307,7 +307,7 @@ __END__
 
 =head1 DESCRIPTION
 
-C<Audio::MPD::Collection> is a class meant to access & query MPD's
+L<Audio::MPD::Collection> is a class meant to access & query MPD's
 collection. You will be able to use those high-level methods instead
 of using the low-level methods provided by mpd itself.
 

@@ -113,7 +113,7 @@ This is mpd-dynamic version 0.4
 =head1 DESCRIPTION
 
 This program implements a dynamic playlist for MPD, build on top of the
-C<Audio::MPD> perl module.
+L<Audio::MPD> perl module.
 
 MPD (music player daemon) is a cool music player, but it lacks a dynamic
 playlist. A dynamic playlist is a playlist that will change

@@ -267,12 +267,12 @@ playlist.
 
 =item new( $mpd )
 
-This will create the object, holding a back-reference to the C<Audio::MPD>
+This will create the object, holding a back-reference to the L<Audio::MPD>
 object itself (for communication purposes). But in order to play safe and
 to free the memory in time, this reference is weakened.
 
 Note that you're not supposed to call this constructor yourself, an
-C<Audio::MPD::Playlist> is automatically created for you during the creation
+L<Audio::MPD::Playlist> is automatically created for you during the creation
 of an L<Audio::MPD> object.
 
 =back
