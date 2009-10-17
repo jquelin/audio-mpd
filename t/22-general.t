@@ -7,7 +7,7 @@ use Audio::MPD;
 use Test::More;
 
 # are we able to test module?
-eval 'use Audio::MPD::Test';
+eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
 plan tests => 7;
@@ -55,5 +55,3 @@ is( $@, '', 'updating part of collection' );
 # testing urlhandlers.
 my @handlers = $mpd->urlhandlers;
 is( scalar @handlers, 0, 'only one url handler supported' );
-
-exit;

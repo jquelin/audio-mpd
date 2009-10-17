@@ -7,7 +7,7 @@ use Audio::MPD;
 use Test::More;
 
 # are we able to test module?
-eval 'use Audio::MPD::Test';
+eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
 plan tests => 76;
@@ -175,5 +175,3 @@ is( scalar @list, 3, 'songs_with_title_partial return all the songs found' );
 isa_ok( $_, 'Audio::MPD::Common::Item::Song', 'songs_with_title_partial return AMCI::Songs' ) for @list;
 like( $list[0]->title, qr/title/, 'songs_with_title_partial return correct objects' );
 
-
-exit;

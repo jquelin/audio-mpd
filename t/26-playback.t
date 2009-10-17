@@ -7,7 +7,7 @@ use Audio::MPD;
 use Test::More;
 
 # are we able to test module?
-eval 'use Audio::MPD::Test';
+eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
 plan tests => 19;
@@ -86,6 +86,3 @@ TODO: {
     is( $mpd->status->time->sofar_secs, 1, 'seekid() defaults to current song' );
 }
 
-
-
-exit;

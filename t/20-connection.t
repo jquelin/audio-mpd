@@ -7,7 +7,7 @@ use Audio::MPD;
 use Test::More;
 
 # are we able to test module?
-eval 'use Audio::MPD::Test';
+eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
 plan tests => 18;
@@ -69,4 +69,3 @@ my @list = $mpd->_cooked_command_strip_first_field( "stats\n" );
 unlike( $_, qr/\D/, '_cooked_command_strip_first_field return only 2nd field' ) for @list;
 # stats return numerical data as second field.
 
-exit;

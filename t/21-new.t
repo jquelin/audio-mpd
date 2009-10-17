@@ -7,7 +7,7 @@ use Audio::MPD;
 use Test::More;
 
 # are we able to test module?
-eval 'use Audio::MPD::Test';
+eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
 plan tests => 13;
@@ -66,5 +66,3 @@ $mpd->ping;
 $mpd->ping;
 $mpd->ping;
 isa_ok( $mpd->_socket, 'IO::Socket', 'socket is created and retained' );
-
-exit;

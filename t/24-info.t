@@ -7,7 +7,7 @@ use Audio::MPD;
 use Test::More;
 
 # are we able to test module?
-eval 'use Audio::MPD::Test';
+eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
 plan tests => 16;
@@ -61,6 +61,3 @@ isa_ok( $song, 'Audio::MPD::Common::Item::Song', 'songid() returns an AMC::Item:
 is( $song->file, 'dir1/title-artist-album.ogg', 'songid() returns the wanted song' );
 $song = $mpd->songid; # default to current song
 is( $song->file, 'title.ogg', 'songid() defaults to current song' );
-
-
-exit;
