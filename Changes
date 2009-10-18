@@ -19,6 +19,9 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.19.9 Sun Oct 18 11:49:57 2009
+ - using test::corpus::audio::mpd for tests (regains mpd 0.15.x compatibility)
+
 0.19.8 Wed Oct 14 18:05:29 2009
  - migrated to dist-zilla (transparent for end-user)
 
