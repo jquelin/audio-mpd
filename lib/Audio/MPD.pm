@@ -12,13 +12,22 @@ use Audio::MPD::Common::Status;
 use Audio::MPD::Playlist;
 use Encode;
 use IO::Socket;
+use Moose;
+use MooseX::SemiAffordanceAccessor;
 use Readonly;
 
 
-use base qw{ Exporter Class::Accessor::Fast };
-__PACKAGE__->mk_accessors(
-    qw[ _conntype _host _password _port _socket
-        collection playlist version ] );
+use base qw{ Exporter };
+
+has _conntype  => ( is=>'rw' );
+has _host      => ( is=>'rw' );
+has _password  => ( is=>'rw' );
+has _port      => ( is=>'rw' );
+has _socket    => ( is=>'rw' );
+has collection => ( is=>'rw' );
+has playlist   => ( is=>'rw' );
+has version    => ( is=>'rw' );
+
 
 Readonly our $REUSE => 0;
 Readonly our $ONCE  => 1;
@@ -66,8 +75,8 @@ sub new {
 
 
     # create the helper objects and store them.
-    $self->collection( Audio::MPD::Collection->new($self) );
-    $self->playlist  ( Audio::MPD::Playlist->new($self) );
+    $self->set_collection( Audio::MPD::Collection->new($self) );
+    $self->set_playlist  ( Audio::MPD::Playlist->new($self) );
 
     # try to issue a ping to test connection - this can die.
     $self->ping;
@@ -103,7 +112,7 @@ sub _connect_to_mpd_server {
     chomp $line;
     die "Not a mpd server - welcome string was: [$line]\n"
         if $line !~ /^OK MPD (.+)$/;
-    $self->version($1);
+    $self->set_version($1);
 
     # send password.
     if ( $self->_password ) {
@@ -113,7 +122,7 @@ sub _connect_to_mpd_server {
     }
 
     # save socket
-    $self->_socket($socket);
+    $self->_set_socket($socket);
 }
 
 
@@ -264,7 +273,7 @@ sub kill {
 sub password {
     my ($self, $passwd) = @_;
     $passwd ||= '';
-    $self->_password($passwd);
+    $self->_set_password($passwd);
     $self->ping; # ping sends a command, and thus the password is sent
 }
 
