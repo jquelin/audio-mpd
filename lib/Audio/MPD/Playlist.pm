@@ -5,10 +5,10 @@ use strict;
 package Audio::MPD::Playlist;
 # ABSTRACT: class to mess MPD's playlist
 
-use Scalar::Util qw[ weaken ];
+use Moose;
+use MooseX::SemiAffordanceAccessor;
 
-use base qw[ Class::Accessor::Fast ];
-__PACKAGE__->mk_accessors( qw[ _mpd ] );
+has _mpd => ( is=>'ro', required=>1, weak_ref=>1 );
 
 
 #--
@@ -25,14 +25,6 @@ __PACKAGE__->mk_accessors( qw[ _mpd ] );
 # Audio::MPD::Playlist is automatically created for you during the creation
 # of an Audio::MPD object.
 #
-sub new {
-    my ($pkg, $mpd) = @_;
-
-    my $self = { _mpd => $mpd };
-    weaken( $self->{_mpd} );
-    bless $self, $pkg;
-    return $self;
-}
 
 
 #--

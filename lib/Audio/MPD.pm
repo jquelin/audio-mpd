@@ -76,7 +76,7 @@ sub new {
 
     # create the helper objects and store them.
     $self->set_collection( Audio::MPD::Collection->new(_mpd=>$self) );
-    $self->set_playlist  ( Audio::MPD::Playlist->new($self) );
+    $self->set_playlist  ( Audio::MPD::Playlist->new(_mpd=>$self) );
 
     # try to issue a ping to test connection - this can die.
     $self->ping;
