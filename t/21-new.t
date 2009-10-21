@@ -66,7 +66,7 @@ delete $ENV{MPD_PORT};
 
 #
 # testing connection type
-$mpd = Audio::MPD->new( port=>16600, conntype=>$REUSE );
+$mpd = Audio::MPD->new( port=>16600, conntype=>'reuse' );
 $mpd->ping;
 $mpd->ping;
 $mpd->ping;

@@ -13,22 +13,14 @@ use Audio::MPD::Playlist;
 use Encode;
 use IO::Socket;
 use Moose;
+use Moose::Util::TypeConstraints;
 use MooseX::SemiAffordanceAccessor;
-use Readonly;
-
-
-use base qw{ Exporter };
-
-
-Readonly our $REUSE => 0;
-Readonly our $ONCE  => 1;
-
-our @EXPORT = qw[ $REUSE $ONCE ];
 
 
 has _socket    => ( is=>'rw', isa=>'IO::Socket::INET' );
 
-has conntype   => ( is=>'ro', default=>$ONCE  );
+enum CONNTYPE  => qw{ reuse once };
+has conntype   => ( is=>'ro', isa=>'CONNTYPE', default=>'once'  );
 has host       => ( is=>'ro', lazy_build=>1 );
 has password   => ( is=>'rw', lazy_build=>1, trigger=>sub { $_[0]->ping } );
 has port       => ( is=>'ro', lazy_build=>1 );
@@ -44,7 +36,7 @@ sub BUILD {
     my $self = shift;
 
     # create the connection if conntype is set to $REUSE
-    $self->_connect_to_mpd_server if $self->conntype == $REUSE;
+    $self->_connect_to_mpd_server if $self->conntype eq 'reuse';
 
     # try to issue a ping to test connection - this can die.
     $self->ping;
@@ -129,7 +121,7 @@ sub _connect_to_mpd_server {
 sub _send_command {
     my ($self, $command) = @_;
 
-    $self->_connect_to_mpd_server if $self->conntype == $ONCE;
+    $self->_connect_to_mpd_server if $self->conntype eq 'once';
     my $socket = $self->_socket;
 
     # ok, now we're connected - let's issue the command.
@@ -143,7 +135,7 @@ sub _send_command {
     }
 
     # close the socket.
-    $socket->close if $self->conntype == $ONCE;
+    $socket->close if $self->conntype eq 'once';
 
     return @output;
 }
@@ -606,13 +598,13 @@ options:
 
 =over 4
 
-=item host => C<$hostname>
+=item host => $hostname
 
 defaults to environment var C<MPD_HOST>, then to 'localhost'. Note that
 C<MPD_HOST> can be of the form C<password@host:port> (each of
 C<password@> or C<:port> can be omitted).
 
-=item port => C<$port>
+=item port => $port
 
 defaults to environment var C<MPD_PORT>, then to parsed C<MPD_HOST>,
 then to 6600.
@@ -625,8 +617,8 @@ then to empty string.
 =item conntype => $type
 
 change how the connection to mpd server is handled. It can be either
-C<$REUSE> to reuse the same connection or C<$ONCE> to open a new
-connection per command (default)
+C<reuse> to reuse the same connection or C<once> to open a new
+connection per command (default).
 
 =back
 
