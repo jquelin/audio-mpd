@@ -15,7 +15,7 @@ has _mpd => ( is=>'ro', required=>1, weak_ref=>1 );
 # Constructor
 
 #
-# my $collection = Audio::MPD::Collection->new( $mpd );
+# my $collection = Audio::MPD::Collection->new( _mpd => $mpd );
 #
 # This will create the object, holding a back-reference to the Audio::MPD
 # object itself (for communication purposes). But in order to play safe and
@@ -305,25 +305,13 @@ L<Audio::MPD::Collection> is a class meant to access & query MPD's
 collection. You will be able to use those high-level methods instead
 of using the low-level methods provided by mpd itself.
 
+Note that you're not supposed to call the constructor yourself, an
+L<Audio::MPD::Collection> is automatically created for you during the
+creation of an L<Audio::MPD> object - it can then be used with the
+C<collection()> accessor.
+
 
 =head1 PUBLIC METHODS
-
-=head2 Constructor
-
-=over 4
-
-=item new( $mpd )
-
-This will create the object, holding a back-reference to the L<Audio::MPD>
-object itself (for communication purposes). But in order to play safe and
-to free the memory in time, this reference is weakened.
-
-Note that you're not supposed to call this constructor yourself, an
-L<Audio::MPD::Collection> is automatically created for you during the creation
-of an L<Audio::MPD> object.
-
-=back
-
 
 =head2 Retrieving songs & directories
 

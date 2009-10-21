@@ -15,7 +15,7 @@ has _mpd => ( is=>'ro', required=>1, weak_ref=>1 );
 # Constructor
 
 #
-# my $collection = Audio::MPD::Playlist->new( $mpd );
+# my $collection = Audio::MPD::Playlist->new( _mpd => $mpd );
 #
 # This will create the object, holding a back-reference to the Audio::MPD
 # object itself (for communication purposes). But in order to play safe and
@@ -244,7 +244,8 @@ __END__
 
 =head1 SYNOPSIS
 
-    my $song = $mpd->playlist->randomize;
+    $mpd->playlist->shuffle;
+    # and lots of other methods
 
 
 =head1 DESCRIPTION
@@ -252,25 +253,13 @@ __END__
 L<Audio::MPD::Playlist> is a class meant to access & update MPD's
 playlist.
 
+Note that you're not supposed to call the constructor yourself, an
+L<Audio::MPD::Playlist> is automatically created for you during the
+creation of an L<Audio::MPD> object - it can then be used with the
+C<playlist()> accessor.
+
 
 =head1 PUBLIC METHODS
-
-=head2 Constructor
-
-=over 4
-
-=item new( $mpd )
-
-This will create the object, holding a back-reference to the L<Audio::MPD>
-object itself (for communication purposes). But in order to play safe and
-to free the memory in time, this reference is weakened.
-
-Note that you're not supposed to call this constructor yourself, an
-L<Audio::MPD::Playlist> is automatically created for you during the creation
-of an L<Audio::MPD> object.
-
-=back
-
 
 =head2 Retrieving information
 
