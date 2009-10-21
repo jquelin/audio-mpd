@@ -19,20 +19,23 @@ use Readonly;
 
 use base qw{ Exporter };
 
-has _conntype  => ( is=>'rw' );
-has _host      => ( is=>'rw' );
-has _password  => ( is=>'rw' );
-has _port      => ( is=>'rw' );
-has _socket    => ( is=>'rw' );
-has collection => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Collection' );
-has playlist   => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Playlist'   );
-has version    => ( is=>'rw' );
-
 
 Readonly our $REUSE => 0;
 Readonly our $ONCE  => 1;
 
 our @EXPORT = qw[ $REUSE $ONCE ];
+
+
+has conntype   => ( is=>'ro', default=>$ONCE  );
+has _socket    => ( is=>'rw', isa=>'IO::Socket::INET' );
+
+has host       => ( is=>'ro', lazy_build=>1 );
+has password   => ( is=>'rw', lazy_build=>1, trigger=>sub { $_[0]->ping } );
+has port       => ( is=>'ro', lazy_build=>1 );
+has collection => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Collection' );
+has playlist   => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Playlist'   );
+has version    => ( is=>'rw' );
+
 
 
 #--
@@ -50,33 +53,28 @@ our @EXPORT = qw[ $REUSE $ONCE ];
 #               either $REUSE: reuse the same connection
 #                    or $ONCE: open a new connection per command (default)
 #   
-sub new {
-    my ($class, %opts) = @_;
 
-    # use mpd defaults.
-    my ($default_password, $default_host);
-    ($default_password, $default_host) = split( '@', $ENV{MPD_HOST} )
-       if exists $ENV{MPD_HOST} && $ENV{MPD_HOST} =~ /@/;
-    my $host     = $opts{host}     || $default_host      || $ENV{MPD_HOST} || 'localhost';
-    my $port     = $opts{port}     || $ENV{MPD_PORT}     || '6600';
-    my $password = $opts{password} || $ENV{MPD_PASSWORD} || $default_password || '';
 
-    # create & bless the object.
-    my $self = {
-        _host     => $host,
-        _port     => $port,
-        _password => $password,
-        _conntype => exists $opts{conntype} ? $opts{conntype} : $ONCE,
-    };
-    bless $self, $class;
+sub _parse_env_var {
+    return (undef, undef, undef) unless defined $ENV{MPD_HOST};
+    return ($1, $2, $3)    if $ENV{MPD_HOST} =~ /^([^@]+)\@([^:@]+):(\d+)$/; # passwd@host:port
+    return ($1, $2, undef) if $ENV{MPD_HOST} =~ /^([^@]+)\@([^:@]+)$/;       # passwd@host
+    return (undef, $1, $2) if $ENV{MPD_HOST} =~ /^([^:@]+):(\d+)$/;        # host:port
+    return (undef, $ENV{MPD_HOST}, undef);
+}
+
+sub _build_host     { return ( _parse_env_var() )[1] || 'localhost'; }
+sub _build_port     { return $ENV{MPD_PORT}     || ( _parse_env_var() )[2] || 6600; }
+sub _build_password { return $ENV{MPD_PASSWORD} || ( _parse_env_var() )[0] || '';     }
+
+sub BUILD {
+    my $self = shift;
 
     # create the connection if conntype is set to $REUSE
-    $self->_connect_to_mpd_server if $self->_conntype == $REUSE;
+    $self->_connect_to_mpd_server if $self->conntype == $REUSE;
 
     # try to issue a ping to test connection - this can die.
     $self->ping;
-
-    return $self;
 }
 
 sub _build_collection { Audio::MPD::Collection->new( _mpd => $_[0] ); }
@@ -100,8 +98,8 @@ sub _connect_to_mpd_server {
 
     # try to connect to mpd.
     my $socket = IO::Socket::INET->new(
-        PeerAddr => $self->_host,
-        PeerPort => $self->_port,
+        PeerAddr => $self->host,
+        PeerPort => $self->port,
     )
     or die "Could not create socket: $!\n";
 
@@ -113,8 +111,8 @@ sub _connect_to_mpd_server {
     $self->set_version($1);
 
     # send password.
-    if ( $self->_password ) {
-        $socket->print( 'password ' . encode('utf-8', $self->_password) . "\n" );
+    if ( $self->password ) {
+        $socket->print( 'password ' . encode('utf-8', $self->password) . "\n" );
         $line = $socket->getline;
         die $line if $line =~ s/^ACK //;
     }
@@ -141,7 +139,7 @@ sub _connect_to_mpd_server {
 sub _send_command {
     my ($self, $command) = @_;
 
-    $self->_connect_to_mpd_server if $self->_conntype == $ONCE;
+    $self->_connect_to_mpd_server if $self->conntype == $ONCE;
     my $socket = $self->_socket;
 
     # ok, now we're connected - let's issue the command.
@@ -155,7 +153,7 @@ sub _send_command {
     }
 
     # close the socket.
-    $socket->close if $self->_conntype == $ONCE;
+    $socket->close if $self->conntype == $ONCE;
 
     return @output;
 }
@@ -263,17 +261,11 @@ sub kill {
 
 
 #
-# $mpd->password( [$password] )
+# $mpd->set_password( [$password] )
 #
 # Change password used to communicate with MPD server to $password.
 # Empty string is assumed if $password is not supplied.
 #
-sub password {
-    my ($self, $passwd) = @_;
-    $passwd ||= '';
-    $self->_set_password($passwd);
-    $self->ping; # ping sends a command, and thus the password is sent
-}
 
 
 #
@@ -563,12 +555,16 @@ sub seekid {
 
 
 no Moose;
-__PACKAGE__->meta->make_immutable( inline_constructor => 0 );
+__PACKAGE__->meta->make_immutable;
 1;
 
 __END__
 
-=pod
+=begin Pod::Coverage
+
+BUILD
+
+=end Pod::Coverage
 
 =head1 SYNOPSIS
 

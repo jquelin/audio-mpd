@@ -35,9 +35,9 @@ start_test_mpd();
 
 #
 # testing password changing.
-eval { $mpd->password('b0rken') };
+eval { $mpd->set_password('b0rken') };
 like( $@, qr/\{password\} incorrect password/, 'changing password' );
-eval { $mpd->password() }; # default to empty string.
+eval { $mpd->set_password() }; # default to empty string.
 is( $@, '', 'no password = empty password' );
 
 
