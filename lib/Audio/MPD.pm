@@ -26,9 +26,9 @@ Readonly our $ONCE  => 1;
 our @EXPORT = qw[ $REUSE $ONCE ];
 
 
-has conntype   => ( is=>'ro', default=>$ONCE  );
 has _socket    => ( is=>'rw', isa=>'IO::Socket::INET' );
 
+has conntype   => ( is=>'ro', default=>$ONCE  );
 has host       => ( is=>'ro', lazy_build=>1 );
 has password   => ( is=>'rw', lazy_build=>1, trigger=>sub { $_[0]->ping } );
 has port       => ( is=>'ro', lazy_build=>1 );
@@ -37,35 +37,8 @@ has playlist   => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Playlist'   );
 has version    => ( is=>'rw' );
 
 
-
 #--
-# Constructor
-
-#
-# my $mpd = Audio::MPD->new( [%opts] )
-#
-# This is the constructor for Audio::MPD. One can specify the following
-# options:
-#   - host     => $hostname : defaults to environment var MPD_HOST, then to 'localhost'
-#   - port     => $port     : defaults to env var MPD_PORT, then to 6600
-#   - password => $password : defaults to env var MPD_PASSWORD, then to ''
-#   - conntype => $type     : how the connection to mpd server is handled. it can be
-#               either $REUSE: reuse the same connection
-#                    or $ONCE: open a new connection per command (default)
-#   
-
-
-sub _parse_env_var {
-    return (undef, undef, undef) unless defined $ENV{MPD_HOST};
-    return ($1, $2, $3)    if $ENV{MPD_HOST} =~ /^([^@]+)\@([^:@]+):(\d+)$/; # passwd@host:port
-    return ($1, $2, undef) if $ENV{MPD_HOST} =~ /^([^@]+)\@([^:@]+)$/;       # passwd@host
-    return (undef, $1, $2) if $ENV{MPD_HOST} =~ /^([^:@]+):(\d+)$/;        # host:port
-    return (undef, $ENV{MPD_HOST}, undef);
-}
-
-sub _build_host     { return ( _parse_env_var() )[1] || 'localhost'; }
-sub _build_port     { return $ENV{MPD_PORT}     || ( _parse_env_var() )[2] || 6600; }
-sub _build_password { return $ENV{MPD_PASSWORD} || ( _parse_env_var() )[0] || '';     }
+# initializer & lazy builders
 
 sub BUILD {
     my $self = shift;
@@ -77,8 +50,25 @@ sub BUILD {
     $self->ping;
 }
 
+#
+# my ($passwd, $host, $port) = _parse_env_var();
+#
+# parse MPD_HOST environment variable, and extract its components. the
+# canonical format of MPD_HOST is passwd@host:port.
+#
+sub _parse_env_var {
+    return (undef, undef, undef) unless defined $ENV{MPD_HOST};
+    return ($1, $2, $3)    if $ENV{MPD_HOST} =~ /^([^@]+)\@([^:@]+):(\d+)$/; # passwd@host:port
+    return ($1, $2, undef) if $ENV{MPD_HOST} =~ /^([^@]+)\@([^:@]+)$/;       # passwd@host
+    return (undef, $1, $2) if $ENV{MPD_HOST} =~ /^([^:@]+):(\d+)$/;          # host:port
+    return (undef, $ENV{MPD_HOST}, undef);
+}
+
+sub _build_host     { return ( _parse_env_var() )[1] || 'localhost'; }
+sub _build_port     { return $ENV{MPD_PORT}     || ( _parse_env_var() )[2] || 6600; }
+sub _build_password { return $ENV{MPD_PASSWORD} || ( _parse_env_var() )[0] || '';   }
 sub _build_collection { Audio::MPD::Collection->new( _mpd => $_[0] ); }
-sub _build_playlist   { Audio::MPD::Playlist->new( _mpd => $_[0] ); }
+sub _build_playlist   { Audio::MPD::Playlist  ->new( _mpd => $_[0] ); }
 
 
 #--
@@ -266,6 +256,7 @@ sub kill {
 # Change password used to communicate with MPD server to $password.
 # Empty string is assumed if $password is not supplied.
 #
+# implemented by password trigger (from moose)
 
 
 #
