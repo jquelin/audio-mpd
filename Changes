@@ -19,6 +19,10 @@ High-level changelog
 Low-level changelog
 ===================
 
+0.19.10 Wed Oct 21 14:20:09 2009
+ - update list of static prereqs, not caught by autoprereq
+ - bump min version for test-corpus-audio-mpd
+
 0.19.9 Sun Oct 18 11:49:57 2009
  - using test::corpus::audio::mpd for tests (regains mpd 0.15.x compatibility)
 
