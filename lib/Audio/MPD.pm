@@ -618,15 +618,18 @@ options:
 =item host => C<$hostname>
 
 defaults to environment var C<MPD_HOST>, then to 'localhost'. Note that
-C<MPD_HOST> can be of the form password@host.
+C<MPD_HOST> can be of the form C<password@host:port> (each of
+C<password@> or C<:port> can be omitted).
 
 =item port => C<$port>
 
-defaults to environment var C<MPD_PORT>, then to 6600.
+defaults to environment var C<MPD_PORT>, then to parsed C<MPD_HOST>,
+then to 6600.
 
 =item password => $password
 
-defaults to environment var C<MPD_PASSWORD>, then to ''.
+defaults to environment var C<MPD_PASSWORD>, then to parsed C<MPD_HOST>,
+then to empty string.
 
 =item conntype => $type
 
@@ -663,7 +666,7 @@ can differ from the real mpd version. eg, mpd version 0.13.2 is
 Send a message to the MPD server telling it to shut down.
 
 
-=item $mpd->password( [$password] )
+=item $mpd->set_password( [$password] )
 
 Change password used to communicate with MPD server to C<$password>.
 Empty string is assumed if C<$password> is not supplied.
