@@ -24,8 +24,8 @@ has _host      => ( is=>'rw' );
 has _password  => ( is=>'rw' );
 has _port      => ( is=>'rw' );
 has _socket    => ( is=>'rw' );
-has collection => ( is=>'rw' );
-has playlist   => ( is=>'rw' );
+has collection => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Collection' );
+has playlist   => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Playlist'   );
 has version    => ( is=>'rw' );
 
 
@@ -73,16 +73,14 @@ sub new {
     # create the connection if conntype is set to $REUSE
     $self->_connect_to_mpd_server if $self->_conntype == $REUSE;
 
-
-    # create the helper objects and store them.
-    $self->set_collection( Audio::MPD::Collection->new(_mpd=>$self) );
-    $self->set_playlist  ( Audio::MPD::Playlist->new(_mpd=>$self) );
-
     # try to issue a ping to test connection - this can die.
     $self->ping;
 
     return $self;
 }
+
+sub _build_collection { Audio::MPD::Collection->new( _mpd => $_[0] ); }
+sub _build_playlist   { Audio::MPD::Playlist->new( _mpd => $_[0] ); }
 
 
 #--
