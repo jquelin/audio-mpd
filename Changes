@@ -1,23 +1,8 @@
-High-level changelog
-====================
+Changelog for Audio-MPD
 
-0.19.x  possibility to change connection scheme
-0.18.x  using common classes in audio::mpd::common
-0.17.x  introducing AM::Playlist + AM::Time
-0.16.x  utf-8 support + introducing mpd-dynamic script
-0.15.x  introducing AM::Collection
-0.14.x  introducing AM::Items
-0.13.x  rewrote connection mechanism
-0.12.4  adoption by jerome quelin & quick fixes
-0.12.0  adoption by nicholas j humphrey & first release on cpan
-0.10.0  adapting to evolving mpd
-[...]   ? (no information)
-0.1.0   initial release by tue abrahamsen
+{{$NEXT}}
 
-
-
-Low-level changelog
-===================
+**
 
 0.19.10 Wed Oct 21 14:20:09 2009
  - update list of static prereqs, not caught by autoprereq
