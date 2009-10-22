@@ -616,8 +616,8 @@ then to empty string.
 
 =item conntype => $type
 
-change how the connection to mpd server is handled. It can be either
-C<reuse> to reuse the same connection or C<once> to open a new
+change how the connection to mpd server is handled. It can be either the
+C<reuse> string to reuse the same connection or C<once> to open a new
 connection per command (default).
 
 =back
