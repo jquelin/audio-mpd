@@ -32,7 +32,7 @@ has _mpd => ( is=>'ro', required=>1, weak_ref=>1 );
 
 # -- Collection: retrieving songs & directories
 
-=meth_mpd_playback my @items = $coll->all_items( [$path] );
+=meth_coll_song my @items = $coll->all_items( [$path] );
 
 Return B<all> L<Audio::MPD::Common::Item>s (both songs & directories)
 currently known by mpd.
