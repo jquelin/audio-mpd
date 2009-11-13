@@ -1,6 +1,8 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+
+1.092950 Thu Oct 22 19:34:35 2009
  - module is quite stable now, bumping to 1.yydddn version
  - migrated to moose
  - password() method renamed to set_password()
