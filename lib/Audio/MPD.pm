@@ -14,6 +14,7 @@ use Encode;
 use IO::Socket;
 use Moose;
 use Moose::Util::TypeConstraints;
+use MooseX::Has::Sugar;
 use MooseX::SemiAffordanceAccessor;
 
 
@@ -45,16 +46,16 @@ connection per command (default).
 
 =cut
 
-has conntype   => ( is=>'ro', isa=>'CONNTYPE', default=>'once'  );
-has host       => ( is=>'ro', lazy_build=>1 );
-has password   => ( is=>'rw', lazy_build=>1, trigger=>sub { $_[0]->ping } );
-has port       => ( is=>'ro', lazy_build=>1 );
+has conntype   => ( ro, isa=>'CONNTYPE', default=>'once'  );
+has host       => ( ro, lazy_build );
+has password   => ( rw, lazy_build, trigger=>sub { $_[0]->ping } );
+has port       => ( ro, lazy_build );
 
-has collection => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Collection' );
-has playlist   => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Playlist'   );
-has version    => ( is=>'rw' );
+has collection => ( ro, lazy_build, isa=>'Audio::MPD::Collection' );
+has playlist   => ( ro, lazy_build, isa=>'Audio::MPD::Playlist'   );
+has version    => ( rw );
 
-has _socket    => ( is=>'rw', isa=>'IO::Socket::INET' );
+has _socket    => ( rw, isa=>'IO::Socket::INET' );
 
 
 #--
@@ -94,6 +95,7 @@ sub _parse_env_var {
 sub _build_host     { return ( _parse_env_var() )[1] || 'localhost'; }
 sub _build_port     { return $ENV{MPD_PORT}     || ( _parse_env_var() )[2] || 6600; }
 sub _build_password { return $ENV{MPD_PASSWORD} || ( _parse_env_var() )[0] || '';   }
+
 sub _build_collection { Audio::MPD::Collection->new( _mpd => $_[0] ); }
 sub _build_playlist   { Audio::MPD::Playlist  ->new( _mpd => $_[0] ); }
 

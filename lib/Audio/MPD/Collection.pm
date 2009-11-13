@@ -6,9 +6,10 @@ package Audio::MPD::Collection;
 # ABSTRACT: class to query MPD's collection
 
 use Moose;
+use MooseX::Has::Sugar;
 use MooseX::SemiAffordanceAccessor;
 
-has _mpd => ( is=>'ro', required=>1, weak_ref=>1 );
+has _mpd => ( ro, required, weak_ref );
 
 
 #--
