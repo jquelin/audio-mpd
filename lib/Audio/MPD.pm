@@ -10,15 +10,13 @@ use Audio::MPD::Common::Item;
 use Audio::MPD::Common::Stats;
 use Audio::MPD::Common::Status;
 use Audio::MPD::Playlist;
+use Audio::MPD::Types;
 use Encode;
 use IO::Socket;
 use Moose;
-use Moose::Util::TypeConstraints;
 use MooseX::Has::Sugar;
 use MooseX::SemiAffordanceAccessor;
 
-
-enum CONNTYPE  => qw{ reuse once };
 
 =attr host
 
@@ -40,9 +38,10 @@ empty string.
 
 =attr conntype
 
-Change how the connection to mpd server is handled. It can be either the
-C<reuse> string to reuse the same connection or C<once> to open a new
-connection per command (default).
+Change how the connection to mpd server is handled. It should be of a
+C<CONNTYPE> type (cf L<Audio::MPD::Types>). Use either the C<reuse>
+string to reuse the same connection or C<once> to open a new connection
+per command (default).
 
 =cut
 
