@@ -17,20 +17,55 @@ use Moose::Util::TypeConstraints;
 use MooseX::SemiAffordanceAccessor;
 
 
-has _socket    => ( is=>'rw', isa=>'IO::Socket::INET' );
-
 enum CONNTYPE  => qw{ reuse once };
+
+=attr host
+
+The hostname where MPD is running. Defaults to environment var
+C<MPD_HOST>, then to 'localhost'. Note that C<MPD_HOST> can be of
+the form C<password@host:port> (each of C<password@> or C<:port> can
+be omitted).
+
+=attr port
+
+The port that MPD server listens to. Defaults to environment var
+C<MPD_PORT>, then to parsed C<MPD_HOST> (cf above), then to 6600.
+
+=attr password
+
+The password to access special MPD functions. Defaults to environment
+var C<MPD_PASSWORD>, then to parsed C<MPD_HOST> (cf above), then to
+empty string.
+
+=attr conntype
+
+Change how the connection to mpd server is handled. It can be either the
+C<reuse> string to reuse the same connection or C<once> to open a new
+connection per command (default).
+
+=cut
+
 has conntype   => ( is=>'ro', isa=>'CONNTYPE', default=>'once'  );
 has host       => ( is=>'ro', lazy_build=>1 );
 has password   => ( is=>'rw', lazy_build=>1, trigger=>sub { $_[0]->ping } );
 has port       => ( is=>'ro', lazy_build=>1 );
+
 has collection => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Collection' );
 has playlist   => ( is=>'ro', lazy_build=>1, isa=>'Audio::MPD::Playlist'   );
 has version    => ( is=>'rw' );
 
+has _socket    => ( is=>'rw', isa=>'IO::Socket::INET' );
+
 
 #--
 # initializer & lazy builders
+
+=method my $mpd = Audio::MPD->new( \%opts );
+
+This is the constructor for L<Audio::MPD>. One can specify any of the
+attributes (cf above).
+
+=cut
 
 sub BUILD {
     my $self = shift;
@@ -211,53 +246,63 @@ sub _cooked_command_strip_first_field {
 
 # -- MPD interaction: general commands
 
-#
-# $mpd->ping;
-#
-# Sends a ping command to the mpd server.
-#
+=meth_mpd_ctrl $mpd->ping;
+
+Sends a ping command to the mpd server.
+
+=cut
+
 sub ping {
     my ($self) = @_;
     $self->_send_command( "ping\n" );
 }
 
 
-#
-# my $version = $mpd->version;
-#
-# Return version of MPD server's connected.
-#
+
+=meth_mpd_ctrl my $version = $mpd->version;
+
+Return mpd's version number as advertised during connection. Note that
+mpd returns B<protocol> version when connected. This protocol version
+can differ from the real mpd version. eg, mpd version 0.13.2 is
+"speaking" and thus advertising version 0.13.0.
+
+=cut
+
 # sub version {} # implemented as an accessor.
-#
 
 
-#
-# $mpd->kill;
-#
-# Send a message to the MPD server telling it to shut down.
-#
+
+=meth_mpd_ctrl $mpd->kill;
+
+Send a message to the MPD server telling it to shut down.
+
+=cut
+
 sub kill {
     my ($self) = @_;
     $self->_send_command("kill\n");
 }
 
 
-#
-# $mpd->set_password( [$password] )
-#
-# Change password used to communicate with MPD server to $password.
-# Empty string is assumed if $password is not supplied.
-#
+
+=meth_mpd_ctrl $mpd->set_password( [$password] );
+
+Change password used to communicate with MPD server to C<$password>.
+Empty string is assumed if C<$password> is not supplied.
+
+=cut
+
 # implemented by password trigger (from moose)
 
 
-#
-# $mpd->updatedb( [$path] );
-#
-# Force mpd to rescan its collection. If $path (relative to MPD's music
-# directory) is supplied, MPD will only scan it - otherwise, MPD will rescan
-# its whole collection.
-#
+=meth_mpd_ctrl $mpd->updatedb( [$path] );
+
+Force mpd to recan its collection. If C<$path> (relative to MPD's music
+directory) is supplied, MPD will only scan it - otherwise, MPD will
+rescan its whole collection.
+
+=cut
+
 sub updatedb {
     my ($self, $path) = @_;
     $path ||= '';
@@ -265,11 +310,12 @@ sub updatedb {
 }
 
 
-#
-# my @handlers = $mpd->urlhandlers;
-#
-# Return an array of supported URL schemes.
-#
+=meth_mpd_ctrl my @handlers = $mpd->urlhandlers;
+
+Return an array of supported URL schemes.
+
+=cut
+
 sub urlhandlers {
     my ($self) = @_;
     return $self->_cooked_command_strip_first_field("urlhandlers\n");
@@ -278,13 +324,14 @@ sub urlhandlers {
 
 # -- MPD interaction: handling volume & output
 
-#
-# $mpd->volume( [+][-]$volume );
-#
-# Sets the audio output volume percentage to absolute $volume.
-# If $volume is prefixed by '+' or '-' then the volume is changed relatively
-# by that value.
-#
+=meth_mpd_output $mpd->volume( [+][-]$volume );
+
+Sets the audio output volume percentage to absolute C<$volume>.  If
+C<$volume> is prefixed by '+' or '-' then the volume is changed
+relatively by that value.
+
+=cut
+
 sub volume {
     my ($self, $volume) = @_;
 
@@ -296,22 +343,26 @@ sub volume {
 }
 
 
-#
-# $mpd->output_enable( $output );
-#
-# Enable the specified audio output. $output is the ID of the audio output.
-#
+=meth_mpd_output $mpd->output_enable( $output );
+
+Enable the specified audio output. C<$output> is the ID of the audio
+output.
+
+=cut
+
 sub output_enable {
     my ($self, $output) = @_;
     $self->_send_command("enableoutput $output\n");
 }
 
 
-#
-# $mpd->output_disable( $output );
-#
-# Disable the specified audio output. $output is the ID of the audio output.
-#
+=meth_mpd_output $mpd->output_disable( $output );
+
+Disable the specified audio output. C<$output> is the ID of the audio
+output.
+
+=cut
+
 sub output_disable {
     my ($self, $output) = @_;
     $self->_send_command("disableoutput $output\n");
@@ -321,11 +372,13 @@ sub output_disable {
 
 # -- MPD interaction: retrieving info from current state
 
-#
-# $mpd->stats;
-#
-# Return an AMC::Stats object with the current statistics of MPD.
-#
+=meth_mpd_info my $stats = $mpd->stats;
+
+Return an L<Audio::MPD::Common::Stats> object with the current statistics
+of MPD. See the associated pod for more information.
+
+=cut
+
 sub stats {
     my ($self) = @_;
     my %kv = $self->_cooked_command_as_kv( "stats\n" );
@@ -333,13 +386,13 @@ sub stats {
 }
 
 
-#
-# my $status = $mpd->status;
-#
-# Return an AMC::Status object with various information on current
-# MPD server settings. Check the embedded pod for more information on the
-# available accessors.
-#
+=meth_mpd_info my $status = $mpd->status;
+
+Return an L<Audio::MPD::Common::Status> object with various information on
+current MPD server settings. See the associated pod for more information.
+
+=cut
+
 sub status {
     my ($self) = @_;
     my %kv = $self->_cooked_command_as_kv( "status\n" );
@@ -348,11 +401,13 @@ sub status {
 }
 
 
-#
-# my $song = $mpd->current;
-#
-# Return an AMC::Item::Song representing the song currently playing.
-#
+=meth_mpd_info my $song = $mpd->current;
+
+Return an L<Audio::MPD::Common::Item::Song> representing the song currently
+playing.
+
+=cut
+
 sub current {
     my ($self) = @_;
     my ($item) = $self->_cooked_command_as_items("currentsong\n");
@@ -360,12 +415,13 @@ sub current {
 }
 
 
-#
-# my $song = $mpd->song( [$song] )
-#
-# Return an AMC::Item::Song representing the song number $song.
-# If $song is not supplied, returns the current song.
-#
+=meth_mpd_info my $song = $mpd->song( [$song] );
+
+Return an L<Audio::MPD::Common::Item::Song> representing the song number
+C<$song>. If C<$song> is not supplied, returns the current song.
+
+=cut
+
 sub song {
     my ($self, $song) = @_;
     return $self->current unless defined $song;
@@ -374,12 +430,13 @@ sub song {
 }
 
 
-#
-# my $song = $mpd->songid( [$songid] )
-#
-# Return an AMC::Item::Song representing the song with id $songid.
-# If $songid is not supplied, returns the current song.
-#
+=meth_mpd_info my $song = $mpd->songid( [$songid] );
+
+Return an L<Audio::MPD::Common::Item::Song> representing the song with id
+C<$songid>. If C<$songid> is not supplied, returns the current song.
+
+=cut
+
 sub songid {
     my ($self, $songid) = @_;
     return $self->current unless defined $songid;
@@ -390,12 +447,14 @@ sub songid {
 
 # -- MPD interaction: altering settings
 
-#
-# $mpd->repeat( [$repeat] );
-#
-# Set the repeat mode to $repeat (1 or 0). If $repeat is not specified then
-# the repeat mode is toggled.
-#
+
+=meth_mpd_settings $mpd->repeat( [$repeat] );
+
+Set the repeat mode to C<$repeat> (1 or 0). If C<$repeat> is not
+specified then the repeat mode is toggled.
+
+=cut
+
 sub repeat {
     my ($self, $mode) = @_;
 
@@ -406,12 +465,13 @@ sub repeat {
 }
 
 
-#
-# $mpd->random( [$random] );
-#
-# Set the random mode to $random (1 or 0). If $random is not specified then
-# the random mode is toggled.
-#
+=meth_mpd_settings $mpd->random( [$random] );
+
+Set the random mode to C<$random> (1 or 0). If C<$random> is not
+specified then the random mode is toggled.
+
+=cut
+
 sub random {
     my ($self, $mode) = @_;
 
@@ -422,12 +482,14 @@ sub random {
 }
 
 
-#
-# $mpd->fade( [$seconds] );
-#
-# Enable crossfading and set the duration of crossfade between songs. If
-# $seconds is not specified or $seconds is 0, then crossfading is disabled.
-#
+=meth_mpd_settings $mpd->fade( [$seconds] );
+
+Enable crossfading and set the duration of crossfade between songs.  If
+C<$seconds> is not specified or $seconds is 0, then crossfading is
+disabled.
+
+=cut
+
 sub fade {
     my ($self, $value) = @_;
     $value ||= 0;
@@ -437,24 +499,27 @@ sub fade {
 
 # -- MPD interaction: controlling playback
 
-#
-# $mpd->play( [$song] );
-#
-# Begin playing playlist at song number $song. If no argument supplied,
-# resume playing.
-#
+=meth_mpd_playback $mpd->play( [$song] );
+
+Begin playing playlist at song number C<$song>. If no argument supplied,
+resume playing.
+
+=cut
+
 sub play {
     my ($self, $number) = @_;
     $number = '' unless defined $number;
     $self->_send_command("play $number\n");
 }
 
-#
-# $mpd->playid( [$songid] );
-#
-# Begin playing playlist at song ID $songid. If no argument supplied,
-# resume playing.
-#
+
+=meth_mpd_playback $mpd->playid( [$songid] );
+
+Begin playing playlist at song ID C<$songid>. If no argument supplied,
+resume playing.
+
+=cut
+
 sub playid {
     my ($self, $number) = @_;
     $number ||= '';
@@ -462,14 +527,15 @@ sub playid {
 }
 
 
-#
-# $mpd->pause( [$sate] );
-#
-# Pause playback. If $state is 0 then the current track is unpaused, if
-# $state is 1 then the current track is paused.
-#
-# Note that if $state is not given, pause state will be toggled.
-#
+=meth_mpd_playback $mpd->pause( [$state] );
+
+Pause playback. If C<$state> is 0 then the current track is unpaused,
+if C<$state> is 1 then the current track is paused.
+
+Note that if C<$state> is not given, pause state will be toggled.
+
+=cut
+
 sub pause {
     my ($self, $state) = @_;
     $state ||= ''; # default is to toggle
@@ -477,44 +543,50 @@ sub pause {
 }
 
 
-#
-# $mpd->stop;
-#
-# Stop playback.
-#
+=meth_mpd_playback $mpd->stop;
+
+Stop playback.
+
+=cut
+
 sub stop {
     my ($self) = @_;
     $self->_send_command("stop\n");
 }
 
 
-#
-# $mpd->next;
-#
-# Play next song in playlist.
-#
+=meth_mpd_playback $mpd->next;
+
+Play next song in playlist.
+
+=cut
+
 sub next {
     my ($self) = @_;
     $self->_send_command("next\n");
 }
 
-#
-# $mpd->prev;
-#
-# Play previous song in playlist.
-#
+
+=meth_mpd_playback $mpd->prev;
+
+Play previous song in playlist.
+
+=cut
+
 sub prev {
     my($self) = shift;
     $self->_send_command("previous\n");
 }
 
 
-#
-# $mpd->seek( $time, [$song] );
-#
-# Seek to $time seconds in song number $song. If $song number is not specified
-# then the perl module will try and seek to $time in the current song.
-#
+=meth_mpd_playback $mpd->seek( $time, [$song]);
+
+Seek to C<$time> seconds in song number C<$song>. If C<$song> number is
+not specified then the perl module will try and seek to C<$time> in the
+current song.
+
+=cut
+
 sub seek {
     my ($self, $time, $song) = @_;
     $time ||= 0; $time = int $time;
@@ -523,12 +595,14 @@ sub seek {
 }
 
 
-#
-# $mpd->seekid( $time, [$songid] );
-#
-# Seek to $time seconds in song ID $songid. If $songid number is not specified
-# then the perl module will try and seek to $time in the current song.
-#
+=meth_mpd_playback $mpd->seekid( $time, $songid );
+
+Seek to C<$time> seconds in song ID C<$songid>. If C<$song> number is
+not specified then the perl module will try and seek to C<$time> in the
+current song.
+
+=cut
+
 sub seekid {
     my ($self, $time, $song) = @_;
     $time ||= 0; $time = int $time;
@@ -566,7 +640,7 @@ controlling MPD (Music Player Daemon) servers. A connection to the MPD
 server is established as soon as a new L<Audio::MPD> object is created.
 
 Since mpd is still in 0.x versions, L<Audio::MPD> sticks to latest mpd
-(0.14 as time of writing) protocol & behaviour, and does B<not> try to
+(0.15 as time of writing) protocol & behaviour, and does B<not> try to
 maintain backward compatibility.
 
 Note that the module will by default connect to mpd before sending any
@@ -583,233 +657,6 @@ The L<POE::Component::Client::MPD> module is way safer - you're advised
 to use it instead of L<Audio::MPD>. Or you can try to set C<conntype> to
 C<$REUSE> (see L<Audio::MPD> constructor for more details), but you
 would be then on your own to deal with disconnections.
-
-
-=head1 METHODS
-
-=head2 Constructor
-
-=over 4
-
-=item new( [%opts] )
-
-This is the constructor for L<Audio::MPD>. One can specify the following
-options:
-
-=over 4
-
-=item host => $hostname
-
-defaults to environment var C<MPD_HOST>, then to 'localhost'. Note that
-C<MPD_HOST> can be of the form C<password@host:port> (each of
-C<password@> or C<:port> can be omitted).
-
-=item port => $port
-
-defaults to environment var C<MPD_PORT>, then to parsed C<MPD_HOST>,
-then to 6600.
-
-=item password => $password
-
-defaults to environment var C<MPD_PASSWORD>, then to parsed C<MPD_HOST>,
-then to empty string.
-
-=item conntype => $type
-
-change how the connection to mpd server is handled. It can be either the
-C<reuse> string to reuse the same connection or C<once> to open a new
-connection per command (default).
-
-=back
-
-
-=back
-
-
-=head2 Controlling the server
-
-=over 4
-
-=item $mpd->ping()
-
-Sends a ping command to the mpd server.
-
-
-=item $mpd->version()
-
-Return mpd's version number as advertised during connection. Note that
-mpd returns B<protocol> version when connected. This protocol version
-can differ from the real mpd version. eg, mpd version 0.13.2 is
-"speaking" and thus advertising version 0.13.0.
-
-
-
-=item $mpd->kill()
-
-Send a message to the MPD server telling it to shut down.
-
-
-=item $mpd->set_password( [$password] )
-
-Change password used to communicate with MPD server to C<$password>.
-Empty string is assumed if C<$password> is not supplied.
-
-
-=item $mpd->updatedb( [$path] )
-
-Force mpd to recan its collection. If C<$path> (relative to MPD's music
-directory) is supplied, MPD will only scan it - otherwise, MPD will
-rescan its whole collection.
-
-
-=item $mpd->urlhandlers()
-
-Return an array of supported URL schemes.
-
-
-=back
-
-
-=head2 Handling volume & output
-
-=over 4
-
-=item $mpd->volume( [+][-]$volume )
-
-Sets the audio output volume percentage to absolute C<$volume>.  If
-C<$volume> is prefixed by '+' or '-' then the volume is changed
-relatively by that value.
-
-
-=item $mpd->output_enable( $output )
-
-Enable the specified audio output. C<$output> is the ID of the audio
-output.
-
-
-=item $mpd->output_disable( $output )
-
-Disable the specified audio output. C<$output> is the ID of the audio
-output.
-
-=back
-
-
-=head2 Retrieving info from current state
-
-=over 4
-
-=item $mpd->stats()
-
-Return an L<Audio::MPD::Common::Stats> object with the current statistics
-of MPD. See the associated pod for more information.
-
-
-=item $mpd->status()
-
-Return an L<Audio::MPD::Common::Status> object with various information on
-current MPD server settings. Check the embedded pod for more information on
-the available accessors.
-
-
-=item $mpd->current()
-
-Return an L<Audio::MPD::Common::Item::Song> representing the song currently
-playing.
-
-
-=item $mpd->song( [$song] )
-
-Return an L<Audio::MPD::Common::Item::Song> representing the song number
-C<$song>. If C<$song> is not supplied, returns the current song.
-
-
-=item $mpd->songid( [$songid] )
-
-Return an L<Audio::MPD::Common::Item::Song> representing the song with id
-C<$songid>. If C<$songid> is not supplied, returns the current song.
-
-=back
-
-
-=head2 Altering MPD settings
-
-=over 4
-
-=item $mpd->repeat( [$repeat] )
-
-Set the repeat mode to C<$repeat> (1 or 0). If C<$repeat> is not
-specified then the repeat mode is toggled.
-
-
-=item $mpd->random( [$random] )
-
-Set the random mode to C<$random> (1 or 0). If C<$random> is not
-specified then the random mode is toggled.
-
-
-=item $mpd->fade( [$seconds] )
-
-Enable crossfading and set the duration of crossfade between songs.  If
-C<$seconds> is not specified or $seconds is 0, then crossfading is
-disabled.
-
-=back
-
-
-=head2 Controlling playback
-
-=over 4
-
-=item $mpd->play( [$song] )
-
-Begin playing playlist at song number C<$song>. If no argument supplied,
-resume playing.
-
-
-=item $mpd->playid( [$songid] )
-
-Begin playing playlist at song ID C<$songid>. If no argument supplied,
-resume playing.
-
-
-=item $mpd->pause( [$state] )
-
-Pause playback. If C<$state> is 0 then the current track is unpaused,
-if C<$state> is 1 then the current track is paused.
-
-Note that if C<$state> is not given, pause state will be toggled.
-
-
-=item $mpd->stop()
-
-Stop playback.
-
-
-=item $mpd->next()
-
-Play next song in playlist.
-
-
-=item $mpd->prev()
-
-Play previous song in playlist.
-
-
-=item $mpd->seek( $time, [$song])
-
-Seek to C<$time> seconds in song number C<$song>. If C<$song> number is
-not specified then the perl module will try and seek to C<$time> in the
-current song.
-
-
-=item $mpd->seekid( $time, $songid )
-
-Seek to C<$time> seconds in song ID C<$songid>. If C<$song> number is
-not specified then the perl module will try and seek to C<$time> in the
-current song.
-
-=back
 
 
 =head2 Searching the collection
