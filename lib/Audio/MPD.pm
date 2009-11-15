@@ -690,15 +690,26 @@ L<http://www.musicpd.org>.wikia.com>.
 Original code (2005) by Tue Abrahamsen C<< <tue.abrahamsen@gmail.com> >>,
 documented in 2006 by Nicholas J. Humfrey C<< <njh@aelius.com> >>.
 
-L<Audio::MPD> development takes place on <audio-mpd@googlegroups.com>:
-feel free to join us. (use L<http://groups.google.com/group/audio-mpd>
-to sign in). Our git repository is located at
-L<http://github.com/jquelin/audio-mpd.git>.
 
-
-You can also look for information on this module at:
+You can look for information on this module at:
 
 =over 4
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Audio-MPD>
+
+=item * See open / report bugs
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Audio-MPD>
+
+=item * Mailing-list
+
+L<http://groups.google.com/group/audio-mpd>
+
+=item * Git repository
+
+L<http://github.com/jquelin/audio-mpd.git>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
@@ -707,10 +718,6 @@ L<http://annocpan.org/dist/Audio-MPD>
 =item * CPAN Ratings
 
 L<http://cpanratings.perl.org/d/Audio-MPD>
-
-=item * Open bugs
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Audio-MPD>
 
 =back
 
