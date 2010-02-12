@@ -2,6 +2,10 @@ Changelog for Audio-MPD
 
 {{$NEXT}}
 
+1.100430  2010-02-12 12:51:18 Europe/Paris
+ - WARNING: no more makefile.pl supplied, only a build.pl
+ - sub::exporter no more used internally
+
 1.093170 Fri Nov 13 19:06:54 2009
  - removed no more used prereq class::accessor
  - revamped pod with podweaver
