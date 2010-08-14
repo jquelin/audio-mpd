@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+package main;
+#ABSTRACT: rate your songs for mpd-dynamic
+
 use 5.010;
 use strict;
 use warnings;
@@ -26,25 +29,14 @@ untie %ratings;
 
 __END__
 
-=head1 NAME
-
-mpd-rate - rate your songs to use mpd-dynamic
-
-
 =head1 USAGE
 
     mpd-rate [options]
 
 
-=head1 VERSION
-
-This is mpd-rate version 0.1
-
-
 =head1 DESCRIPTION
 
 This program allows you to rate your songs, to allow mpd-dynamic to use ratings.
-
 
 
 

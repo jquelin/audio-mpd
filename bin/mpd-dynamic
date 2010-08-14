@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+package main;
+# ABSTRACT: a dynamic playlist for mpd
+
 use strict;
 use warnings;
 
@@ -86,20 +89,9 @@ sub debug {
 
 __END__
 
-
-=head1 NAME
-
-mpd-dynamic - a dynamic playlist for mpd
-
-
 =head1 USAGE
 
     mpd-dynamic [options]
-
-
-=head1 VERSION
-
-This is mpd-dynamic version 0.4
 
 
 =head1 DESCRIPTION
