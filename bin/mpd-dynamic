@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
-package main;
-# ABSTRACT: a dynamic playlist for mpd
-
 use strict;
 use warnings;
+
+package main;
+# ABSTRACT: a dynamic playlist for mpd
 
 use Audio::MPD;
 use DB_File;

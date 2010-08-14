@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 
-package main;
-#ABSTRACT: rate your songs for mpd-dynamic
-
 use 5.010;
 use strict;
 use warnings;
+
+package main;
+#ABSTRACT: rate your songs for mpd-dynamic
 
 use Audio::MPD;
 use DB_File;
@@ -17,7 +17,7 @@ my $song = encode( 'utf-8', Audio::MPD->new->current->file );
 
 # open ratings file
 my %ratings;
-tie %ratings, 'DB_File', $ARGV{ratings}, O_RDWR|O_CREAT, 0666, $DB_HASH
+tie %ratings, 'DB_File', $ARGV{ratings}, O_RDWR|O_CREAT, oct(666), $DB_HASH
     or die "$ARGV{ratings}: $!";
 
 # update rating or print it
