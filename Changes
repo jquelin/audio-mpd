@@ -2,6 +2,9 @@ Changelog for Audio-MPD
 
 {{$NEXT}}
 
+1.102260  2010-08-14 19:21:51 Europe/Paris
+ - new script mpd-rate to rate a song / display current rating
+
 1.100430  2010-02-12 12:51:18 Europe/Paris
  - WARNING: no more makefile.pl supplied, only a build.pl
  - sub::exporter no more used internally
