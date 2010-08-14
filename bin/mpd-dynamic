@@ -197,6 +197,8 @@ You can also take advantage of ratings if you want. With those options, songs
 need to have at least a given rating (or no rating yet) to be inserted: this
 way, you will only listen to your favorite songs!
 
+Ratings can be created / updated with C<mpd-rate>.
+
 Note that if you supply a non-existant rating db-file, the rating mechanism
 will be ignored. The following options control the rating mechanism:
 
