@@ -5,17 +5,19 @@ use strict;
 package Audio::MPD;
 # ABSTRACT: class to talk to MPD (Music Player Daemon) servers
 
-use Audio::MPD::Collection;
 use Audio::MPD::Common::Item;
 use Audio::MPD::Common::Stats;
 use Audio::MPD::Common::Status;
-use Audio::MPD::Playlist;
-use Audio::MPD::Types;
+use Audio::MPD::Common::Output;
 use Encode;
 use IO::Socket;
 use Moose;
 use MooseX::Has::Sugar;
 use MooseX::SemiAffordanceAccessor;
+
+use Audio::MPD::Collection;
+use Audio::MPD::Playlist;
+use Audio::MPD::Types;
 
 
 =attr host
@@ -341,6 +343,35 @@ sub volume {
         $volume = $1 eq '+' ? $current + $2 : $current - $2;
     }
     $self->_send_command("setvol $volume\n");
+}
+
+
+=meth_mpd_output outputs
+
+    my @outputs = $mpd->outputs( );
+
+Return a list of C<Audio::MPD::Common::Outputs> with all outputs
+available within MPD.
+
+=cut
+
+sub outputs {
+    my ($self) = @_;
+
+    my @lines = $self->_send_command("outputs\n");
+    my (@outputs, %param);
+
+    # parse lines in reverse order since "id" lines come first
+    foreach my $line (reverse @lines) {
+        my ($k,$v) = split /:\s/, $line, 2;
+        $k =~ s/^output//;
+        $param{$k} = $v;
+        next unless $k eq 'id'; # last output param
+        unshift @outputs, Audio::MPD::Common::Output->new(%param);
+        %param = ();
+    }
+
+    return @outputs;
 }
 
 

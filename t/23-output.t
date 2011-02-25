@@ -10,7 +10,7 @@ use Test::More;
 eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 5;
+plan tests => 9;
 my $mpd = Audio::MPD->new;
 
 
@@ -31,6 +31,15 @@ is( $mpd->status->volume, 51, 'increasing volume' );
 $mpd->volume('-4');
 is( $mpd->status->volume, 47, 'decreasing volume' );
 $mpd->volume($oldvol);  # resoring volume.
+
+#
+# testing outputs.
+my @outputs = $mpd->outputs;
+is( scalar(@outputs), 1, 'list of outputs' );
+my $o = shift @outputs;
+isa_ok( $o, 'Audio::MPD::Common::Output', "outputs return AMC:Output objects" );
+is( $o->id,   0,      "AMC:O object: id" );
+is( $o->name, "null", "AMC:O object: name" );
 
 #
 # testing disable_output.

@@ -1,6 +1,7 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+ - new command available: outputs
 
 1.102260  2010-08-14 19:21:51 Europe/Paris
  - new script mpd-rate to rate a song / display current rating
