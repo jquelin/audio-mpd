@@ -33,7 +33,9 @@ has _mpd => ( ro, required, weak_ref );
 
 # -- Playlist: retrieving information
 
-=meth_play_info my @items = $pl->as_items;
+=meth_play_info as_items
+
+    my @items = $pl->as_items;
 
 Return an array of L<Audio::MPD::Common::Item::Song>s, one for each of the
 songs in the current playlist.
@@ -48,7 +50,9 @@ sub as_items {
 }
 
 
-=meth_play_info my @items = $pl->items_changed_since( $plversion );
+=meth_play_info items_changed_since
+
+    my @items = $pl->items_changed_since( $plversion );
 
 Return a list with all the songs (as L<Audio::MPD::Common::Item::Song> objects)
 added to the playlist since playlist C<$plversion>.
@@ -63,7 +67,9 @@ sub items_changed_since {
 
 # -- Playlist: adding / removing songs
 
-=meth_play_addrm $pl->add( $path [, $path [...] ] );
+=meth_play_addrm add
+
+    $pl->add( $path [, $path [...] ] );
 
 Add the songs identified by C<$path> (relative to MPD's music directory) to the
 current playlist. No return value.
@@ -80,7 +86,9 @@ sub add {
 }
 
 
-=meth_play_addrm $pl->delete( $song [, $song [...] ] );
+=meth_play_addrm delete
+
+    $pl->delete( $song [, $song [...] ] );
 
 Remove the specified C<$song> numbers (starting from 0) from the current
 playlist. No return value.
@@ -97,7 +105,9 @@ sub delete {
 }
 
 
-=meth_play_addrm $pl->deleteid( $songid [, $songid [...] ] );
+=meth_play_addrm deleteid
+
+    $pl->deleteid( $songid [, $songid [...] ] );
 
 Remove the specified C<$songid>s (as assigned by mpd when inserted in playlist)
 from the current playlist. No return value.
@@ -114,7 +124,9 @@ sub deleteid {
 }
 
 
-=meth_play_addrm $pl->clear;
+=meth_play_addrm clear
+
+    $pl->clear;
 
 Remove all the songs from the current playlist. No return value.
 
@@ -126,7 +138,9 @@ sub clear {
 }
 
 
-=meth_play_addrm $pl->crop;
+=meth_play_addrm crop
+
+    $pl->crop;
 
 Remove all of the songs from the current playlist B<except> the
 song currently playing.
@@ -152,7 +166,9 @@ sub crop {
 # -- Playlist: changing playlist order
 
 
-=meth_play_order $pl->shuffle;
+=meth_play_order shuffle
+
+    $pl->shuffle;
 
 Shuffle the current playlist. No return value.
 
@@ -164,7 +180,9 @@ sub shuffle {
 }
 
 
-=meth_play_order $pl->swap( $song1, $song2 );
+=meth_play_order swap
+
+    $pl->swap( $song1, $song2 );
 
 Swap positions of song number C<$song1> and C<$song2> in the current
 playlist. No return value.
@@ -177,7 +195,9 @@ sub swap {
 }
 
 
-=meth_play_order $pl->swapid( $songid1, $songid2 );
+=meth_play_order swapid
+
+    $pl->swapid( $songid1, $songid2 );
 
 Swap the postions of song ID C<$songid1> with song ID C<$songid2> in the
 current playlist. No return value.
@@ -190,7 +210,9 @@ sub swapid {
 }
 
 
-=meth_play_order $pl->move( $song, $newpos );
+=meth_play_order move
+
+    $pl->move( $song, $newpos );
 
 Move song number C<$song> to the position C<$newpos>. No return value.
 
@@ -202,7 +224,9 @@ sub move {
 }
 
 
-=meth_play_order $pl->moveid( $songid, $newpos );
+=meth_play_order moveid
+
+    $pl->moveid( $songid, $newpos );
 
 Move song ID C<$songid> to the position C<$newpos>. No return value.
 
@@ -216,7 +240,9 @@ sub moveid {
 
 # -- Playlist: managing playlists
 
-=meth_play_mgmt $pl->load( $playlist );
+=meth_play_mgmt load
+
+    $pl->load( $playlist );
 
 Load list of songs from specified C<$playlist> file. No return value.
 
@@ -228,7 +254,9 @@ sub load {
 }
 
 
-=meth_play_mgmt $pl->save( $playlist );
+=meth_play_mgmt save
+
+    $pl->save( $playlist );
 
 Save the current playlist to a file called C<$playlist> in MPD's playlist
 directory. No return value.
@@ -241,7 +269,9 @@ sub save {
 }
 
 
-=meth_play_mgmt $pl->rm( $playlist );
+=meth_play_mgmt rm
+
+    $pl->rm( $playlist );
 
 Delete playlist named C<$playlist> from MPD's playlist directory. No
 return value.

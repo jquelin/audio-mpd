@@ -62,7 +62,9 @@ has _socket    => ( rw, isa=>'IO::Socket::INET' );
 #--
 # initializer & lazy builders
 
-=method my $mpd = Audio::MPD->new( \%opts );
+=method new
+
+    my $mpd = Audio::MPD->new( \%opts );
 
 This is the constructor for L<Audio::MPD>. One can specify any of the
 attributes (cf above).
@@ -249,7 +251,9 @@ sub _cooked_command_strip_first_field {
 
 # -- MPD interaction: general commands
 
-=meth_mpd_ctrl $mpd->ping;
+=meth_mpd_ctrl ping
+
+    $mpd->ping;
 
 Sends a ping command to the mpd server.
 
@@ -262,7 +266,9 @@ sub ping {
 
 
 
-=meth_mpd_ctrl my $version = $mpd->version;
+=meth_mpd_ctrl version
+
+    my $version = $mpd->version;
 
 Return mpd's version number as advertised during connection. Note that
 mpd returns B<protocol> version when connected. This protocol version
@@ -275,7 +281,9 @@ can differ from the real mpd version. eg, mpd version 0.13.2 is
 
 
 
-=meth_mpd_ctrl $mpd->kill;
+=meth_mpd_ctrl kill
+
+    $mpd->kill;
 
 Send a message to the MPD server telling it to shut down.
 
@@ -288,7 +296,9 @@ sub kill {
 
 
 
-=meth_mpd_ctrl $mpd->set_password( [$password] );
+=meth_mpd_ctrl set_password
+
+    $mpd->set_password( [$password] );
 
 Change password used to communicate with MPD server to C<$password>.
 Empty string is assumed if C<$password> is not supplied.
@@ -298,7 +308,9 @@ Empty string is assumed if C<$password> is not supplied.
 # implemented by password trigger (from moose)
 
 
-=meth_mpd_ctrl $mpd->updatedb( [$path] );
+=meth_mpd_ctrl updatedb
+
+    $mpd->updatedb( [$path] );
 
 Force mpd to recan its collection. If C<$path> (relative to MPD's music
 directory) is supplied, MPD will only scan it - otherwise, MPD will
@@ -313,7 +325,9 @@ sub updatedb {
 }
 
 
-=meth_mpd_ctrl my @handlers = $mpd->urlhandlers;
+=meth_mpd_ctrl urlhandlers
+
+    my @handlers = $mpd->urlhandlers;
 
 Return an array of supported URL schemes.
 
@@ -327,7 +341,9 @@ sub urlhandlers {
 
 # -- MPD interaction: handling volume & output
 
-=meth_mpd_output $mpd->volume( [+][-]$volume );
+=meth_mpd_output volume
+
+    $mpd->volume( [+][-]$volume );
 
 Sets the audio output volume percentage to absolute C<$volume>.  If
 C<$volume> is prefixed by '+' or '-' then the volume is changed
@@ -375,7 +391,9 @@ sub outputs {
 }
 
 
-=meth_mpd_output $mpd->output_enable( $output );
+=meth_mpd_output output_enable
+
+    $mpd->output_enable( $output );
 
 Enable the specified audio output. C<$output> is the ID of the audio
 output.
@@ -388,7 +406,9 @@ sub output_enable {
 }
 
 
-=meth_mpd_output $mpd->output_disable( $output );
+=meth_mpd_output output_disable
+
+    $mpd->output_disable( $output );
 
 Disable the specified audio output. C<$output> is the ID of the audio
 output.
@@ -404,7 +424,9 @@ sub output_disable {
 
 # -- MPD interaction: retrieving info from current state
 
-=meth_mpd_info my $stats = $mpd->stats;
+=meth_mpd_info stats
+
+    my $stats = $mpd->stats;
 
 Return an L<Audio::MPD::Common::Stats> object with the current statistics
 of MPD. See the associated pod for more information.
@@ -418,7 +440,9 @@ sub stats {
 }
 
 
-=meth_mpd_info my $status = $mpd->status;
+=meth_mpd_info status
+
+    my $status = $mpd->status;
 
 Return an L<Audio::MPD::Common::Status> object with various information on
 current MPD server settings. See the associated pod for more information.
@@ -433,7 +457,9 @@ sub status {
 }
 
 
-=meth_mpd_info my $song = $mpd->current;
+=meth_mpd_info current
+
+    my $song = $mpd->current;
 
 Return an L<Audio::MPD::Common::Item::Song> representing the song currently
 playing.
@@ -447,7 +473,9 @@ sub current {
 }
 
 
-=meth_mpd_info my $song = $mpd->song( [$song] );
+=meth_mpd_info song
+
+    my $song = $mpd->song( [$song] );
 
 Return an L<Audio::MPD::Common::Item::Song> representing the song number
 C<$song>. If C<$song> is not supplied, returns the current song.
@@ -462,7 +490,9 @@ sub song {
 }
 
 
-=meth_mpd_info my $song = $mpd->songid( [$songid] );
+=meth_mpd_info songid
+
+    my $song = $mpd->songid( [$songid] );
 
 Return an L<Audio::MPD::Common::Item::Song> representing the song with id
 C<$songid>. If C<$songid> is not supplied, returns the current song.
@@ -480,7 +510,9 @@ sub songid {
 # -- MPD interaction: altering settings
 
 
-=meth_mpd_settings $mpd->repeat( [$repeat] );
+=meth_mpd_settings repeat
+
+    $mpd->repeat( [$repeat] );
 
 Set the repeat mode to C<$repeat> (1 or 0). If C<$repeat> is not
 specified then the repeat mode is toggled.
@@ -497,7 +529,9 @@ sub repeat {
 }
 
 
-=meth_mpd_settings $mpd->random( [$random] );
+=meth_mpd_settings random
+
+    $mpd->random( [$random] );
 
 Set the random mode to C<$random> (1 or 0). If C<$random> is not
 specified then the random mode is toggled.
@@ -514,7 +548,9 @@ sub random {
 }
 
 
-=meth_mpd_settings $mpd->fade( [$seconds] );
+=meth_mpd_settings fade
+
+    $mpd->fade( [$seconds] );
 
 Enable crossfading and set the duration of crossfade between songs.  If
 C<$seconds> is not specified or $seconds is 0, then crossfading is
@@ -531,7 +567,9 @@ sub fade {
 
 # -- MPD interaction: controlling playback
 
-=meth_mpd_playback $mpd->play( [$song] );
+=meth_mpd_playback play
+
+    $mpd->play( [$song] );
 
 Begin playing playlist at song number C<$song>. If no argument supplied,
 resume playing.
@@ -545,7 +583,9 @@ sub play {
 }
 
 
-=meth_mpd_playback $mpd->playid( [$songid] );
+=meth_mpd_playback playid
+
+    $mpd->playid( [$songid] );
 
 Begin playing playlist at song ID C<$songid>. If no argument supplied,
 resume playing.
@@ -559,7 +599,9 @@ sub playid {
 }
 
 
-=meth_mpd_playback $mpd->pause( [$state] );
+=meth_mpd_playback pause
+
+    $mpd->pause( [$state] );
 
 Pause playback. If C<$state> is 0 then the current track is unpaused,
 if C<$state> is 1 then the current track is paused.
@@ -575,7 +617,9 @@ sub pause {
 }
 
 
-=meth_mpd_playback $mpd->stop;
+=meth_mpd_playback stop
+
+    $mpd->stop;
 
 Stop playback.
 
@@ -587,7 +631,9 @@ sub stop {
 }
 
 
-=meth_mpd_playback $mpd->next;
+=meth_mpd_playback next
+
+    $mpd->next;
 
 Play next song in playlist.
 
@@ -599,7 +645,9 @@ sub next {
 }
 
 
-=meth_mpd_playback $mpd->prev;
+=meth_mpd_playback prev
+
+    $mpd->prev;
 
 Play previous song in playlist.
 
@@ -611,7 +659,9 @@ sub prev {
 }
 
 
-=meth_mpd_playback $mpd->seek( $time, [$song]);
+=meth_mpd_playback seek
+
+    $mpd->seek( $time, [$song]);
 
 Seek to C<$time> seconds in song number C<$song>. If C<$song> number is
 not specified then the perl module will try and seek to C<$time> in the
@@ -627,7 +677,9 @@ sub seek {
 }
 
 
-=meth_mpd_playback $mpd->seekid( $time, $songid );
+=meth_mpd_playback seekid
+
+    $mpd->seekid( $time, $songid );
 
 Seek to C<$time> seconds in song ID C<$songid>. If C<$song> number is
 not specified then the perl module will try and seek to C<$time> in the
@@ -649,11 +701,8 @@ __PACKAGE__->meta->make_immutable;
 
 __END__
 
-=begin Pod::Coverage
-
-BUILD
-
-=end Pod::Coverage
+=for Pod::Coverage
+    BUILD
 
 =head1 SYNOPSIS
 

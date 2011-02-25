@@ -33,7 +33,9 @@ has _mpd => ( ro, required, weak_ref );
 
 # -- Collection: retrieving songs & directories
 
-=meth_coll_song my @items = $coll->all_items( [$path] );
+=meth_coll_song all_items
+
+    my @items = $coll->all_items( [$path] );
 
 Return B<all> L<Audio::MPD::Common::Item>s (both songs & directories)
 currently known by mpd.
@@ -52,7 +54,9 @@ sub all_items {
 }
 
 
-=meth_coll_song my @items = $coll->all_items_simple( [$path] );
+=meth_coll_song all_items_simple
+
+    my @items = $coll->all_items_simple( [$path] );
 
 Return B<all> L<Audio::MPD::Common::Item>s (both songs & directories)
 currently known by mpd.
@@ -75,7 +79,9 @@ sub all_items_simple {
 }
 
 
-=meth_coll_song my @items = $coll->items_in_dir( [$path] );
+=meth_coll_song items_in_dir
+
+    my @items = $coll->items_in_dir( [$path] );
 
 Return the items in the given C<$path>. If no C<$path> supplied, do it on
 mpd's root directory.
@@ -95,7 +101,9 @@ sub items_in_dir {
 
 # -- Collection: retrieving the whole collection
 
-=meth_coll_whole my @songs = $coll->all_songs( [$path] );
+=meth_coll_whole all_songs
+
+    my @songs = $coll->all_songs( [$path] );
 
 Return B<all> L<Audio::MPD::Common::Item::Song>s currently known by mpd.
 
@@ -110,7 +118,9 @@ sub all_songs {
 }
 
 
-=meth_coll_whole my @albums = $coll->all_albums;
+=meth_coll_whole all_albums
+
+    my @albums = $coll->all_albums;
 
 Return the list of all albums (strings) currently known by mpd.
 
@@ -122,7 +132,9 @@ sub all_albums {
 }
 
 
-=meth_coll_whole my @artists = $coll->all_artists;
+=meth_coll_whole all_artists
+
+    my @artists = $coll->all_artists;
 
 Return the list of all artists (strings) currently known by mpd.
 
@@ -134,7 +146,9 @@ sub all_artists {
 }
 
 
-=meth_coll_whole my @titles = $coll->all_titles;
+=meth_coll_whole all_titles
+
+    my @titles = $coll->all_titles;
 
 Return the list of all song titles (strings) currently known by mpd.
 
@@ -146,7 +160,9 @@ sub all_titles {
 }
 
 
-=meth_coll_whole my @pathes = $coll->all_pathes;
+=meth_coll_whole all_pathes
+
+    my @pathes = $coll->all_pathes;
 
 Return the list of all pathes (strings) currently known by mpd.
 
@@ -158,7 +174,9 @@ sub all_pathes {
 }
 
 
-=meth_coll_whole my @lists = $coll->all_playlists;
+=meth_coll_whole all_playlists
+
+    my @lists = $coll->all_playlists;
 
 Return the list of all playlists (strings) currently known by mpd.
 
@@ -175,7 +193,9 @@ sub all_playlists {
 
 # -- Collection: picking songs
 
-=meth_coll_pick my $song = $coll->song( $path );
+=meth_coll_pick song
+
+    my $song = $coll->song( $path );
 
 Return the L<Audio::MPD::Common::Item::Song> which correspond to C<$path>.
 
@@ -190,7 +210,9 @@ sub song {
 }
 
 
-=meth_coll_pick my @songs = $coll->songs_with_filename_partial( $string );
+=meth_coll_pick songs_with_filename_partial
+
+    my @songs = $coll->songs_with_filename_partial( $string );
 
 Return the L<Audio::MPD::Common::Item::Song>s containing C<$string> in
 their path.
@@ -207,7 +229,9 @@ sub songs_with_filename_partial {
 
 # -- Collection: songs, albums & artists relations
 
-=meth_coll_relations my @albums = $coll->albums_by_artist( $artist );
+=meth_coll_relations albums_by_artist
+
+    my @albums = $coll->albums_by_artist( $artist );
 
 Return all albums (strings) performed by C<$artist> or where C<$artist>
 participated.
@@ -221,7 +245,9 @@ sub albums_by_artist {
 }
 
 
-=meth_coll_relations my @songs = $coll->songs_by_artist( $artist );
+=meth_coll_relations songs_by_artist
+
+    my @songs = $coll->songs_by_artist( $artist );
 
 Return all L<Audio::MPD::Common::Item::Song>s performed by C<$artist>.
 
@@ -235,7 +261,9 @@ sub songs_by_artist {
 }
 
 
-=meth_coll_relations my @songs = $coll->songs_by_artist_partial( $string );
+=meth_coll_relations songs_by_artist_partial
+
+    my @songs = $coll->songs_by_artist_partial( $string );
 
 Return all L<Audio::MPD::Common::Item::Song>s performed by an artist
 with C<$string> in her name.
@@ -250,7 +278,9 @@ sub songs_by_artist_partial {
 }
 
 
-=meth_coll_relations my @songs = $coll->songs_from_album( $album );
+=meth_coll_relations songs_from_album
+
+    my @songs = $coll->songs_from_album( $album );
 
 Return all L<Audio::MPD::Common::Item::Song>s appearing in C<$album>.
 
@@ -264,7 +294,9 @@ sub songs_from_album {
 }
 
 
-=meth_coll_relations my @songs = $coll->songs_from_album_partial( $string );
+=meth_coll_relations songs_from_album_partial
+
+    my @songs = $coll->songs_from_album_partial( $string );
 
 Return all L<Audio::MPD::Common::Item::Song>s appearing in album
 containing C<$string>.
@@ -278,7 +310,9 @@ sub songs_from_album_partial {
     return $self->_mpd->_cooked_command_as_items( qq[search album "$what"\n] );
 }
 
-=meth_coll_relations my @songs = $coll->songs_with_title( $title );
+=meth_coll_relations songs_with_title
+
+    my @songs = $coll->songs_with_title( $title );
 
 Return all L<Audio::MPD::Common::Item::Song>s which title is exactly
 C<$title>.
@@ -293,7 +327,9 @@ sub songs_with_title {
 }
 
 
-=meth_coll_relations my @songs = $coll->songs_with_title_partial( $string );
+=meth_coll_relations songs_with_title_partial
+
+    my @songs = $coll->songs_with_title_partial( $string );
 
 Return all L<Audio::MPD::Common::Item::Song>s where C<$string> is part
 of the title.
