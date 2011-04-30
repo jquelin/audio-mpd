@@ -1,8 +1,19 @@
+#
+# This file is part of Audio-MPD
+#
+# This software is copyright (c) 2007 by Jerome Quelin.
+#
+# This is free software; you can redistribute it and/or modify it under
+# the same terms as the Perl 5 programming language system itself.
+#
 use 5.008;
 use warnings;
 use strict;
 
 package Audio::MPD::Playlist;
+BEGIN {
+  $Audio::MPD::Playlist::VERSION = '1.111200';
+}
 # ABSTRACT: class to mess MPD's playlist
 
 use Moose;
@@ -33,14 +44,6 @@ has _mpd => ( ro, required, weak_ref );
 
 # -- Playlist: retrieving information
 
-=meth_play_info as_items
-
-    my @items = $pl->as_items;
-
-Return an array of L<Audio::MPD::Common::Item::Song>s, one for each of the
-songs in the current playlist.
-
-=cut
 
 sub as_items {
     my ($self) = @_;
@@ -50,14 +53,6 @@ sub as_items {
 }
 
 
-=meth_play_info items_changed_since
-
-    my @items = $pl->items_changed_since( $plversion );
-
-Return a list with all the songs (as L<Audio::MPD::Common::Item::Song> objects)
-added to the playlist since playlist C<$plversion>.
-
-=cut
 
 sub items_changed_since {
     my ($self, $plid) = @_;
@@ -67,14 +62,6 @@ sub items_changed_since {
 
 # -- Playlist: adding / removing songs
 
-=meth_play_addrm add
-
-    $pl->add( $path [, $path [...] ] );
-
-Add the songs identified by C<$path> (relative to MPD's music directory) to the
-current playlist. No return value.
-
-=cut
 
 sub add {
     my ($self, @pathes) = @_;
@@ -86,14 +73,6 @@ sub add {
 }
 
 
-=meth_play_addrm delete
-
-    $pl->delete( $song [, $song [...] ] );
-
-Remove the specified C<$song> numbers (starting from 0) from the current
-playlist. No return value.
-
-=cut
 
 sub delete {
     my ($self, @songs) = @_;
@@ -105,14 +84,6 @@ sub delete {
 }
 
 
-=meth_play_addrm deleteid
-
-    $pl->deleteid( $songid [, $songid [...] ] );
-
-Remove the specified C<$songid>s (as assigned by mpd when inserted in playlist)
-from the current playlist. No return value.
-
-=cut
 
 sub deleteid {
     my ($self, @songs) = @_;
@@ -124,13 +95,6 @@ sub deleteid {
 }
 
 
-=meth_play_addrm clear
-
-    $pl->clear;
-
-Remove all the songs from the current playlist. No return value.
-
-=cut
 
 sub clear {
     my ($self) = @_;
@@ -138,14 +102,6 @@ sub clear {
 }
 
 
-=meth_play_addrm crop
-
-    $pl->crop;
-
-Remove all of the songs from the current playlist B<except> the
-song currently playing.
-
-=cut
 
 sub crop {
     my ($self) = @_;
@@ -166,13 +122,6 @@ sub crop {
 # -- Playlist: changing playlist order
 
 
-=meth_play_order shuffle
-
-    $pl->shuffle;
-
-Shuffle the current playlist. No return value.
-
-=cut
 
 sub shuffle {
     my ($self) = @_;
@@ -180,14 +129,6 @@ sub shuffle {
 }
 
 
-=meth_play_order swap
-
-    $pl->swap( $song1, $song2 );
-
-Swap positions of song number C<$song1> and C<$song2> in the current
-playlist. No return value.
-
-=cut
 
 sub swap {
     my ($self, $from, $to) = @_;
@@ -195,14 +136,6 @@ sub swap {
 }
 
 
-=meth_play_order swapid
-
-    $pl->swapid( $songid1, $songid2 );
-
-Swap the postions of song ID C<$songid1> with song ID C<$songid2> in the
-current playlist. No return value.
-
-=cut
 
 sub swapid {
     my ($self, $from, $to) = @_;
@@ -210,13 +143,6 @@ sub swapid {
 }
 
 
-=meth_play_order move
-
-    $pl->move( $song, $newpos );
-
-Move song number C<$song> to the position C<$newpos>. No return value.
-
-=cut
 
 sub move {
     my ($self, $song, $pos) = @_;
@@ -224,13 +150,6 @@ sub move {
 }
 
 
-=meth_play_order moveid
-
-    $pl->moveid( $songid, $newpos );
-
-Move song ID C<$songid> to the position C<$newpos>. No return value.
-
-=cut
 
 sub moveid {
     my ($self, $song, $pos) = @_;
@@ -240,13 +159,6 @@ sub moveid {
 
 # -- Playlist: managing playlists
 
-=meth_play_mgmt load
-
-    $pl->load( $playlist );
-
-Load list of songs from specified C<$playlist> file. No return value.
-
-=cut
 
 sub load {
     my ($self, $playlist) = @_;
@@ -254,14 +166,6 @@ sub load {
 }
 
 
-=meth_play_mgmt save
-
-    $pl->save( $playlist );
-
-Save the current playlist to a file called C<$playlist> in MPD's playlist
-directory. No return value.
-
-=cut
 
 sub save {
     my ($self, $playlist) = @_;
@@ -269,14 +173,6 @@ sub save {
 }
 
 
-=meth_play_mgmt rm
-
-    $pl->rm( $playlist );
-
-Delete playlist named C<$playlist> from MPD's playlist directory. No
-return value.
-
-=cut
 
 sub rm {
     my ($self, $playlist) = @_;
@@ -288,13 +184,22 @@ no Moose;
 __PACKAGE__->meta->make_immutable;
 1;
 
-__END__
+
+
+=pod
+
+=head1 NAME
+
+Audio::MPD::Playlist - class to mess MPD's playlist
+
+=head1 VERSION
+
+version 1.111200
 
 =head1 SYNOPSIS
 
     $mpd->playlist->shuffle;
     # and lots of other methods
-
 
 =head1 DESCRIPTION
 
@@ -305,4 +210,128 @@ Note that you're not supposed to call the constructor yourself, an
 L<Audio::MPD::Playlist> is automatically created for you during the
 creation of an L<Audio::MPD> object - it can then be used with the
 C<playlist()> accessor.
+
+=head1 RETRIEVING INFORMATION
+
+=head2 as_items
+
+    my @items = $pl->as_items;
+
+Return an array of L<Audio::MPD::Common::Item::Song>s, one for each of the
+songs in the current playlist.
+
+=head2 items_changed_since
+
+    my @items = $pl->items_changed_since( $plversion );
+
+Return a list with all the songs (as L<Audio::MPD::Common::Item::Song> objects)
+added to the playlist since playlist C<$plversion>.
+
+=head1 ADDING / REMOVING SONGS
+
+=head2 add
+
+    $pl->add( $path [, $path [...] ] );
+
+Add the songs identified by C<$path> (relative to MPD's music directory) to the
+current playlist. No return value.
+
+=head2 delete
+
+    $pl->delete( $song [, $song [...] ] );
+
+Remove the specified C<$song> numbers (starting from 0) from the current
+playlist. No return value.
+
+=head2 deleteid
+
+    $pl->deleteid( $songid [, $songid [...] ] );
+
+Remove the specified C<$songid>s (as assigned by mpd when inserted in playlist)
+from the current playlist. No return value.
+
+=head2 clear
+
+    $pl->clear;
+
+Remove all the songs from the current playlist. No return value.
+
+=head2 crop
+
+    $pl->crop;
+
+Remove all of the songs from the current playlist B<except> the
+song currently playing.
+
+=head1 CHANGING PLAYLIST ORDER
+
+=head2 shuffle
+
+    $pl->shuffle;
+
+Shuffle the current playlist. No return value.
+
+=head2 swap
+
+    $pl->swap( $song1, $song2 );
+
+Swap positions of song number C<$song1> and C<$song2> in the current
+playlist. No return value.
+
+=head2 swapid
+
+    $pl->swapid( $songid1, $songid2 );
+
+Swap the postions of song ID C<$songid1> with song ID C<$songid2> in the
+current playlist. No return value.
+
+=head2 move
+
+    $pl->move( $song, $newpos );
+
+Move song number C<$song> to the position C<$newpos>. No return value.
+
+=head2 moveid
+
+    $pl->moveid( $songid, $newpos );
+
+Move song ID C<$songid> to the position C<$newpos>. No return value.
+
+=head1 MANAGING PLAYLISTS
+
+=head2 load
+
+    $pl->load( $playlist );
+
+Load list of songs from specified C<$playlist> file. No return value.
+
+=head2 save
+
+    $pl->save( $playlist );
+
+Save the current playlist to a file called C<$playlist> in MPD's playlist
+directory. No return value.
+
+=head2 rm
+
+    $pl->rm( $playlist );
+
+Delete playlist named C<$playlist> from MPD's playlist directory. No
+return value.
+
+=head1 AUTHOR
+
+Jerome Quelin
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2007 by Jerome Quelin.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
+
+__END__
 

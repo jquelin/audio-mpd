@@ -1,10 +1,21 @@
 #!/usr/bin/perl
+#
+# This file is part of Audio-MPD
+#
+# This software is copyright (c) 2007 by Jerome Quelin.
+#
+# This is free software; you can redistribute it and/or modify it under
+# the same terms as the Perl 5 programming language system itself.
+#
 
 use 5.010;
 use strict;
 use warnings;
 
 package main;
+BEGIN {
+  $main::VERSION = '1.111200';
+}
 #ABSTRACT: rate your songs for mpd-dynamic
 
 use Audio::MPD;
@@ -27,18 +38,25 @@ else { say exists $ratings{$song} ? $ratings{$song} : 0; }
 untie %ratings;
 
 
-__END__
 
-=head1 USAGE
 
-    mpd-rate [options]
+=pod
 
+=head1 NAME
+
+main - rate your songs for mpd-dynamic
+
+=head1 VERSION
+
+version 1.111200
 
 =head1 DESCRIPTION
 
 This program allows you to rate your songs, to allow mpd-dynamic to use ratings.
 
+=head1 USAGE
 
+    mpd-rate [options]
 
 =head1 OPTIONS
 
@@ -52,19 +70,15 @@ The path of a db file with the ratings per song. The keys are the song path
 (relative to MPD root), and the value is an integer (the rating). Default to
 C<~/.mpd/ratings.db>.
 
-=for Euclid:
-    ratings.type:     writable
+=for Euclid: ratings.type:     writable
     ratings.default:  "$ENV{HOME}/.mpd/ratings.db"
-
 
 =item <rating>
 
 The rating you want to apply to the current song. If not supplied, will
 print its current rating.
 
-=for Euclid:
-    rating.type:    integer
-
+=for Euclid: rating.type:    integer
 
 =item --version
 
@@ -78,12 +92,9 @@ Print the usual program information
 
 =back
 
-
-
 =head1 AUTHOR
 
 Jerome Quelin, C<< <jquelin@cpan.org> >>
-
 
 =head1 COPYRIGHT & LICENSE
 
@@ -92,4 +103,19 @@ Copyright (c) 2010 Jerome Quelin, all rights reserved.
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
+=head1 AUTHOR
+
+Jerome Quelin
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2007 by Jerome Quelin.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
 =cut
+
+
+__END__
+
