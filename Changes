@@ -2,6 +2,9 @@ Changelog for Audio-MPD
 
 {{$NEXT}}
 
+1.111200  2011-04-30 10:21:31 Europe/Paris
+ - removing misleading example in pod
+
 1.110560  2011-02-25 15:28:59 Europe/Paris
  - new command available: outputs
 
