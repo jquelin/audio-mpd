@@ -745,7 +745,7 @@ would be then on your own to deal with disconnections.
 To search the collection, use the C<collection()> accessor, returning the
 associated L<Audio::MPD::Collection> object. You will then be able to call:
 
-    $mpd->collection->random_song;
+    $mpd->collection->all_songs;
 
 See L<Audio::MPD::Collection> documentation for more details on available
 methods.
