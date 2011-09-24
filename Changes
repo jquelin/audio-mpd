@@ -1,6 +1,8 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+ - collection: new method all_genres (sebastien nobili)
+ - collection: new method artists_by_genre (sebastien nobili)
 
 1.111200  2011-04-30 10:21:31 Europe/Paris
  - removing misleading example in pod

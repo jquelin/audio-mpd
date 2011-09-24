@@ -191,6 +191,20 @@ sub all_playlists {
 }
 
 
+=meth_coll_whole  all_genres
+
+    my @genres = $coll->all_genres;
+
+Return the list of all genres (strings) currently known by mpd.
+
+=cut
+
+sub all_genres {
+    my ($self) = @_;
+    return $self->_mpd->_cooked_command_strip_first_field( "list genre\n" );
+}
+
+
 # -- Collection: picking songs
 
 =meth_coll_pick song
@@ -227,7 +241,7 @@ sub songs_with_filename_partial {
 }
 
 
-# -- Collection: songs, albums & artists relations
+# -- Collection: songs, albums, artists & genres relations
 
 =meth_coll_relations albums_by_artist
 
@@ -341,6 +355,21 @@ sub songs_with_title_partial {
     $what =~ s/"/\\"/g;
 
     return $self->_mpd->_cooked_command_as_items( qq[search title "$what"\n] );
+}
+
+
+=meth_coll_relations artists_by_genre
+
+    my @artists = $coll->artists_by_genre( $genre );
+
+Return all artists (strings) of C<$genre>.
+
+=cut
+
+sub artists_by_genre {
+    my ($self, $genre) = @_;
+    $genre =~ s/"/\\"/g;
+    return $self->_mpd->_cooked_command_strip_first_field( qq[list artist genre "$genre"\n] );
 }
 
 
