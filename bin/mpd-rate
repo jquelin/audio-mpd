@@ -13,8 +13,8 @@ use strict;
 use warnings;
 
 package main;
-BEGIN {
-  $main::VERSION = '1.111200';
+{
+  $main::VERSION = '1.112670';
 }
 #ABSTRACT: rate your songs for mpd-dynamic
 
@@ -48,7 +48,7 @@ main - rate your songs for mpd-dynamic
 
 =head1 VERSION
 
-version 1.111200
+version 1.112670
 
 =head1 DESCRIPTION
 

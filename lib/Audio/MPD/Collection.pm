@@ -11,8 +11,8 @@ use warnings;
 use strict;
 
 package Audio::MPD::Collection;
-BEGIN {
-  $Audio::MPD::Collection::VERSION = '1.111200';
+{
+  $Audio::MPD::Collection::VERSION = '1.112670';
 }
 # ABSTRACT: class to query MPD's collection
 
@@ -121,6 +121,13 @@ sub all_playlists {
 }
 
 
+
+sub all_genres {
+    my ($self) = @_;
+    return $self->_mpd->_cooked_command_strip_first_field( "list genre\n" );
+}
+
+
 # -- Collection: picking songs
 
 
@@ -142,7 +149,7 @@ sub songs_with_filename_partial {
 }
 
 
-# -- Collection: songs, albums & artists relations
+# -- Collection: songs, albums, artists & genres relations
 
 
 sub albums_by_artist {
@@ -205,6 +212,14 @@ sub songs_with_title_partial {
 }
 
 
+
+sub artists_by_genre {
+    my ($self, $genre) = @_;
+    $genre =~ s/"/\\"/g;
+    return $self->_mpd->_cooked_command_strip_first_field( qq[list artist genre "$genre"\n] );
+}
+
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 1;
@@ -219,7 +234,7 @@ Audio::MPD::Collection - class to query MPD's collection
 
 =head1 VERSION
 
-version 1.111200
+version 1.112670
 
 =head1 SYNOPSIS
 
@@ -313,6 +328,12 @@ Return the list of all pathes (strings) currently known by mpd.
 
 Return the list of all playlists (strings) currently known by mpd.
 
+=head2 all_genres
+
+    my @genres = $coll->all_genres;
+
+Return the list of all genres (strings) currently known by mpd.
+
 =head1 PICKING A SONG
 
 =head2 song
@@ -328,7 +349,7 @@ Return the L<Audio::MPD::Common::Item::Song> which correspond to C<$path>.
 Return the L<Audio::MPD::Common::Item::Song>s containing C<$string> in
 their path.
 
-=head1 SONGS, ALBUMS & ARTISTS RELATIONS
+=head1 SONGS, ALBUMS, ARTISTS & GENRES RELATIONS
 
 =head2 albums_by_artist
 
@@ -376,6 +397,12 @@ C<$title>.
 
 Return all L<Audio::MPD::Common::Item::Song>s where C<$string> is part
 of the title.
+
+=head2 artists_by_genre
+
+    my @artists = $coll->artists_by_genre( $genre );
+
+Return all artists (strings) of C<$genre>.
 
 =head1 AUTHOR
 

@@ -67,6 +67,8 @@ eval { $v .= pmver('Proc::Daemon','any version') };
 eval { $v .= pmver('Test::Corpus::Audio::MPD','1.092920') };
 eval { $v .= pmver('Test::More','0.88') };
 eval { $v .= pmver('Time::HiRes','any version') };
+eval { $v .= pmver('strict','any version') };
+eval { $v .= pmver('warnings','any version') };
 
 
 
