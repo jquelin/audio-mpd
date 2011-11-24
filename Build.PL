@@ -10,7 +10,7 @@ my %module_build_args = (
     "File::Find" => 0,
     "File::Temp" => 0,
     "Module::Build" => "0.3601",
-    "Test::Corpus::Audio::MPD" => "1.092920",
+    "Test::Corpus::Audio::MPD" => "1.113282",
     "Test::More" => "0.88"
   },
   "configure_requires" => {
@@ -21,7 +21,7 @@ my %module_build_args = (
     "Jerome Quelin"
   ],
   "dist_name" => "Audio-MPD",
-  "dist_version" => "1.112670",
+  "dist_version" => "1.113280",
   "license" => "perl",
   "module_name" => "Audio::MPD",
   "recommends" => {},
@@ -34,7 +34,7 @@ my %module_build_args = (
     "DB_File" => 0,
     "Encode" => 0,
     "Getopt::Euclid" => 0,
-    "IO::Socket" => 0,
+    "IO::Socket::IP" => 0,
     "Moose" => 0,
     "Moose::Util::TypeConstraints" => 0,
     "MooseX::Has::Sugar" => 0,

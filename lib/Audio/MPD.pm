@@ -12,7 +12,7 @@ use strict;
 
 package Audio::MPD;
 {
-  $Audio::MPD::VERSION = '1.112670';
+  $Audio::MPD::VERSION = '1.113280';
 }
 # ABSTRACT: class to talk to MPD (Music Player Daemon) servers
 
@@ -21,7 +21,7 @@ use Audio::MPD::Common::Stats;
 use Audio::MPD::Common::Status;
 use Audio::MPD::Common::Output;
 use Encode;
-use IO::Socket;
+use IO::Socket::IP;
 use Moose;
 use MooseX::Has::Sugar;
 use MooseX::SemiAffordanceAccessor;
@@ -41,7 +41,7 @@ has collection => ( ro, lazy_build, isa=>'Audio::MPD::Collection' );
 has playlist   => ( ro, lazy_build, isa=>'Audio::MPD::Playlist'   );
 has version    => ( rw );
 
-has _socket    => ( rw, isa=>'IO::Socket::INET' );
+has _socket    => ( rw, isa=>'IO::Socket::IP' );
 
 
 #--
@@ -96,7 +96,7 @@ sub _connect_to_mpd_server {
     my ($self) = @_;
 
     # try to connect to mpd.
-    my $socket = IO::Socket::INET->new(
+    my $socket = IO::Socket::IP->new(
         PeerAddr => $self->host,
         PeerPort => $self->port,
     )
@@ -475,7 +475,7 @@ Audio::MPD - class to talk to MPD (Music Player Daemon) servers
 
 =head1 VERSION
 
-version 1.112670
+version 1.113280
 
 =head1 SYNOPSIS
 

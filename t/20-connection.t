@@ -18,7 +18,7 @@ use Test::More;
 eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 18;
+plan tests => 20;
 
 my $mpd = Audio::MPD->new;
 isa_ok($mpd, 'Audio::MPD');
@@ -39,6 +39,12 @@ SKIP: {
     eval { Audio::MPD->new(port=>25) };
     like($@, qr/^Not a mpd server - welcome string was:/, 'wrong server');
 };
+
+
+#
+# testing ipv6 connection
+my $mpd6 = Audio::MPD->new( host => "::1" );
+isa_ok($mpd6, 'Audio::MPD');
 
 
 #

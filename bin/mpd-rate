@@ -12,9 +12,9 @@ use 5.010;
 use strict;
 use warnings;
 
-package main;
+package mpd_rate;
 {
-  $main::VERSION = '1.112670';
+  $mpd_rate::VERSION = '1.113280';
 }
 #ABSTRACT: rate your songs for mpd-dynamic
 
@@ -44,11 +44,11 @@ untie %ratings;
 
 =head1 NAME
 
-main - rate your songs for mpd-dynamic
+mpd_rate - rate your songs for mpd-dynamic
 
 =head1 VERSION
 
-version 1.112670
+version 1.113280
 
 =head1 DESCRIPTION
 

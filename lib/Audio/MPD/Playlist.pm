@@ -12,7 +12,7 @@ use strict;
 
 package Audio::MPD::Playlist;
 {
-  $Audio::MPD::Playlist::VERSION = '1.112670';
+  $Audio::MPD::Playlist::VERSION = '1.113280';
 }
 # ABSTRACT: class to mess MPD's playlist
 
@@ -194,7 +194,7 @@ Audio::MPD::Playlist - class to mess MPD's playlist
 
 =head1 VERSION
 
-version 1.112670
+version 1.113280
 
 =head1 SYNOPSIS
 

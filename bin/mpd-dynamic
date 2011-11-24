@@ -11,9 +11,9 @@
 use strict;
 use warnings;
 
-package main;
+package mpd_dynamic;
 {
-  $main::VERSION = '1.112670';
+  $mpd_dynamic::VERSION = '1.113280';
 }
 # ABSTRACT: a dynamic playlist for mpd
 
@@ -104,11 +104,11 @@ sub debug {
 
 =head1 NAME
 
-main - a dynamic playlist for mpd
+mpd_dynamic - a dynamic playlist for mpd
 
 =head1 VERSION
 
-version 1.112670
+version 1.113280
 
 =head1 DESCRIPTION
 

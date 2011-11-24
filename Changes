@@ -1,5 +1,12 @@
 Changelog for Audio-MPD
 
+1.113280  2011-11-24 15:07:47 Europe/Paris
+ - fix rt#68357 - ipv6 support
+ - fix rt#71201 - url handlers can vary with mpd installation
+ - fix rt#71202 - requiring software mixer for tests
+ - tests for all_genres, artists_by_genre (sebastien nobili)
+ - better namespace for scripts
+
 1.112670  2011-09-24 11:40:44 Europe/Paris
  - collection: new method all_genres (sebastien nobili)
  - collection: new method artists_by_genre (sebastien nobili)

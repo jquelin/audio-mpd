@@ -12,7 +12,7 @@ use strict;
 
 package Audio::MPD::Collection;
 {
-  $Audio::MPD::Collection::VERSION = '1.112670';
+  $Audio::MPD::Collection::VERSION = '1.113280';
 }
 # ABSTRACT: class to query MPD's collection
 
@@ -234,7 +234,7 @@ Audio::MPD::Collection - class to query MPD's collection
 
 =head1 VERSION
 
-version 1.112670
+version 1.113280
 
 =head1 SYNOPSIS
 
