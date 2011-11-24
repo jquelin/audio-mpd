@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-package main;
+package mpd_dynamic;
 # ABSTRACT: a dynamic playlist for mpd
 
 use Audio::MPD;
