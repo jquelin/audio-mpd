@@ -1,6 +1,7 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+ - fix rt#71202 - requiring software mixer for tests
 
 1.112670  2011-09-24 11:40:44 Europe/Paris
  - collection: new method all_genres (sebastien nobili)
