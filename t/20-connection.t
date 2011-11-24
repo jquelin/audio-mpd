@@ -10,7 +10,7 @@ use Test::More;
 eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 19;
+plan tests => 20;
 
 my $mpd = Audio::MPD->new;
 isa_ok($mpd, 'Audio::MPD');

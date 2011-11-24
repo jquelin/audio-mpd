@@ -54,4 +54,4 @@ is( $@, '', 'updating part of collection' );
 #
 # testing urlhandlers.
 my @handlers = $mpd->urlhandlers;
-is( scalar @handlers, 1, 'only one url handler supported' );
+ok( scalar @handlers >= 1, 'at least one url handler supported' );
