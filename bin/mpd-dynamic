@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-package mpd_dynamic;
+# PODNAME: mpd-dynamic
 # ABSTRACT: a dynamic playlist for mpd
 
 use Audio::MPD;

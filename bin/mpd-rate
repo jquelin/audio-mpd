@@ -4,8 +4,8 @@ use 5.010;
 use strict;
 use warnings;
 
-package mpd_rate;
-#ABSTRACT: rate your songs for mpd-dynamic
+# PODNAME: mpd-rate;
+# ABSTRACT: rate your songs for mpd-dynamic
 
 use Audio::MPD;
 use DB_File;
