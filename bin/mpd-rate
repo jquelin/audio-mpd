@@ -13,7 +13,12 @@ use Encode;
 use Getopt::Euclid qw{ :minimal_keys };
 
 # fetch current song
-my $song = encode( 'utf-8', Audio::MPD->new->current->file );
+my $playing = Audio::MPD->new->current;
+unless (defined $playing)
+{
+    die "Cannot rate current song, as no song currently is playing!";
+}
+my $song = encode( 'utf-8', $playing->file );
 
 # open ratings file
 my %ratings;

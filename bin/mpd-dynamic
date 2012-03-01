@@ -23,6 +23,8 @@ Proc::Daemon::Init unless $ARGV{debug};
 
 # fetch list of songs known by mpd.
 my @files = $mpd->collection->all_pathes;
+die "Please set up mpd's audio collection before running mpd-dynamic"
+    unless @files;
 
 
 while (1) { # endless loop
@@ -37,7 +39,7 @@ while (1) { # endless loop
 
     # yup - update playlist & song.
     $playlist = $status->playlist;
-    $song     = $status->song;
+    $song     = $status->song // 0;
 
     # keep at most $ARGV{old} songs.
     if ( $song > $ARGV{old} ) {
