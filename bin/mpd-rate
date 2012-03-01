@@ -12,11 +12,8 @@ use 5.010;
 use strict;
 use warnings;
 
-package mpd_rate;
-{
-  $mpd_rate::VERSION = '1.113280';
-}
-#ABSTRACT: rate your songs for mpd-dynamic
+# PODNAME: mpd-rate;
+# ABSTRACT: rate your songs for mpd-dynamic
 
 use Audio::MPD;
 use DB_File;
@@ -24,7 +21,12 @@ use Encode;
 use Getopt::Euclid qw{ :minimal_keys };
 
 # fetch current song
-my $song = encode( 'utf-8', Audio::MPD->new->current->file );
+my $playing = Audio::MPD->new->current;
+unless (defined $playing)
+{
+    die "Cannot rate current song, as no song currently is playing!";
+}
+my $song = encode( 'utf-8', $playing->file );
 
 # open ratings file
 my %ratings;
@@ -44,11 +46,11 @@ untie %ratings;
 
 =head1 NAME
 
-mpd_rate - rate your songs for mpd-dynamic
+mpd-rate; - rate your songs for mpd-dynamic
 
 =head1 VERSION
 
-version 1.113280
+version 1.120610
 
 =head1 DESCRIPTION
 
@@ -91,17 +93,6 @@ print its current rating.
 Print the usual program information
 
 =back
-
-=head1 AUTHOR
-
-Jerome Quelin, C<< <jquelin@cpan.org> >>
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright (c) 2010 Jerome Quelin, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
 
 =head1 AUTHOR
 

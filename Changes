@@ -1,5 +1,10 @@
 Changelog for Audio-MPD
 
+1.120610  2012-03-01 09:31:01 Europe/Paris
+ - fix rt#75436 - mpd-rate and mpd-dynamic should fail gracefully when
+   no song is playing (florian)
+ - fix rt#75437 - fix mpd-rate and mpd-dynamic pod names
+
 1.113280  2011-11-24 15:07:47 Europe/Paris
  - fix rt#68357 - ipv6 support
  - fix rt#71201 - url handlers can vary with mpd installation

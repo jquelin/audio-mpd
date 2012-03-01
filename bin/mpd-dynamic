@@ -11,10 +11,7 @@
 use strict;
 use warnings;
 
-package mpd_dynamic;
-{
-  $mpd_dynamic::VERSION = '1.113280';
-}
+# PODNAME: mpd-dynamic
 # ABSTRACT: a dynamic playlist for mpd
 
 use Audio::MPD;
@@ -34,6 +31,8 @@ Proc::Daemon::Init unless $ARGV{debug};
 
 # fetch list of songs known by mpd.
 my @files = $mpd->collection->all_pathes;
+die "Please set up mpd's audio collection before running mpd-dynamic"
+    unless @files;
 
 
 while (1) { # endless loop
@@ -48,7 +47,7 @@ while (1) { # endless loop
 
     # yup - update playlist & song.
     $playlist = $status->playlist;
-    $song     = $status->song;
+    $song     = $status->song // 0;
 
     # keep at most $ARGV{old} songs.
     if ( $song > $ARGV{old} ) {
@@ -104,11 +103,11 @@ sub debug {
 
 =head1 NAME
 
-mpd_dynamic - a dynamic playlist for mpd
+mpd-dynamic - a dynamic playlist for mpd
 
 =head1 VERSION
 
-version 1.113280
+version 1.120610
 
 =head1 DESCRIPTION
 
@@ -220,17 +219,6 @@ The minimum rating for a song to be inserted in the playlist. Default to 4.
     min.default:  4
 
 =back
-
-=head1 AUTHOR
-
-Jerome Quelin, C<< <jquelin@cpan.org> >>
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright (c) 2007-2009 Jerome Quelin, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
 
 =head1 AUTHOR
 

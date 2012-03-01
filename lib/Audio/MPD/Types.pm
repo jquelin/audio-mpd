@@ -12,7 +12,7 @@ use strict;
 
 package Audio::MPD::Types;
 {
-  $Audio::MPD::Types::VERSION = '1.113280';
+  $Audio::MPD::Types::VERSION = '1.120610';
 }
 # ABSTRACT: types used in the distribution
 
@@ -31,7 +31,7 @@ Audio::MPD::Types - types used in the distribution
 
 =head1 VERSION
 
-version 1.113280
+version 1.120610
 
 =head1 DESCRIPTION
 

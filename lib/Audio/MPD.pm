@@ -12,7 +12,7 @@ use strict;
 
 package Audio::MPD;
 {
-  $Audio::MPD::VERSION = '1.113280';
+  $Audio::MPD::VERSION = '1.120610';
 }
 # ABSTRACT: class to talk to MPD (Music Player Daemon) servers
 
@@ -475,7 +475,7 @@ Audio::MPD - class to talk to MPD (Music Player Daemon) servers
 
 =head1 VERSION
 
-version 1.113280
+version 1.120610
 
 =head1 SYNOPSIS
 
