@@ -7,7 +7,7 @@ package Audio::MPD::Types;
 
 use Moose::Util::TypeConstraints;
 
-enum CONNTYPE  => qw{ reuse once };
+enum CONNTYPE  => [qw{ reuse once }];
 
 1;
 __END__
