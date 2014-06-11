@@ -1,0 +1,337 @@
+# NAME
+
+Audio::MPD - class to talk to MPD (Music Player Daemon) servers
+
+# VERSION
+
+version 1.120611
+
+# SYNOPSIS
+
+    use Audio::MPD;
+
+    my $mpd = Audio::MPD->new;
+    $mpd->play;
+    sleep 10;
+    $mpd->next;
+
+# DESCRIPTION
+
+[Audio::MPD](https://metacpan.org/pod/Audio::MPD) gives a clear object-oriented interface for talking to and
+controlling MPD (Music Player Daemon) servers. A connection to the MPD
+server is established as soon as a new [Audio::MPD](https://metacpan.org/pod/Audio::MPD) object is created.
+
+Since mpd is still in 0.x versions, [Audio::MPD](https://metacpan.org/pod/Audio::MPD) sticks to latest mpd
+(0.15 as time of writing) protocol & behaviour, and does **not** try to
+maintain backward compatibility.
+
+Note that the module will by default connect to mpd before sending any
+command, and will disconnect after the command has been issued. This
+scheme is far from optimal, but allows us not to care about timeout
+disconnections. Because of that, the `idle` command (new in mpd 0.14)
+is **not** (and will not) be supported in [Audio::MPD](https://metacpan.org/pod/Audio::MPD). This will be
+implemented in [POE::Component::Client::MPD](https://metacpan.org/pod/POE::Component::Client::MPD).
+
+**/!\\** Note that [Audio::MPD](https://metacpan.org/pod/Audio::MPD) is using high-level, blocking sockets.
+This means that if the mpd server is slow, or hangs for whatever reason,
+or even crash abruptly, the program will be hung forever in this sub.
+The [POE::Component::Client::MPD](https://metacpan.org/pod/POE::Component::Client::MPD) module is way safer - you're advised
+to use it instead of [Audio::MPD](https://metacpan.org/pod/Audio::MPD). Or you can try to set `conntype` to
+`$REUSE` (see [Audio::MPD](https://metacpan.org/pod/Audio::MPD) constructor for more details), but you
+would be then on your own to deal with disconnections.
+
+## Searching the collection
+
+To search the collection, use the `collection()` accessor, returning the
+associated [Audio::MPD::Collection](https://metacpan.org/pod/Audio::MPD::Collection) object. You will then be able to call:
+
+    $mpd->collection->all_songs;
+
+See [Audio::MPD::Collection](https://metacpan.org/pod/Audio::MPD::Collection) documentation for more details on available
+methods.
+
+## Handling the playlist
+
+To update the playlist, use the `playlist()` accessor, returning the
+associated [Audio::MPD::Playlist](https://metacpan.org/pod/Audio::MPD::Playlist) object. You will then be able to call:
+
+    $mpd->playlist->clear;
+
+See [Audio::MPD::Playlist](https://metacpan.org/pod/Audio::MPD::Playlist) documentation for more details on available
+methods.
+
+# ATTRIBUTES
+
+## host
+
+The hostname where MPD is running. Defaults to environment var
+`MPD_HOST`, then to 'localhost'. Note that `MPD_HOST` can be of
+the form `password@host:port` (each of `password@` or `:port` can
+be omitted).
+
+## port
+
+The port that MPD server listens to. Defaults to environment var
+`MPD_PORT`, then to parsed `MPD_HOST` (cf above), then to 6600.
+
+## password
+
+The password to access special MPD functions. Defaults to environment
+var `MPD_PASSWORD`, then to parsed `MPD_HOST` (cf above), then to
+empty string.
+
+## conntype
+
+Change how the connection to mpd server is handled. It should be of a
+`CONNTYPE` type (cf [Audio::MPD::Types](https://metacpan.org/pod/Audio::MPD::Types)). Use either the `reuse`
+string to reuse the same connection or `once` to open a new connection
+per command (default).
+
+# METHODS
+
+## new
+
+    my $mpd = Audio::MPD->new( \%opts );
+
+This is the constructor for [Audio::MPD](https://metacpan.org/pod/Audio::MPD). One can specify any of the
+attributes (cf above).
+
+# CONTROLLING THE SERVER
+
+## ping
+
+    $mpd->ping;
+
+Sends a ping command to the mpd server.
+
+## version
+
+    my $version = $mpd->version;
+
+Return mpd's version number as advertised during connection. Note that
+mpd returns **protocol** version when connected. This protocol version
+can differ from the real mpd version. eg, mpd version 0.13.2 is
+"speaking" and thus advertising version 0.13.0.
+
+## kill
+
+    $mpd->kill;
+
+Send a message to the MPD server telling it to shut down.
+
+## set\_password
+
+    $mpd->set_password( [$password] );
+
+Change password used to communicate with MPD server to `$password`.
+Empty string is assumed if `$password` is not supplied.
+
+## updatedb
+
+    $mpd->updatedb( [$path] );
+
+Force mpd to recan its collection. If `$path` (relative to MPD's music
+directory) is supplied, MPD will only scan it - otherwise, MPD will
+rescan its whole collection.
+
+## urlhandlers
+
+    my @handlers = $mpd->urlhandlers;
+
+Return an array of supported URL schemes.
+
+# HANDLING VOLUME & OUTPUT
+
+## volume
+
+    $mpd->volume( [+][-]$volume );
+
+Sets the audio output volume percentage to absolute `$volume`.  If
+`$volume` is prefixed by '+' or '-' then the volume is changed
+relatively by that value.
+
+## outputs
+
+    my @outputs = $mpd->outputs( );
+
+Return a list of `Audio::MPD::Common::Outputs` with all outputs
+available within MPD.
+
+## output\_enable
+
+    $mpd->output_enable( $output );
+
+Enable the specified audio output. `$output` is the ID of the audio
+output.
+
+## output\_disable
+
+    $mpd->output_disable( $output );
+
+Disable the specified audio output. `$output` is the ID of the audio
+output.
+
+# RETRIEVING INFO FROM CURRENT STATE
+
+## stats
+
+    my $stats = $mpd->stats;
+
+Return an [Audio::MPD::Common::Stats](https://metacpan.org/pod/Audio::MPD::Common::Stats) object with the current statistics
+of MPD. See the associated pod for more information.
+
+## status
+
+    my $status = $mpd->status;
+
+Return an [Audio::MPD::Common::Status](https://metacpan.org/pod/Audio::MPD::Common::Status) object with various information on
+current MPD server settings. See the associated pod for more information.
+
+## current
+
+    my $song = $mpd->current;
+
+Return an [Audio::MPD::Common::Item::Song](https://metacpan.org/pod/Audio::MPD::Common::Item::Song) representing the song currently
+playing.
+
+## song
+
+    my $song = $mpd->song( [$song] );
+
+Return an [Audio::MPD::Common::Item::Song](https://metacpan.org/pod/Audio::MPD::Common::Item::Song) representing the song number
+`$song`. If `$song` is not supplied, returns the current song.
+
+## songid
+
+    my $song = $mpd->songid( [$songid] );
+
+Return an [Audio::MPD::Common::Item::Song](https://metacpan.org/pod/Audio::MPD::Common::Item::Song) representing the song with id
+`$songid`. If `$songid` is not supplied, returns the current song.
+
+# ALTERING MPD SETTINGS
+
+## repeat
+
+    $mpd->repeat( [$repeat] );
+
+Set the repeat mode to `$repeat` (1 or 0). If `$repeat` is not
+specified then the repeat mode is toggled.
+
+## random
+
+    $mpd->random( [$random] );
+
+Set the random mode to `$random` (1 or 0). If `$random` is not
+specified then the random mode is toggled.
+
+## fade
+
+    $mpd->fade( [$seconds] );
+
+Enable crossfading and set the duration of crossfade between songs.  If
+`$seconds` is not specified or $seconds is 0, then crossfading is
+disabled.
+
+# CONTROLLING PLAYBACK
+
+## play
+
+    $mpd->play( [$song] );
+
+Begin playing playlist at song number `$song`. If no argument supplied,
+resume playing.
+
+## playid
+
+    $mpd->playid( [$songid] );
+
+Begin playing playlist at song ID `$songid`. If no argument supplied,
+resume playing.
+
+## pause
+
+    $mpd->pause( [$state] );
+
+Pause playback. If `$state` is 0 then the current track is unpaused,
+if `$state` is 1 then the current track is paused.
+
+Note that if `$state` is not given, pause state will be toggled.
+
+## stop
+
+    $mpd->stop;
+
+Stop playback.
+
+## next
+
+    $mpd->next;
+
+Play next song in playlist.
+
+## prev
+
+    $mpd->prev;
+
+Play previous song in playlist.
+
+## seek
+
+    $mpd->seek( $time, [$song]);
+
+Seek to `$time` seconds in song number `$song`. If `$song` number is
+not specified then the perl module will try and seek to `$time` in the
+current song.
+
+## seekid
+
+    $mpd->seekid( $time, $songid );
+
+Seek to `$time` seconds in song ID `$songid`. If `$song` number is
+not specified then the perl module will try and seek to `$time` in the
+current song.
+
+# SEE ALSO
+
+You can find more information on the mpd project on its homepage at
+[http://www.musicpd.org](http://www.musicpd.org).wikia.com>.
+
+Original code (2005) by Tue Abrahamsen `<tue.abrahamsen@gmail.com>`,
+documented in 2006 by Nicholas J. Humfrey `<njh@aelius.com>`.
+
+You can look for information on this module at:
+
+- Search CPAN
+
+    [http://metacpan.org/release/Audio-MPD](http://metacpan.org/release/Audio-MPD)
+
+- See open / report bugs
+
+    [http://rt.cpan.org/NoAuth/Bugs.html?Dist=Audio-MPD](http://rt.cpan.org/NoAuth/Bugs.html?Dist=Audio-MPD)
+
+- Mailing-list
+
+    [http://groups.google.com/group/audio-mpd](http://groups.google.com/group/audio-mpd)
+
+- Git repository
+
+    [http://github.com/jquelin/audio-mpd.git](http://github.com/jquelin/audio-mpd.git)
+
+- AnnoCPAN: Annotated CPAN documentation
+
+    [http://annocpan.org/dist/Audio-MPD](http://annocpan.org/dist/Audio-MPD)
+
+- CPAN Ratings
+
+    [http://cpanratings.perl.org/d/Audio-MPD](http://cpanratings.perl.org/d/Audio-MPD)
+
+# AUTHOR
+
+Jerome Quelin
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2007 by Jerome Quelin.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.

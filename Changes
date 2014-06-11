@@ -1,6 +1,7 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+ - migrated to @AUthor::JQUELIN
 
 1.120610  2012-03-01 09:31:01 Europe/Paris
  - fix rt#75436 - mpd-rate and mpd-dynamic should fail gracefully when
