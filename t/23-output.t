@@ -54,7 +54,7 @@ SKIP: {
     my $error = $mpd->status->error;
     skip "detection method doesn't always work - depends on timing", 1
         unless defined $error;
-    like( $error, qr/^problems/, 'disabling output' );
+    like( $error, qr/^problems|All audio outputs are disabled/, 'disabling output' );
 }
 
 #
