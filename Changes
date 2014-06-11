@@ -1,7 +1,10 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+
+2.000     2014-06-11 14:31:10+02:00 Europe/Paris
  - adapt to new Moose (rt#90682)
+ - fix test breakages due to mpd output changes (rt#91082)
  - migrated to @AUthor::JQUELIN
 
 1.120610  2012-03-01 09:31:01 Europe/Paris

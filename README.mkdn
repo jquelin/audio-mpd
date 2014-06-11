@@ -4,7 +4,7 @@ Audio::MPD - class to talk to MPD (Music Player Daemon) servers
 
 # VERSION
 
-version 1.120611
+version 2.000
 
 # SYNOPSIS
 
