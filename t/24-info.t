@@ -56,7 +56,7 @@ is( $song->file, 'title.ogg', 'song() defaults to current song' );
 
 #
 # testing songid.
-$song = $mpd->songid(1);
+$song = $mpd->songid(2);
 isa_ok( $song, 'Audio::MPD::Common::Item::Song', 'songid() returns an AMC::Item::Song object' );
 is( $song->file, 'dir1/title-artist-album.ogg', 'songid() returns the wanted song' );
 $song = $mpd->songid; # default to current song
