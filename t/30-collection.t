@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Audio::MPD;
+use List::AllUtils qw{ any };
 use Test::More;
 
 # are we able to test module?
@@ -78,7 +79,7 @@ is( $list[1], 'our album', 'all_albums return strings' );
 # note: mpd 0.14 also returns empty artists
 @list = $coll->all_artists;
 is( scalar @list, 2, 'all_artists return the artists' );
-is( $list[0], 'dir1-artist', 'all_artists return strings' );
+ok( any { $_ eq 'dir1-artist' } @list, 'all_artists return strings' );
 
 
 #
@@ -86,7 +87,7 @@ is( $list[0], 'dir1-artist', 'all_artists return strings' );
 # note: mpd 0.14 also returns empty titles
 @list = $coll->all_titles;
 is( scalar @list, 4, 'all_titles return the titles' );
-like( $list[0], qr/-title$/, 'all_titles return strings' );
+ok( any { /-title$/ } @list, 'all_titles return strings' );
 
 
 #
