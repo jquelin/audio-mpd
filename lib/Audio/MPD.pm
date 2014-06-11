@@ -777,7 +777,7 @@ You can look for information on this module at:
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/Audio-MPD>
+L<http://metacpan.org/release/Audio-MPD>
 
 =item * See open / report bugs
 
