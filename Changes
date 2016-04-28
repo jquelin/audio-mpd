@@ -1,6 +1,7 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+ - mpd-dynamic: simplify code & logic
 
 2.000     2014-06-11 14:31:10+02:00 Europe/Paris
  - adapt to new Moose (rt#90682)

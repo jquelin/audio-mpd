@@ -10,6 +10,7 @@ use Audio::MPD;
 use DB_File;
 use Encode;
 use Getopt::Euclid qw[ :minimal_keys ];
+use List::AllUtils qw{ shuffle };
 use Proc::Daemon;
 use Time::HiRes    qw[ usleep ];
 
@@ -22,10 +23,6 @@ my $mpd = Audio::MPD->new;
 Proc::Daemon::Init unless $ARGV{debug};
 
 # fetch list of songs known by mpd.
-my @files = $mpd->collection->all_pathes;
-die "Please set up mpd's audio collection before running mpd-dynamic"
-    unless @files;
-
 
 while (1) { # endless loop
     my $status;
@@ -59,17 +56,21 @@ while (1) { # endless loop
             tie( %ratings, 'DB_File', $ARGV{ratings}, O_RDONLY )
             ? 1 : 0;
 
-        PICK_ONE:
-        for (1..$new) {
-            my $random = encode('utf-8', $files[ rand @files ]);
-            if ( $istied && exists $ratings{$random}
-                 && $ratings{$random} != 0
-                 && $ratings{$random} < $ARGV{min} ) {
-                debug("rating too low: $ratings{$random} [$random]\n");
-                redo PICK_ONE;
-            }
-            debug("adding [$random]\n");
-            eval { $mpd->playlist->add( decode('utf-8', $random) ) };
+        my @files = $mpd->collection->all_pathes;
+        die "Please set up mpd's audio collection before running mpd-dynamic"
+            unless @files;
+
+        my @oksongs =
+            shuffle
+            grep { $ratings{$_} >= $ARGV{min} }
+            grep { $ratings{$_} != 0 }
+            grep { exists $ratings{$_} }
+            @files;
+        my @newones = splice @oksongs, 0, $new;
+        foreach my $path (@newones) {
+            my $song = encode('utf-8', $path);
+            debug("adding [$song]\n");
+            eval { $mpd->playlist->add($path) };
             debug("error: $@\n") if $@;
         }
         untie %ratings if $istied;
