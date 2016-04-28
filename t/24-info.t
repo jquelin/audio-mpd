@@ -10,7 +10,7 @@ use Test::More;
 eval 'use Test::Corpus::Audio::MPD';
 plan skip_all => $@ if $@ =~ s/\n+Compilation failed.*//s;
 
-plan tests => 16;
+plan tests => 17;
 my $mpd = Audio::MPD->new;
 my $song;
 
@@ -26,7 +26,8 @@ is( $stats->artists,      1, 'one artist in the database' );
 is( $stats->albums,       1, 'one album in the database' );
 is( $stats->songs,        5, '5 songs in the database' );
 is( $stats->playtime,     0, 'already played 0 seconds' );
-is( $stats->db_playtime, 10, '10 seconds worth of music in the db' );
+cmp_ok( $stats->db_playtime, '>=', 9, '>= 9 seconds worth of music in the db' );
+cmp_ok( $stats->db_playtime, '<=', 10, '<= 10 seconds worth of music in the db' );
 isnt( $stats->uptime, undef, 'uptime is defined' );
 isnt( $stats->db_update,  0, 'database has been updated' );
 
