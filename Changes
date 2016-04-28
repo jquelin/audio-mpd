@@ -2,6 +2,9 @@ Changelog for Audio-MPD
 
 {{$NEXT}}
 
+2.002     2016-04-28 20:35:51+02:00 Europe/Paris
+ - fix rt#100300 - test support for mpd 0.19 (Debian)
+
 2.001     2016-04-28 20:27:01+02:00 Europe/Paris
  - mpd-dynamic: simplify code & logic
  - new script mpd-dump-ratings
