@@ -56,7 +56,7 @@ has collection => ( ro, lazy_build, isa=>'Audio::MPD::Collection' );
 has playlist   => ( ro, lazy_build, isa=>'Audio::MPD::Playlist'   );
 has version    => ( rw );
 
-has _socket    => ( rw, isa=>'IO::Socket::IP' );
+has _socket    => ( rw, isa=>'IO::Socket' );
 
 
 #--
@@ -119,11 +119,21 @@ sub _connect_to_mpd_server {
     my ($self) = @_;
 
     # try to connect to mpd.
-    my $socket = IO::Socket::IP->new(
-        PeerAddr => $self->host,
-        PeerPort => $self->port,
-    )
-    or die "Could not create socket: $!\n";
+    my $socket;
+
+    if ($self->host =~ m{^/}) {
+        eval q{use IO::Socket::UNIX qw(); 1}
+            or die "Could not load IO::Socket::UNIX: $@\n";
+        $socket = IO::Socket::UNIX->new($self->host)
+            or die "Could not create socket: $!\n";
+    }
+    else {
+        $socket = IO::Socket::IP->new(
+            PeerAddr => $self->host,
+            PeerPort => $self->port,
+        )
+        or die "Could not create socket: $!\n";
+    }
 
     # parse version information.
     my $line = $socket->getline;

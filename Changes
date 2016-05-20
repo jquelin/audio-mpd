@@ -1,6 +1,7 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+ - fix rt#99762 - support for mpd on a Unix socket (smcv)
 
 2.003     2016-05-20 14:01:00+02:00 Europe/Paris
  - fix rt#114136 - allow mpd-dynamic to run without a ratings.db
