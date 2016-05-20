@@ -1,6 +1,8 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+
+2.004     2016-05-20 14:05:55+02:00 Europe/Paris
  - fix rt#99762 - support for mpd on a Unix socket (smcv)
 
 2.003     2016-05-20 14:01:00+02:00 Europe/Paris
