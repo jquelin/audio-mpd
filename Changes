@@ -1,6 +1,8 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+
+2.003     2016-05-20 14:01:00+02:00 Europe/Paris
  - fix rt#114136 - allow mpd-dynamic to run without a ratings.db
 
 2.002     2016-04-28 20:35:51+02:00 Europe/Paris
