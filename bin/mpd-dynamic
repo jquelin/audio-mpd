@@ -60,12 +60,17 @@ while (1) { # endless loop
         die "Please set up mpd's audio collection before running mpd-dynamic"
             unless @files;
 
-        my @oksongs =
-            shuffle
-            grep { $ratings{$_} >= $ARGV{min} }
-            grep { $ratings{$_} != 0 }
-            grep { exists $ratings{$_} }
-            @files;
+        my @oksongs;
+        if ( $istied ) {
+            @oksongs =
+                shuffle
+                grep { $ratings{$_} >= $ARGV{min} }
+                grep { $ratings{$_} != 0 }
+                grep { exists $ratings{$_} }
+                @files;
+        } else {
+            @oksongs = shuffle @files;
+        }
         my @newones = splice @oksongs, 0, $new;
         foreach my $path (@newones) {
             my $song = encode('utf-8', $path);

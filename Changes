@@ -1,6 +1,7 @@
 Changelog for Audio-MPD
 
 {{$NEXT}}
+ - fix rt#114136 - allow mpd-dynamic to run without a ratings.db
 
 2.002     2016-04-28 20:35:51+02:00 Europe/Paris
  - fix rt#100300 - test support for mpd 0.19 (Debian)
